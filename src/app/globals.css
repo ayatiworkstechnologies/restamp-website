@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --blue: #087ed9;
+  font-family: var(--font-manrope), 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  font-family: var(--font-manrope), 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #172334;
+  background: white;
+}
+
+button, a {
+  transition: all 0.2s ease;
+}
+
+button {
+  cursor: pointer;
+}
+
+.container-site {
+  max-width: 1180px;
+  margin: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .section-title {
+    font-size: 26px;
+  }
+}
