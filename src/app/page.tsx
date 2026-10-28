@@ -135,13 +135,17 @@ export default function HomePage() {
               }}
             />
 
-            {/* Seamless interactive click target over the 'Post property FREE' pill */}
+            {/* Top Right Floating Pill: Post property FREE */}
             <Link
               href="/owner"
               aria-label="Post property for free"
-              title="Post property for free"
-              className="absolute top-[6.5%] sm:top-[7%] right-[5%] sm:right-[5.5%] w-[150px] sm:w-[170px] md:w-[185px] h-[34px] sm:h-[38px] md:h-[42px] z-20 cursor-pointer rounded-xl hover:ring-2 hover:ring-white/50 active:scale-95 transition-all"
-            />
+              className="absolute top-5 sm:top-6 lg:top-7 right-5 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+            >
+              <span>Post property</span>
+              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
+                FREE
+              </span>
+            </Link>
 
             {/* Left Content Area */}
             <div className="relative z-10 flex flex-col justify-center h-full p-6 sm:p-8 md:p-10 lg:p-12 max-w-[550px]">
