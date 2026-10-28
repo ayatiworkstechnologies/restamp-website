@@ -126,7 +126,7 @@ export default function HomePage() {
           </div>
 
           {/* Blueprint Banner Card matching Your-home-journey.png */}
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white sm:aspect-[1280/400] min-h-[420px] sm:min-h-0">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[440px] sm:min-h-[400px] md:min-h-[380px] lg:min-h-[420px]">
             {/* High-resolution 2x background graphic with building cutout and blueprint grid */}
             <div
               className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
@@ -139,7 +139,7 @@ export default function HomePage() {
             <Link
               href="/owner"
               aria-label="Post property for free"
-              className="absolute top-5 sm:top-6 lg:top-7 right-5 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
             >
               <span>Post property</span>
               <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
@@ -148,32 +148,32 @@ export default function HomePage() {
             </Link>
 
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center h-full p-6 sm:p-8 md:p-10 lg:p-12 max-w-[550px]">
+            <div className="relative z-10 flex flex-col justify-center h-full pt-16 pb-8 sm:py-8 md:py-10 lg:py-12 px-6 sm:px-8 md:px-10 lg:px-12 w-full max-w-full md:max-w-[55%] lg:max-w-[550px]">
               {/* Eyebrow badge */}
-              <div className="inline-block self-start mb-4 sm:mb-5">
-                <span className="inline-flex items-center px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
+              <div className="inline-block self-start mb-3 sm:mb-5">
+                <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
                   BUY A HOME
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.14]">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.16]">
                 Not just a property.
                 <br />
                 Your kind of place.
               </h3>
 
               {/* Subtitle */}
-              <p className="text-white/90 text-sm sm:text-[15px] leading-relaxed mt-4 max-w-md font-normal">
+              <p className="text-white/90 text-xs sm:text-sm md:text-[15px] leading-relaxed mt-3 sm:mt-4 max-w-md font-normal">
                 From your first apartment to a little more room for everyone.
                 Find a home that fits the life you want to live.
               </p>
 
               {/* CTA Button */}
-              <div className="mt-6 sm:mt-8">
+              <div className="mt-5 sm:mt-8">
                 <Link
                   href="/buy"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-sm sm:text-[15px] font-bold px-6 sm:px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-xs sm:text-sm md:text-[15px] font-bold px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
                 >
                   <span>Explore homes to buy</span>
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
@@ -395,10 +395,10 @@ export default function HomePage() {
             />
 
             {/* Readability gradient mask for smaller screens */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/90 to-transparent sm:via-[#0074ce]/70 md:via-[#0074ce]/35 lg:via-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-[#0074ce]/40 sm:via-[#0074ce]/80 md:via-[#0074ce]/60 md:to-transparent lg:via-[#0074ce]/20 lg:to-transparent pointer-events-none" />
 
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-8 md:p-10 lg:p-12 max-w-[560px]">
+            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-8 md:p-10 lg:p-12 w-full max-w-full md:max-w-[52%] lg:max-w-[540px]">
               {/* Eyebrow / Subtitle */}
               <p className="text-white/90 text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
                 Take control of your home journey with ease — anywhere, anytime.
@@ -411,16 +411,16 @@ export default function HomePage() {
                 App today!
               </h2>
 
-              {/* App Store & Google Play Badges - Side by Side */}
-              <div className="flex flex-row items-center gap-3 sm:gap-4 mt-5 sm:mt-6">
+              {/* App Store & Google Play Badges - Responsive & Side by Side */}
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3.5 mt-5 sm:mt-6">
                 {/* Apple App Store */}
                 <a
                   href="#download-ios"
                   aria-label="Download on the App Store"
-                  className="inline-flex items-center gap-2.5 sm:gap-3 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
+                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
                 >
                   <svg
-                    className="w-5 h-6 shrink-0 drop-shadow-xs"
+                    className="w-4.5 h-5.5 sm:w-5 sm:h-6 shrink-0 drop-shadow-xs"
                     viewBox="0 0 20 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -435,10 +435,10 @@ export default function HomePage() {
                     />
                   </svg>
                   <div className="text-left">
-                    <span className="text-[9px] sm:text-[10px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
+                    <span className="text-[8.5px] sm:text-[9.5px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
                       Download on the
                     </span>
-                    <span className="text-xs sm:text-sm md:text-[15px] font-bold text-white block leading-tight whitespace-nowrap">
+                    <span className="text-xs sm:text-sm font-bold text-white block leading-tight whitespace-nowrap">
                       App Store
                     </span>
                   </div>
@@ -448,10 +448,10 @@ export default function HomePage() {
                 <a
                   href="#download-android"
                   aria-label="Download on Google Play"
-                  className="inline-flex items-center gap-2.5 sm:gap-3 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
+                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
                 >
                   <svg
-                    className="w-5 h-6 shrink-0 drop-shadow-xs"
+                    className="w-4.5 h-5.5 sm:w-5 sm:h-6 shrink-0 drop-shadow-xs"
                     viewBox="0 0 21 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -474,10 +474,10 @@ export default function HomePage() {
                     />
                   </svg>
                   <div className="text-left">
-                    <span className="text-[9px] sm:text-[10px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
+                    <span className="text-[8.5px] sm:text-[9.5px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
                       Download on the
                     </span>
-                    <span className="text-xs sm:text-sm md:text-[15px] font-bold text-white block leading-tight whitespace-nowrap">
+                    <span className="text-xs sm:text-sm font-bold text-white block leading-tight whitespace-nowrap">
                       Google Play
                     </span>
                   </div>
@@ -489,12 +489,12 @@ export default function HomePage() {
 
         {/* Bottom Banner */}
         <section className="border-t border-slate-200">
-          <div className="container-site py-8 flex justify-between gap-5 items-center">
+          <div className="container-site py-8 flex flex-col sm:flex-row justify-between gap-4 sm:gap-5 items-start sm:items-center">
             <div>
-              <h2 className="font-semibold text-slate-900">
+              <h2 className="font-semibold text-slate-900 text-base sm:text-lg">
                 The right address changes everything.
               </h2>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs text-slate-500 mt-1 sm:mt-2">
                 Your next chapter starts with Restamp.
               </p>
             </div>

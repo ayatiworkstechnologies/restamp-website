@@ -3,8 +3,8 @@ import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0b1622] text-slate-400 pt-16 sm:pt-20 pb-10 sm:pb-12 border-t border-slate-800">
-      <div className="container-site grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 text-sm">
+    <footer className="bg-[#0b1622] text-slate-400 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-10 md:pb-12 border-t border-slate-800">
+      <div className="container-site grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-sm pb-12 sm:pb-16 md:pb-18">
         {/* Brand Column */}
         <div>
           <Link
@@ -98,8 +98,13 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Horizontal Divider Line */}
+      <div className="container-site">
+        <div className="border-t border-slate-800/80 w-full" />
+      </div>
+
       {/* Bottom Copyright Strip */}
-      <div className="container-site mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-slate-800/80 text-center text-xs text-slate-400">
+      <div className="container-site pt-8 pb-2 text-center text-xs text-slate-400">
         <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
           <span>Copyright @ 2026 by Restamp - All Right Reserved</span>
           <span className="hidden sm:inline text-slate-600">|</span>
