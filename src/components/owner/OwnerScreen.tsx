@@ -23,7 +23,6 @@ import {
   Bath,
   Maximize2,
   CheckCircle2,
-  ExternalLink,
   Tag,
   UploadCloud,
   ShieldCheck,
@@ -354,23 +353,6 @@ export default function OwnerScreen() {
 
   return (
     <div className="bg-white text-slate-900 min-h-screen">
-      {/* Top Subtle Bar */}
-      <div className="border-b border-slate-100 bg-slate-50/70 text-slate-600 text-xs py-2 px-4">
-        <div className="container-site flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>0% Brokerage Property Listing Portal for Individual Owners</span>
-          </div>
-          <Link
-            href="/owner/dashboard"
-            className="text-slate-600 hover:text-[#087ed9] font-medium transition inline-flex items-center gap-1"
-          >
-            <span>Existing Owner Dashboard</span>
-            <ExternalLink size={11} />
-          </Link>
-        </div>
-      </div>
-
       {/* Hero Section — Matching Reference Architecture Banner & Floating Right Form */}
       <section className="container-site py-6 sm:py-8 md:py-10">
         <div

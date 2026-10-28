@@ -389,7 +389,7 @@ export default function HomePage() {
             <div
               className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
               style={{
-                backgroundImage: `url('/images/mobile-app@2x.png')`,
+                backgroundImage: `url('/images/mobile-app@2x.webp')`,
                 imageRendering: '-webkit-optimize-contrast',
               }}
             />
