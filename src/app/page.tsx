@@ -116,37 +116,82 @@ export default function HomePage() {
 
         {/* Home Journey Section */}
         <section className="container-site pb-20">
-          <p className="eyebrow text-center">Your home journey starts with the choices</p>
-          <h2 className="section-title text-center mt-3">
-            Better places to live.
-            <br />
-            More possibilities to explore.
-          </h2>
-          <div className="grid md:grid-cols-2 gap-10 items-center mt-10">
-            <div className="overflow-hidden rounded-2xl shadow-sm">
-              <img
-                src="/images/interior.jpg"
-                className="w-full h-80 object-cover hover:scale-105 transition duration-300"
-                alt="Bright modern living room"
-              />
-            </div>
-            <div className="md:pl-8">
-              <p className="eyebrow">Buy a home</p>
-              <h3 className="section-title mt-3">
+          <div className="text-center mb-8">
+            <p className="eyebrow">Your home journey starts with the choices</p>
+            <h2 className="section-title mt-2">
+              Better places to live.
+              <br />
+              More possibilities to explore.
+            </h2>
+          </div>
+
+          {/* Blueprint Banner Card matching Your-home-journey.png */}
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white">
+            {/* Architectural blueprint grid background texture */}
+            <div
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-40 sm:opacity-50"
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 1px, transparent 1px)
+                `,
+                backgroundSize: '36px 36px',
+              }}
+            />
+
+            {/* Background graphic with modern building cutout */}
+            <div
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
+              style={{ backgroundImage: `url('/images/your-home-journey.png')` }}
+            />
+
+            {/* Readability gradient for mobile and medium screens */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-transparent sm:via-[#0074ce]/80 md:via-[#0074ce]/40 pointer-events-none" />
+
+            {/* Interactive 'Post property FREE' link overlay */}
+            <Link
+              href="/owner"
+              aria-label="Post property for free"
+              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+            >
+              <span>Post property</span>
+              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
+                FREE
+              </span>
+            </Link>
+
+            {/* Left Content Area */}
+            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-10 md:p-12 lg:p-14 max-w-xl">
+              {/* Eyebrow badge */}
+              <div className="inline-block self-start mb-4 sm:mb-5">
+                <span className="inline-flex items-center px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
+                  BUY A HOME
+                </span>
+              </div>
+
+              {/* Title */}
+              <h3 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.14]">
                 Not just a property.
                 <br />
                 Your kind of place.
               </h3>
-              <p className="text-sm text-slate-500 leading-7 mt-4 max-w-md">
-                From your first apartment to a little more room for everyone. Find a home
-                that fits the life you want to live.
+
+              {/* Subtitle */}
+              <p className="text-white/90 text-sm sm:text-[15px] leading-relaxed mt-4 max-w-md font-normal">
+                From your first apartment to a little more room for everyone.
+                Find a home that fits the life you want to live.
               </p>
-              <Link
-                href="/buy"
-                className="inline-flex items-center gap-2 bg-[#087ed9] hover:bg-sky-600 text-white text-xs font-semibold px-5 py-3 rounded-md mt-6 transition shadow-sm"
-              >
-                Explore homes to buy <ArrowRight size={14} />
-              </Link>
+
+              {/* CTA Button */}
+              <div className="mt-6 sm:mt-8">
+                <Link
+                  href="/buy"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-sm sm:text-[15px] font-bold px-6 sm:px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+                >
+                  <span>Explore homes to buy</span>
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
