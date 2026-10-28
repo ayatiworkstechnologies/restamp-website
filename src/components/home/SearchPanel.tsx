@@ -50,39 +50,41 @@ export default function SearchPanel() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-6 md:p-8 max-w-4xl mx-auto -mt-16 relative z-20">
+    <div className="bg-white rounded-2xl shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 sm:p-6 md:p-8 max-w-4xl mx-auto -mt-16 relative z-20">
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-7 sm:gap-9 mb-6">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab;
-          return (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className="relative pb-2.5 text-sm sm:text-[15px] font-medium transition cursor-pointer"
-            >
-              <span
-                className={
-                  isActive
-                    ? 'font-semibold text-[#0077e6]'
-                    : 'text-slate-700 hover:text-slate-900'
-                }
+      <div className="flex items-center justify-between gap-3 sm:gap-6 mb-4 sm:mb-6 border-b border-slate-100 sm:border-0 pb-1 sm:pb-0">
+        <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto no-scrollbar scrollbar-none py-0.5">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className="relative pb-2.5 text-sm sm:text-[15px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
               >
-                {tab}
-              </span>
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#0077e6] rounded-full" />
-              )}
-            </button>
-          );
-        })}
+                <span
+                  className={
+                    isActive
+                      ? 'font-bold text-[#0077e6]'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }
+                >
+                  {tab}
+                </span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#0077e6] rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </div>
         <Link
           href="/sell"
-          className="ml-auto mb-2.5 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 hover:border-slate-300 hover:shadow-sm transition"
+          className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-800 hover:border-slate-300 hover:shadow-sm transition shrink-0 whitespace-nowrap ml-auto mb-1.5"
         >
-          Post property
-          <span className="rounded bg-green-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">Free</span>
+          <span>Post property</span>
+          <span className="rounded bg-green-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase text-white">Free</span>
         </Link>
       </div>
 
@@ -143,7 +145,7 @@ export default function SearchPanel() {
           {/* Search Button with Hugeicons */}
           <button
             type="submit"
-            className="bg-[#0077e6] hover:bg-blue-600 active:bg-blue-700 text-white rounded-lg px-7 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition shrink-0 cursor-pointer shadow-sm"
+            className="bg-[#0077e6] hover:bg-blue-600 active:bg-blue-700 text-white rounded-lg px-7 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition w-full sm:w-auto shrink-0 cursor-pointer shadow-sm"
           >
             <HugeiconsIcon icon={SearchIcon} size={17} />
             <span>Search</span>
@@ -259,6 +261,20 @@ export default function SearchPanel() {
           </div>
         )}
       </form>
+
+      {/* Mobile-only Quick Post Property strip */}
+      <div className="sm:hidden mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+        <span className="text-slate-500 font-medium">Looking to sell or rent?</span>
+        <Link
+          href="/sell"
+          className="inline-flex items-center gap-1.5 font-bold text-[#0077e6] hover:underline"
+        >
+          <span>Post property for free</span>
+          <span className="bg-green-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded tracking-wide">
+            FREE
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
