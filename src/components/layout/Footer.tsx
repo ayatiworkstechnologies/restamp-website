@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -6,9 +7,21 @@ export default function Footer() {
       <div className="container-site grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 text-sm">
         {/* Brand Column */}
         <div>
-          <strong className="text-white text-2xl font-bold tracking-tight block">
-            restamp<span className="text-[#087ed9]">.</span>
-          </strong>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2.5 text-white font-bold tracking-tight text-2xl group"
+          >
+            <Image
+              src="/restamp-logo-white.svg"
+              alt="Restamp Logo"
+              width={34}
+              height={34}
+              className="h-8.5 w-8.5 object-contain"
+            />
+            <span className="text-white font-bold text-2xl tracking-tight">
+              Re<span className="text-[#087ed9]">stamp</span>
+            </span>
+          </Link>
           <p className="mt-3.5 text-xs text-slate-400 leading-relaxed max-w-xs">
             A new chapter starts with the right address.
           </p>
