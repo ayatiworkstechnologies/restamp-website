@@ -384,31 +384,35 @@ export default function HomePage() {
 
         {/* Mobile App Download Section */}
         <section id="download-app" className="container-site pb-20">
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white sm:aspect-[1026/378] min-h-[440px] sm:min-h-0">
-            {/* High-definition smartphone mockup graphic pinned cleanly to the right */}
-            <img
-              src="/images/mobile-app@2x.png"
-              alt="Restamp Mobile App"
-              className="absolute right-0 top-0 h-full w-auto max-w-[65%] object-contain object-right pointer-events-none select-none"
-              style={{ imageRendering: '-webkit-optimize-contrast' }}
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:h-[420px]">
+            {/* High-definition smartphone mockup graphic pinned cleanly as background */}
+            <div
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
+              style={{
+                backgroundImage: `url('/images/mobile-app@2x.png')`,
+                imageRendering: '-webkit-optimize-contrast',
+              }}
             />
 
+            {/* Readability gradient mask for smaller screens */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/90 to-transparent sm:via-[#0074ce]/70 md:via-[#0074ce]/35 lg:via-transparent pointer-events-none" />
+
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center h-full p-6 sm:p-10 md:p-12 lg:p-14 max-w-[520px]">
+            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-10 md:p-12 lg:p-14 max-w-[480px]">
               {/* Eyebrow / Subtitle */}
               <p className="text-white/90 text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
                 Take control of your home journey with ease — anywhere, anytime.
               </p>
 
               {/* Title */}
-              <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-white tracking-tight leading-[1.12] mt-2 sm:mt-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-[40px] font-extrabold text-white tracking-tight leading-[1.15] mt-2 sm:mt-3">
                 Download the Restamp
                 <br />
                 App today!
               </h2>
 
               {/* App Store & Google Play Badges */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-6 sm:mt-7">
                 {/* Apple App Store */}
                 <a
                   href="#download-ios"
