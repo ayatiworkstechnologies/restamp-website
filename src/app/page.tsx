@@ -384,7 +384,7 @@ export default function HomePage() {
 
         {/* Mobile App Download Section */}
         <section id="download-app" className="container-site pb-20">
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:h-[420px]">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:min-h-[420px]">
             {/* High-definition smartphone mockup graphic pinned cleanly as background */}
             <div
               className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
@@ -398,29 +398,29 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/90 to-transparent sm:via-[#0074ce]/70 md:via-[#0074ce]/35 lg:via-transparent pointer-events-none" />
 
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-10 md:p-12 lg:p-14 max-w-[480px]">
+            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-8 md:p-10 lg:p-12 max-w-[560px]">
               {/* Eyebrow / Subtitle */}
               <p className="text-white/90 text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
                 Take control of your home journey with ease — anywhere, anytime.
               </p>
 
               {/* Title */}
-              <h2 className="text-2xl sm:text-3xl lg:text-[40px] font-extrabold text-white tracking-tight leading-[1.15] mt-2 sm:mt-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.15] mt-2 sm:mt-3">
                 Download the Restamp
                 <br />
                 App today!
               </h2>
 
-              {/* App Store & Google Play Badges */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-6 sm:mt-7">
+              {/* App Store & Google Play Badges - Side by Side */}
+              <div className="flex flex-row items-center gap-3 sm:gap-4 mt-5 sm:mt-6">
                 {/* Apple App Store */}
                 <a
                   href="#download-ios"
                   aria-label="Download on the App Store"
-                  className="inline-flex items-center gap-3.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-2xl px-5 py-3 text-white transition-all duration-200 shadow-sm hover:shadow-md group"
+                  className="inline-flex items-center gap-2.5 sm:gap-3 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
                 >
                   <svg
-                    className="w-6 h-7 shrink-0 drop-shadow-xs"
+                    className="w-5 h-6 shrink-0 drop-shadow-xs"
                     viewBox="0 0 20 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -435,10 +435,10 @@ export default function HomePage() {
                     />
                   </svg>
                   <div className="text-left">
-                    <span className="text-[10px] sm:text-[11px] text-white/85 font-semibold block uppercase tracking-wider leading-none mb-1">
+                    <span className="text-[9px] sm:text-[10px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
                       Download on the
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-white block leading-tight">
+                    <span className="text-xs sm:text-sm md:text-[15px] font-bold text-white block leading-tight whitespace-nowrap">
                       App Store
                     </span>
                   </div>
@@ -448,10 +448,10 @@ export default function HomePage() {
                 <a
                   href="#download-android"
                   aria-label="Download on Google Play"
-                  className="inline-flex items-center gap-3.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-2xl px-5 py-3 text-white transition-all duration-200 shadow-sm hover:shadow-md group"
+                  className="inline-flex items-center gap-2.5 sm:gap-3 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
                 >
                   <svg
-                    className="w-6 h-7 shrink-0 drop-shadow-xs"
+                    className="w-5 h-6 shrink-0 drop-shadow-xs"
                     viewBox="0 0 21 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -474,10 +474,10 @@ export default function HomePage() {
                     />
                   </svg>
                   <div className="text-left">
-                    <span className="text-[10px] sm:text-[11px] text-white/85 font-semibold block uppercase tracking-wider leading-none mb-1">
+                    <span className="text-[9px] sm:text-[10px] text-white/80 font-semibold block uppercase tracking-wider leading-none mb-0.5">
                       Download on the
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-white block leading-tight">
+                    <span className="text-xs sm:text-sm md:text-[15px] font-bold text-white block leading-tight whitespace-nowrap">
                       Google Play
                     </span>
                   </div>
