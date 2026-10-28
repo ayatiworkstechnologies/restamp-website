@@ -126,42 +126,25 @@ export default function HomePage() {
           </div>
 
           {/* Blueprint Banner Card matching Your-home-journey.png */}
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white">
-            {/* Architectural blueprint grid background texture */}
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white sm:aspect-[1280/400] min-h-[420px] sm:min-h-0">
+            {/* High-resolution 2x background graphic with building cutout and blueprint grid */}
             <div
-              className="absolute inset-0 w-full h-full pointer-events-none opacity-40 sm:opacity-50"
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
               style={{
-                backgroundImage: `
-                  linear-gradient(to right, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 1px, transparent 1px)
-                `,
-                backgroundSize: '36px 36px',
+                backgroundImage: `url('/images/your-home-journey@2x.png')`,
               }}
             />
 
-            {/* Background graphic with modern building cutout */}
-            <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
-              style={{ backgroundImage: `url('/images/your-home-journey.png')` }}
-            />
-
-            {/* Readability gradient for mobile and medium screens */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-transparent sm:via-[#0074ce]/80 md:via-[#0074ce]/40 pointer-events-none" />
-
-            {/* Interactive 'Post property FREE' link overlay */}
+            {/* Seamless interactive click target over the 'Post property FREE' pill */}
             <Link
               href="/owner"
               aria-label="Post property for free"
-              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
-            >
-              <span>Post property</span>
-              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
-                FREE
-              </span>
-            </Link>
+              title="Post property for free"
+              className="absolute top-[6.5%] sm:top-[7%] right-[5%] sm:right-[5.5%] w-[150px] sm:w-[170px] md:w-[185px] h-[34px] sm:h-[38px] md:h-[42px] z-20 cursor-pointer rounded-xl hover:ring-2 hover:ring-white/50 active:scale-95 transition-all"
+            />
 
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-10 md:p-12 lg:p-14 max-w-xl">
+            <div className="relative z-10 flex flex-col justify-center h-full p-6 sm:p-8 md:p-10 lg:p-12 max-w-[550px]">
               {/* Eyebrow badge */}
               <div className="inline-block self-start mb-4 sm:mb-5">
                 <span className="inline-flex items-center px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
