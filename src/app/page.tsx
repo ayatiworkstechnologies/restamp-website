@@ -382,6 +382,78 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Mobile App Download Section */}
+        <section id="download-app" className="container-site pb-20">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white sm:aspect-[1026/378] min-h-[440px] sm:min-h-0">
+            {/* Background graphic with smartphone mockup & floating cards */}
+            <div
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
+              style={{
+                backgroundImage: `url('/images/mobile-app@2x.png')`,
+              }}
+            />
+
+            {/* Left Content Area */}
+            <div className="relative z-10 flex flex-col justify-center h-full p-6 sm:p-10 md:p-12 lg:p-14 max-w-[520px]">
+              {/* Eyebrow / Subtitle */}
+              <p className="text-white/90 text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
+                Take control of your home journey with ease — anywhere, anytime.
+              </p>
+
+              {/* Title */}
+              <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-white tracking-tight leading-[1.12] mt-2 sm:mt-3">
+                Download the Restamp
+                <br />
+                App today!
+              </h2>
+
+              {/* App Store & Google Play Badges */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+                {/* Apple App Store */}
+                <a
+                  href="#download-ios"
+                  aria-label="Download on the App Store"
+                  className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 rounded-xl px-4 py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md hover:border-white/40 group"
+                >
+                  <svg className="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.85-.9.04-2.02.6-2.67 1.35-.57.65-.98 1.72-.94 2.75 1.01.08 2.06-.5 2.6-1.25z" />
+                  </svg>
+                  <div className="text-left leading-none">
+                    <span className="text-[9px] sm:text-[10px] text-white/80 font-medium block uppercase tracking-wider mb-1">
+                      Download on the
+                    </span>
+                    <span className="text-sm sm:text-[15px] font-bold text-white block">
+                      App Store
+                    </span>
+                  </div>
+                </a>
+
+                {/* Google Play Store */}
+                <a
+                  href="#download-android"
+                  aria-label="Download on Google Play"
+                  className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 rounded-xl px-4 py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md hover:border-white/40 group"
+                >
+                  <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M3.6 1.8C3.2 2.2 3 2.8 3 3.6v16.8c0 .8.2 1.4.6 1.8l8-8-8-12.4z" />
+                    <path fill="#EA4335" d="M14.4 12l-2.8-2.7L3.6 1.8l10.8 10.2z" />
+                    <path fill="#34A853" d="M3.6 22.2l10.8-10.2-2.8-2.7-8 12.9z" />
+                    <path fill="#FBBC04" d="M14.4 12l2.8-2.7 3.8 2.2c1.1.6 1.1 1.6 0 2.2l-3.8 2.2-2.8-2.7z" />
+                  </svg>
+                  <div className="text-left leading-none">
+                    <span className="text-[9px] sm:text-[10px] text-white/80 font-medium block uppercase tracking-wider mb-1">
+                      Download on the
+                    </span>
+                    <span className="text-sm sm:text-[15px] font-bold text-white block">
+                      Google Play
+                    </span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Bottom Banner */}
         <section className="border-t border-slate-200">
           <div className="container-site py-8 flex justify-between gap-5 items-center">

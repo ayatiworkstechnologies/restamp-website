@@ -13,7 +13,7 @@ export default function Footer() {
             A new chapter starts with the right address.
           </p>
           <Link
-            href="/buy"
+            href="/#download-app"
             className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white mt-5 transition font-medium"
           >
             <span>Explore the Restamp app</span>
