@@ -385,12 +385,12 @@ export default function HomePage() {
         {/* Mobile App Download Section */}
         <section id="download-app" className="container-site pb-20">
           <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white sm:aspect-[1026/378] min-h-[440px] sm:min-h-0">
-            {/* Background graphic with smartphone mockup & floating cards */}
-            <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
-              style={{
-                backgroundImage: `url('/images/mobile-app@2x.png')`,
-              }}
+            {/* High-definition smartphone mockup graphic pinned cleanly to the right */}
+            <img
+              src="/images/mobile-app@2x.png"
+              alt="Restamp Mobile App"
+              className="absolute right-0 top-0 h-full w-auto max-w-[65%] object-contain object-right pointer-events-none select-none"
+              style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
 
             {/* Left Content Area */}
