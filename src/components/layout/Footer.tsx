@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0b1622] text-slate-400 pt-14 pb-8 border-t border-slate-800">
+    <footer className="bg-[#0b1622] text-slate-400 pt-16 sm:pt-20 pb-10 sm:pb-12 border-t border-slate-800">
       <div className="container-site grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 text-sm">
         {/* Brand Column */}
         <div>
@@ -99,9 +99,22 @@ export default function Footer() {
       </div>
 
       {/* Bottom Copyright Strip */}
-      <div className="container-site mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
-        <p>© 2026 Restamp. All rights reserved.</p>
-        <p className="text-slate-400">Made for your next move.</p>
+      <div className="container-site mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-slate-800/80 text-center text-xs text-slate-400">
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span>Copyright @ 2026 by Restamp - All Right Reserved</span>
+          <span className="hidden sm:inline text-slate-600">|</span>
+          <span>
+            Design &amp; Developed by{' '}
+            <a
+              href="https://ayatiworks.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-300 hover:text-white transition font-medium underline underline-offset-2 decoration-slate-600 hover:decoration-white"
+            >
+              Ayatiworks
+            </a>
+          </span>
+        </p>
       </div>
     </footer>
   );
