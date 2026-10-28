@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getProfile, type Profile } from '@/lib/profile';
 import { useWishlist } from '@/lib/wishlist';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -41,10 +42,12 @@ export default function Header() {
     {
       label: 'For Owners',
       links: [
+        { label: 'Owner Portal / Post Free', href: '/owner' },
+        { label: 'Post Property to Sell', href: '/sell?purpose=Sell' },
+        { label: 'Rent Out Property', href: '/sell?purpose=Rent' },
+        { label: 'Owner Plans & Pricing', href: '/owner/plans' },
+        { label: 'Owner Dashboard', href: '/owner/dashboard' },
         { label: 'Owner Login', href: '/login?role=owner' },
-        { label: 'Post Property', href: '/sell' },
-        { label: 'Rent Out Property', href: '/rent' },
-        { label: 'Owner Plans', href: '/owner/plans' },
       ],
     },
     {
@@ -53,6 +56,13 @@ export default function Header() {
         { label: 'Agent Login', href: '/login?role=agent' },
         { label: 'New Projects', href: '/projects' },
         { label: 'Agent Registration', href: '/register?role=agent' },
+      ],
+    },
+    {
+      label: 'For Admin',
+      links: [
+        { label: 'Admin Login', href: '/admin/login' },
+        { label: 'Admin Dashboard', href: '/admin-dashboard' },
       ],
     },
   ];
@@ -66,20 +76,25 @@ export default function Header() {
     { label: 'Buy', href: '/buy', hasDropdown: true },
     { label: 'Rent', href: '/rent', hasDropdown: true },
     { label: 'New projects', href: '/projects', hasDropdown: true },
-    { label: 'For property owners', href: '/sell', hasDropdown: false },
+    { label: 'For property owners', href: '/owner', hasDropdown: false },
   ];
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-2xs">
       <div className="container-site flex h-18 items-center justify-between gap-5">
-        {/* Brand Logo with Hugeicons Home01Icon */}
+        {/* Brand Logo with Restamp Official SVG */}
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-[#087ed9] font-extrabold text-xl tracking-tight"
+          className="flex items-center gap-2 text-[#087ed9] font-extrabold text-xl tracking-tight"
         >
-          <span className="p-1.5 bg-sky-50 rounded-lg text-[#087ed9] flex items-center justify-center">
-            <HugeiconsIcon icon={Home01Icon} size={20} />
-          </span>
+          <Image
+            src="/restamplogo.svg"
+            alt="Restamp Logo"
+            width={30}
+            height={30}
+            className="h-7.5 w-7.5 object-contain"
+            priority
+          />
           <span className="text-slate-900 font-bold">
             Re<span className="text-[#087ed9]">stamp</span>
           </span>
@@ -88,7 +103,10 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
           {navLinks.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === '/owner'
+                ? pathname === '/owner' || pathname === '/sell'
+                : pathname === item.href;
             return (
               <Link
                 key={item.href}

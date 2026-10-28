@@ -12,6 +12,13 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'Restamp | Find your next home',
   description: 'Discover homes, projects and places with Restamp.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/restamplogo.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/restamplogo.svg',
+  },
 };
 
 export default function RootLayout({

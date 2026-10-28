@@ -342,8 +342,31 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
 
 /* ---------- Wizard ---------- */
 
-export default function PostPropertyWizard() {
-  const [listing, setListing] = useState<OwnerListing>(emptyListing);
+export default function PostPropertyWizard({
+  doneHref = '/',
+  doneLabel = 'Back to home',
+  initialPurpose,
+  initialCategory,
+  initialPropertyType,
+  initialPhone,
+  containerId,
+}: {
+  doneHref?: string;
+  doneLabel?: string;
+  initialPurpose?: 'Sell' | 'Resale' | 'Rent' | 'Lease';
+  initialCategory?: 'Residential' | 'Commercial';
+  initialPropertyType?: string;
+  initialPhone?: string;
+  containerId?: string;
+} = {}) {
+  const [listing, setListing] = useState<OwnerListing>(() => {
+    const base = emptyListing();
+    if (initialPurpose) base.purpose = initialPurpose;
+    if (initialCategory) base.category = initialCategory;
+    if (initialPropertyType) base.propertyType = initialPropertyType;
+    if (initialPhone) base.phone = initialPhone;
+    return base;
+  });
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
   const [notice, setNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
@@ -359,8 +382,15 @@ export default function PostPropertyWizard() {
     const draft = getDraft();
     if (draft) setResumable(draft);
     const me = getProfile();
-    if (me) setListing((l) => ({ ...l, phone: l.phone || me.mobile, email: l.email || me.email }));
-  }, []);
+    setListing((l) => ({
+      ...l,
+      ...(initialPurpose ? { purpose: initialPurpose } : {}),
+      ...(initialCategory ? { category: initialCategory } : {}),
+      ...(initialPropertyType ? { propertyType: initialPropertyType } : {}),
+      phone: initialPhone || l.phone || me?.mobile || '',
+      email: l.email || me?.email || '',
+    }));
+  }, [initialPurpose, initialCategory, initialPropertyType, initialPhone]);
 
   const set = <K extends keyof OwnerListing>(key: K, value: OwnerListing[K]) => {
     setListing((l) => ({ ...l, [key]: value }));
@@ -469,8 +499,8 @@ export default function PostPropertyWizard() {
           >
             Add another property
           </button>
-          <Link href="/" className="rounded-lg bg-[#087ed9] px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-600 transition">
-            Back to home
+          <Link href={doneHref} className="rounded-lg bg-[#087ed9] px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-600 transition">
+            {doneLabel}
           </Link>
         </div>
       </div>
@@ -485,7 +515,7 @@ export default function PostPropertyWizard() {
       : 'Transparent new property pricing attracts serious buyers and investors faster.';
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+    <div id={containerId || 'post-property-wizard'} className="grid gap-6 lg:grid-cols-[260px_1fr]">
       {/* Step list */}
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <ol className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] lg:flex-col lg:gap-1">

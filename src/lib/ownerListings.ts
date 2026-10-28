@@ -171,3 +171,7 @@ export function clearDraft() {
     localStorage.removeItem(DRAFT_KEY);
   } catch {}
 }
+
+export function deleteListing(id: string) {
+  write(LISTINGS_KEY, getOwnerListings().filter((l) => l.id !== id));
+}

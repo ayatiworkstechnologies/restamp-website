@@ -479,10 +479,10 @@ export default function OwnerPlansPage() {
                 </div>
               </dl>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link href="/profile" className="rounded-lg border border-[#087ed9] px-5 py-2.5 text-sm font-semibold text-[#087ed9] hover:bg-sky-50 transition">
-                  View profile
+                <Link href="/owner/dashboard" className="rounded-lg border border-[#087ed9] px-5 py-2.5 text-sm font-semibold text-[#087ed9] hover:bg-sky-50 transition">
+                  Go to dashboard
                 </Link>
-                <Link href="/sell" className="rounded-lg bg-[#087ed9] px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-600 transition">
+                <Link href="/owner/dashboard/add-property" className="rounded-lg bg-[#087ed9] px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-600 transition">
                   Post property
                 </Link>
               </div>
