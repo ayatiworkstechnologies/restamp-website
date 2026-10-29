@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  ArrowUpRight,
   Shield,
   Clock,
   Sparkles,
@@ -18,9 +19,6 @@ import {
   Lock,
   Star,
   Home,
-  Building2,
-  Bed,
-  Bath,
   Maximize2,
   CheckCircle2,
   Tag,
@@ -34,8 +32,6 @@ const propertyOptions = {
   Rent: ['Apartment / Flat', 'Independent House / Villa', 'Builder Floor', 'Studio / 1 RK'],
   Commercial: ['Office Space', 'Shop / Showroom', 'Commercial Land', 'Warehouse'],
 };
-
-const bhkQuickChips = ['1 BHK', '2 BHK', '3 BHK', '4+ BHK'];
 
 type Intent = 'Sell' | 'Rent' | 'Commercial';
 
@@ -286,10 +282,8 @@ export default function OwnerScreen() {
   const [intent, setIntent] = useState<Intent>(
     queryPurpose === 'Rent' || queryPurpose === 'Lease' ? 'Rent' : 'Sell'
   );
-  const [selectedType, setSelectedType] = useState<string>(propertyOptions.Sell[0]);
-  const [selectedBhk, setSelectedBhk] = useState<string>('2 BHK');
+  const [selectedType] = useState<string>(propertyOptions.Sell[0]);
   const [phone, setPhone] = useState<string>('');
-  const [phoneError, setPhoneError] = useState<string>('');
 
   // Plans category toggle
   const [planCategory, setPlanCategory] = useState<'Residential' | 'Commercial'>('Residential');
@@ -304,25 +298,6 @@ export default function OwnerScreen() {
       setPhone(profile.mobile);
     }
   }, []);
-
-  const handleIntentChange = (newIntent: Intent) => {
-    setIntent(newIntent);
-    setSelectedType(propertyOptions[newIntent][0]);
-  };
-
-  const handleStartPosting = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (phone && !/^[6-9]\d{9}$/.test(phone)) {
-      setPhoneError('Please enter a valid 10-digit mobile number');
-      return;
-    }
-    setPhoneError('');
-
-    const wizardEl = document.getElementById('owner-property-studio');
-    if (wizardEl) {
-      wizardEl.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const faqs = [
     {
@@ -353,222 +328,116 @@ export default function OwnerScreen() {
 
   return (
     <div className="bg-white text-slate-900 min-h-screen">
-      {/* Hero Section — Matching Reference Architecture Banner & Floating Right Form */}
-      <section className="container-site py-6 sm:py-8 md:py-10">
-        <div
-          className="relative rounded-[32px] md:rounded-[40px] overflow-hidden min-h-[580px] lg:min-h-[620px] flex items-center p-6 sm:p-10 md:p-12 lg:p-14 bg-slate-900 shadow-xl"
-          style={{
-            backgroundImage:
-              'linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.75) 100%), linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.3) 55%, rgba(15, 23, 42, 0.5) 100%), url(/images/owner-hero-banner.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="w-full grid gap-10 lg:grid-cols-12 items-center relative z-10">
-            {/* Left Content (Bottom/Middle Aligned like Reference) */}
-            <div className="lg:col-span-7 space-y-5 text-white">
-              <div className="inline-flex items-center gap-2 rounded-full bg-sky-500/15 backdrop-blur-md border border-sky-400/30 px-3.5 py-1 text-xs font-semibold text-sky-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#38bdf8] animate-pulse" />
-                <span>Zero Brokerage Assurance</span>
-              </div>
+      {/* Architectural Full-Bleed Hero Banner (Matching Reference Design) */}
+      <section
+        className="relative w-full overflow-hidden bg-[#070e17] min-h-[640px] sm:min-h-[700px] md:min-h-[760px] lg:min-h-[820px] flex flex-col justify-between py-10 sm:py-14 md:py-16"
+        style={{
+          backgroundImage:
+            'linear-gradient(180deg, rgba(7, 14, 23, 0.45) 0%, rgba(7, 14, 23, 0.15) 35%, rgba(7, 14, 23, 0.85) 100%), linear-gradient(90deg, rgba(7, 14, 23, 0.88) 0%, rgba(7, 14, 23, 0.45) 50%, rgba(7, 14, 23, 0.2) 100%), url(/images/owner-architectural-hero.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 45%',
+        }}
+      >
+        {/* Blueprint Architectural Grid Framing with Corner Crosshairs */}
+        <div className="absolute inset-4 sm:inset-8 md:inset-10 lg:inset-12 border border-white/15 pointer-events-none z-10">
+          <span className="absolute -top-2.5 -left-2.5 text-white/40 text-xs font-mono font-light select-none">+</span>
+          <span className="absolute -top-2.5 -right-2.5 text-white/40 text-xs font-mono font-light select-none">+</span>
+          <span className="absolute -bottom-2.5 -left-2.5 text-white/40 text-xs font-mono font-light select-none">+</span>
+          <span className="absolute -bottom-2.5 -right-2.5 text-white/40 text-xs font-mono font-light select-none">+</span>
+        </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-[1.12] drop-shadow-sm">
-                Discover and Your
-                <br />
-                <span className="text-[#38bdf8]">Perfect Dream Home</span>
-              </h1>
+        {/* Top / Main Hero Content */}
+        <div className="container-site w-full relative z-20 pt-6 sm:pt-10 md:pt-14">
+          <div className="max-w-2xl space-y-6 text-white">
+            {/* Architectural Eyebrow */}
+            <p className="text-xs sm:text-[13px] font-medium tracking-[0.22em] text-white/70 uppercase font-mono">
+              BUILT TO INSPIRE
+            </p>
 
-              <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-md drop-shadow-xs font-normal">
-                Whether you&apos;re looking to sell, rent, or lease your property, we&apos;re here to connect you directly with genuine seekers with zero brokerage.
-              </p>
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-white leading-[1.08] drop-shadow-md">
+              Design spaces people love
+            </h1>
 
-              {/* Minimal Trust Pills */}
-              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-white/90">
-                <div className="flex items-center gap-1.5 bg-sky-950/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-sky-400/20">
-                  <Check size={13} className="text-[#38bdf8]" />
-                  <span>0% Brokerage</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-sky-950/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-sky-400/20">
-                  <Check size={13} className="text-[#38bdf8]" />
-                  <span>Direct WhatsApp Inquiries</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-sky-950/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-sky-400/20">
-                  <Check size={13} className="text-[#38bdf8]" />
-                  <span>24h Verification</span>
-                </div>
-              </div>
-            </div>
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base md:text-lg text-white/80 leading-relaxed font-light drop-shadow-xs max-w-xl">
+              Bring your architectural projects to life with a template that puts your work front and center. Simple, elegant, and made for creators like you.
+            </p>
 
-            {/* Right Side: Floating Crisp White Form Card (Website Colour Palette) */}
-            <div className="lg:col-span-5">
-              <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 md:p-8 shadow-2xl text-slate-900 border border-slate-100 max-w-md w-full ml-auto">
-                <div className="mb-5">
-                  <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight leading-snug">
-                    Find your Best Property
-                    <br />
-                    <span className="text-[#087ed9]">what do you want!</span>
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">Please fill all the details.</p>
-                </div>
+            {/* Pill CTA Button (Matching Reference Design) */}
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              <Link
+                href="/sell"
+                className="inline-flex items-center gap-3.5 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-semibold pl-6 pr-2.5 py-2.5 text-sm transition-all duration-300 hover:scale-[1.02] shadow-2xl group active:scale-[0.98]"
+              >
+                <span>Get started</span>
+                <span className="h-8 w-8 rounded-full bg-[#070e17] text-white flex items-center justify-center transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shadow-sm">
+                  <ArrowUpRight size={15} />
+                </span>
+              </Link>
 
-                <form onSubmit={handleStartPosting} className="space-y-4">
-                  {/* Field 1: Location / Intent */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">
-                      I want to
-                    </label>
-                    <div className="relative">
-                      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 sm:py-3 text-sm transition focus-within:border-[#087ed9] focus-within:ring-2 focus-within:ring-[#087ed9]/20">
-                        <div className="flex items-center gap-2.5 flex-1">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-50 text-[#087ed9] shrink-0">
-                            <Home size={13} />
-                          </span>
-                          <select
-                            value={intent}
-                            onChange={(e) => handleIntentChange(e.target.value as Intent)}
-                            className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none cursor-pointer appearance-none"
-                          >
-                            <option value="Sell">Sell Property</option>
-                            <option value="Rent">Rent Out Property</option>
-                            <option value="Commercial">Commercial Lease</option>
-                          </select>
-                        </div>
-                        <ChevronDown size={15} className="text-slate-400 shrink-0 pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Field 2: Property Type */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">
-                      Property Type
-                    </label>
-                    <div className="relative">
-                      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 sm:py-3 text-sm transition focus-within:border-[#087ed9] focus-within:ring-2 focus-within:ring-[#087ed9]/20">
-                        <div className="flex items-center gap-2.5 flex-1">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-50 text-[#087ed9] shrink-0">
-                            <Building2 size={13} />
-                          </span>
-                          <select
-                            value={selectedType}
-                            onChange={(e) => setSelectedType(e.target.value)}
-                            className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none cursor-pointer appearance-none"
-                          >
-                            {propertyOptions[intent].map((t) => (
-                              <option key={t} value={t}>
-                                {t}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <ChevronDown size={15} className="text-slate-400 shrink-0 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    {/* Small Spec Chips */}
-                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                      {bhkQuickChips.map((chip) => (
-                        <button
-                          key={chip}
-                          type="button"
-                          onClick={() => setSelectedBhk(chip)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition cursor-pointer ${
-                            selectedBhk === chip
-                              ? 'border-[#087ed9] bg-[#087ed9] text-white font-semibold shadow-xs'
-                              : 'border-slate-200 bg-slate-50/80 text-slate-600 hover:border-[#087ed9]/50 hover:text-[#087ed9]'
-                          }`}
-                        >
-                          <Bed size={11} className={selectedBhk === chip ? 'text-white' : 'opacity-70'} />
-                          <span>{chip}</span>
-                        </button>
-                      ))}
-                      <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-slate-200 bg-slate-50/80 text-slate-500">
-                        <Bath size={11} className="opacity-70" />
-                        <span>2 Bath</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Field 3: Mobile Number / Contact */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">
-                      Your Mobile Number
-                    </label>
-                    <div className="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 sm:py-3 text-sm transition focus-within:border-[#087ed9] focus-within:ring-2 focus-within:ring-[#087ed9]/20">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-50 text-[#087ed9] shrink-0">
-                        <Phone size={11} />
-                      </span>
-                      <span className="text-xs font-bold text-slate-700">+91</span>
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        placeholder="Enter 10-digit number"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-400 placeholder:font-normal"
-                      />
-                    </div>
-                    {phoneError && <p className="text-xs text-red-500 font-medium mt-1">{phoneError}</p>}
-                  </div>
-
-                  {/* Submit Button (Website Blue CTA Button) */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="w-full rounded-full bg-[#087ed9] hover:bg-[#0070c9] py-3.5 px-6 text-sm font-semibold text-white transition shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
-                    >
-                      <span>Start Free Listing</span>
-                      <ArrowRight size={15} />
-                    </button>
-                    <p className="text-center text-[11px] text-slate-400 mt-2">
-                      Zero brokerage · Instant verification · 100% Free
-                    </p>
-                  </div>
-                </form>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-white/75 bg-slate-950/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>0% Platform Commission · 100% Free Listing</span>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Metrics Strip */}
-      <section className="py-12 border-b border-slate-100 bg-white">
-        <div className="container-site">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-center">
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                <CountUp prefix="₹" end={0} duration={1200} />
-              </p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Zero Brokerage</p>
-              <p className="text-xs text-slate-400 mt-0.5">Save ₹40,000–₹2,00,000</p>
+        {/* Bottom Architectural Metrics Strip Integrated into Banner Base */}
+        <div className="container-site w-full relative z-20 pt-16 sm:pt-24 pb-4 sm:pb-6">
+          <div className="relative border-t border-white/15 pt-8 sm:pt-10">
+            {/* Center Floating "Scroll down" Pill Badge */}
+            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = document.getElementById('restamp-difference');
+                  target?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="rounded-full bg-[#070e17]/70 hover:bg-[#070e17]/90 backdrop-blur-md px-5 py-2 border border-white/20 text-xs font-medium text-white/90 flex items-center gap-2 shadow-xl transition-all duration-200 hover:scale-105 cursor-pointer"
+              >
+                <span>Scroll down</span>
+                <ChevronDown size={13} className="text-white/70 animate-bounce" />
+              </button>
             </div>
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                <CountUp end={15} duration={1600} suffix=" Days" />
-              </p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Average Closure</p>
-              <p className="text-xs text-slate-400 mt-0.5">Direct seeker matches</p>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-3xl sm:text-4xl font-extrabold text-[#087ed9] tracking-tight">
-                <CountUp end={500000} duration={2000} formatIndian suffix="+" />
-              </p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Active Seekers</p>
-              <p className="text-xs text-slate-400 mt-0.5">Chennai &amp; metro hubs</p>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                <CountUp end={4.9} duration={1800} decimals={1} suffix=" / 5" />
-              </p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Owner Rating</p>
-              <p className="text-xs text-slate-400 mt-0.5">Over 18,000+ owners</p>
+
+            {/* 4 Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-white">
+              <div>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-white">
+                  <CountUp prefix="₹" end={0} duration={1200} />
+                </p>
+                <p className="text-xs sm:text-sm text-white/65 mt-1 font-light">Zero brokerage</p>
+              </div>
+
+              <div>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-white">
+                  <CountUp end={15} duration={1600} suffix=" Days" />
+                </p>
+                <p className="text-xs sm:text-sm text-white/65 mt-1 font-light">Average closure</p>
+              </div>
+
+              <div>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-white">
+                  <CountUp end={500000} duration={2000} formatIndian suffix="+" />
+                </p>
+                <p className="text-xs sm:text-sm text-white/65 mt-1 font-light">Active verified seekers</p>
+              </div>
+
+              <div>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-white">
+                  <CountUp end={4.9} duration={1800} decimals={1} suffix=" / 5" />
+                </p>
+                <p className="text-xs sm:text-sm text-white/65 mt-1 font-light">Owner satisfaction</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* The Restamp Difference — Bento Grid matching User Reference Design */}
-      <section className="py-20 bg-[#eceef2] border-b border-slate-200/70">
+      <section id="restamp-difference" className="py-20 bg-[#eceef2] border-b border-slate-200/70 scroll-mt-20">
         <div className="container-site">
           <div className="max-w-xl mb-12">
             <p className="eyebrow text-[#087ed9]">The Restamp Difference</p>
@@ -829,22 +698,25 @@ export default function OwnerScreen() {
         </div>
       </section>
 
-      {/* Owner Plans */}
-      <section className="py-16 bg-white border-b border-slate-100">
+      {/* Owner Assistance Plans — Matching Modern Mockup Architecture */}
+      <section className="py-24 bg-[#f4f4f6] border-b border-slate-200/70 scroll-mt-20">
         <div className="container-site">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-14">
             <div>
               <p className="eyebrow text-[#087ed9]">Assistance Plans</p>
               <h2 className="section-title mt-1.5 text-slate-900">Upgrade when you need extra reach</h2>
+              <p className="mt-2 text-sm text-slate-500 max-w-xl">
+                Get dedicated relationship manager assistance, top search placement, and direct verified WhatsApp buyer leads.
+              </p>
             </div>
-            <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+            <div className="inline-flex rounded-2xl bg-white border border-slate-200/80 p-1 text-xs font-semibold shadow-2xs">
               {(['Residential', 'Commercial'] as const).map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setPlanCategory(cat)}
-                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
-                    planCategory === cat ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                  className={`px-4 py-2 rounded-xl transition cursor-pointer ${
+                    planCategory === cat ? 'bg-slate-900 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   {cat}
@@ -853,57 +725,127 @@ export default function OwnerScreen() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {ownerPlans[planCategory].map((p: OwnerPlan) => (
-              <div
-                key={p.id}
-                className={`rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition border ${
-                  p.popular
-                    ? 'border-[#087ed9] bg-white shadow-sm ring-1 ring-[#087ed9]'
-                    : 'border-slate-200 bg-white'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-slate-900">{p.name}</h3>
-                    {p.popular && (
-                      <span className="text-[10px] font-bold text-[#087ed9] uppercase tracking-wider bg-sky-50 px-2 py-0.5 rounded-md">
-                        Popular
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 items-stretch">
+            {ownerPlans[planCategory].map((p: OwnerPlan) => {
+              const isFeatured = p.popular;
+              return (
+                <div
+                  key={p.id}
+                  className={`relative rounded-[32px] sm:rounded-[36px] bg-white p-7 sm:p-9 flex flex-col justify-between transition-all duration-300 ${
+                    isFeatured
+                      ? 'border border-slate-200/80 shadow-xl shadow-slate-300/40 overflow-hidden'
+                      : 'border border-slate-200/80 shadow-sm hover:shadow-xl hover:shadow-slate-200/40'
+                  }`}
+                >
+                  {/* Glowing Sunset Ambient Mesh Aura for Featured Plan */}
+                  {isFeatured && (
+                    <div
+                      className="absolute -top-12 -left-12 -right-12 h-64 pointer-events-none rounded-t-[36px] overflow-hidden opacity-90"
+                      style={{
+                        background:
+                          'radial-gradient(ellipse at 50% 28%, rgba(147, 197, 253, 0.55) 0%, rgba(254, 215, 170, 0.6) 45%, rgba(251, 207, 232, 0.4) 75%, transparent 100%)',
+                        filter: 'blur(36px)',
+                      }}
+                    />
+                  )}
+
+                  {/* Top Tier Block */}
+                  <div>
+                    <div className="flex items-center justify-between relative z-10">
+                      <span
+                        className={`text-xl font-bold tracking-tight ${
+                          isFeatured
+                            ? 'bg-gradient-to-r from-sky-600 via-amber-600 to-rose-600 bg-clip-text text-transparent'
+                            : 'text-slate-900'
+                        }`}
+                      >
+                        {p.name}
                       </span>
-                    )}
-                  </div>
-                  <div className="mt-3 flex items-baseline gap-1">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                      {p.price === 0 ? 'Free' : `₹${p.price.toLocaleString('en-IN')}`}
-                    </span>
-                    {p.price > 0 && <span className="text-xs text-slate-400 font-medium">+ GST</span>}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">{p.priceSub1}</p>
+                      {isFeatured && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+                          {p.highlight || 'Most Popular'}
+                        </span>
+                      )}
+                    </div>
 
-                  <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-slate-600">
-                        <Check size={14} className="text-[#087ed9] shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                    {/* Price & Billing */}
+                    <div className="mt-4 flex items-baseline gap-3 relative z-10">
+                      <span className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                        {p.price === 0 ? 'Free' : `₹${p.price.toLocaleString('en-IN')}`}
+                      </span>
+                      <div className="text-[11px] leading-tight font-medium">
+                        <span
+                          className={`block font-bold ${
+                            isFeatured ? 'text-slate-900' : 'text-slate-700'
+                          }`}
+                        >
+                          {p.priceSub1}
+                        </span>
+                        <span className="block text-slate-400">
+                          {p.priceSub2}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100">
-                  <Link
-                    href="/owner/plans"
-                    className={`w-full py-2.5 rounded-xl text-center text-xs font-semibold block transition ${
-                      p.popular
-                        ? 'bg-[#087ed9] hover:bg-[#0070c9] text-white'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                    }`}
-                  >
-                    {p.price === 0 ? 'Use Free Plan' : 'Select Plan'}
-                  </Link>
+                    {/* Primary CTA Button (Positioned at Top like Reference Mockup) */}
+                    <div className="mt-6 relative z-10">
+                      <Link
+                        href="/owner/plans"
+                        className={`w-full py-4 px-6 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer ${
+                          isFeatured
+                            ? 'bg-[#18181b] hover:bg-black text-white shadow-md shadow-slate-900/10'
+                            : 'bg-[#f4f4f5] hover:bg-[#e4e4e7] text-slate-900'
+                        }`}
+                      >
+                        <span>{p.price === 0 ? 'Use Free Plan' : 'Select Plan'}</span>
+                        <ArrowRight size={15} />
+                      </Link>
+                    </div>
+
+                    {/* Subtle Hairline Divider */}
+                    <div
+                      className={`mt-8 pt-7 border-t relative z-10 ${
+                        isFeatured ? 'border-slate-100' : 'border-slate-100/90'
+                      }`}
+                    />
+
+                    {/* Feature Bullets with Clean Checkmarks */}
+                    <div className="space-y-3.5 relative z-10">
+                      {p.features.map((feature, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-start gap-3 text-sm leading-snug ${
+                            isFeatured
+                              ? 'text-slate-800 font-medium'
+                              : 'text-slate-600'
+                          }`}
+                        >
+                          <Check
+                            size={16}
+                            strokeWidth={isFeatured ? 2.5 : 2.2}
+                            className={`shrink-0 mt-0.5 ${
+                              isFeatured ? 'text-[#087ed9]' : 'text-slate-900'
+                            }`}
+                          />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card Footer Link */}
+                  <div className="pt-8 mt-8 border-t border-slate-100 relative z-10">
+                    <Link
+                      href="/owner/plans"
+                      className="text-xs text-slate-400 hover:text-slate-700 font-medium transition inline-flex items-center gap-1"
+                    >
+                      <span>Need custom assistance?</span>
+                      <span className="text-[#087ed9] font-semibold">Explore options &rarr;</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

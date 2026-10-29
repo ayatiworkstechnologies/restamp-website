@@ -55,20 +55,23 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* For property owners */}
+        {/* For owners & agents */}
         <div>
           <strong className="text-white text-sm font-semibold block mb-4">
-            For property owners
+            Owners &amp; Agents
           </strong>
           <div className="flex flex-col gap-2.5 text-xs">
             <Link href="/sell" className="hover:text-white transition">
-              Post your property
+              Post property (Property Studio)
             </Link>
-            <Link href="/sell" className="hover:text-white transition">
-              Sell your home
+            <Link href="/owner" className="hover:text-white transition">
+              Owner portal
             </Link>
-            <Link href="/sell" className="hover:text-white transition">
-              Rent out your property
+            <Link href="/agent" className="hover:text-white transition">
+              Agent partner hub
+            </Link>
+            <Link href="/agent/dashboard" className="hover:text-white transition">
+              Broker deal console
             </Link>
           </div>
         </div>

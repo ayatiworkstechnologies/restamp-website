@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import OwnerScreen from '@/components/owner/OwnerScreen';
+import PostPropertyScreen from '@/components/property/PostPropertyScreen';
 
 export const metadata = {
-  title: 'Post Property for Free | 0% Brokerage | Restamp Owner Hub',
+  title: 'Post Property for Free | Property Studio | Restamp',
   description:
-    'Post your flat, villa, plot, or commercial property for free on Restamp. Direct inquiries on WhatsApp, verified owner tag, and zero brokerage.',
+    'Complete your property listing with accurate location, specifications, and pricing to publish your listing with 0% brokerage on Restamp.',
 };
 
 export default function SellPage() {
@@ -14,11 +14,12 @@ export default function SellPage() {
     <>
       <Header />
       <main>
-        <Suspense fallback={<div className="min-h-screen bg-[#070e17] flex items-center justify-center text-slate-400">Loading Owner Hub...</div>}>
-          <OwnerScreen />
+        <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] flex items-center justify-center text-slate-400">Loading Property Studio...</div>}>
+          <PostPropertyScreen />
         </Suspense>
       </main>
       <Footer />
     </>
   );
 }
+

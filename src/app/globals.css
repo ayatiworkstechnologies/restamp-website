@@ -57,6 +57,126 @@ button {
   animation: fade-in .3s ease both;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out both;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.25s ease-out both;
+}
+
+/* Rich Home Page & UI Animations */
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-up {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+@keyframes floatSlowReverse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.animate-float-reverse {
+  animation: floatSlowReverse 5s ease-in-out infinite;
+}
+
+@keyframes ambientGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.18) translate(15px, -10px);
+  }
+}
+
+.animate-ambient-glow {
+  animation: ambientGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes shimmerPass {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmerPass 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* Stagger Delays */
+.delay-75 { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-450 { animation-delay: 450ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* Micro-interaction Hover Lift */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+}
+
 /* Soft scrollbar in horizontal tables */
 .table-scroll::-webkit-scrollbar {
   height: 6px;

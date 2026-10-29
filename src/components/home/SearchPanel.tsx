@@ -50,7 +50,7 @@ export default function SearchPanel() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 sm:p-6 md:p-8 max-w-4xl mx-auto -mt-16 relative z-20">
+    <div className="bg-white rounded-2xl shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(8,126,217,0.14)] transition-shadow duration-300 border border-slate-100 p-4 sm:p-6 md:p-8 max-w-4xl mx-auto -mt-16 relative z-20">
       {/* Navigation Tabs */}
       <div className="flex items-center justify-between gap-3 sm:gap-6 mb-4 sm:mb-6 border-b border-slate-100 sm:border-0 pb-1 sm:pb-0">
         <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto no-scrollbar scrollbar-none py-0.5">
@@ -61,19 +61,19 @@ export default function SearchPanel() {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className="relative pb-2.5 text-sm sm:text-[15px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
+                className="relative pb-2.5 text-sm sm:text-[15px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap group/tab"
               >
                 <span
                   className={
                     isActive
                       ? 'font-bold text-[#0077e6]'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 hover:text-slate-900 group-hover/tab:text-slate-900'
                   }
                 >
                   {tab}
                 </span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#0077e6] rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#0077e6] rounded-full animate-fadeIn" />
                 )}
               </button>
             );
@@ -145,7 +145,7 @@ export default function SearchPanel() {
           {/* Search Button with Hugeicons */}
           <button
             type="submit"
-            className="bg-[#0077e6] hover:bg-blue-600 active:bg-blue-700 text-white rounded-lg px-7 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition w-full sm:w-auto shrink-0 cursor-pointer shadow-sm"
+            className="bg-[#0077e6] hover:bg-blue-600 active:scale-95 hover:-translate-y-0.5 text-white rounded-lg px-7 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 w-full sm:w-auto shrink-0 cursor-pointer shadow-sm hover:shadow-md"
           >
             <HugeiconsIcon icon={SearchIcon} size={17} />
             <span>Search</span>

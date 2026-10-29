@@ -5,6 +5,7 @@ import {
   MapPin,
   ShieldCheck,
   HeartHandshake,
+  Sparkles,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -60,31 +61,39 @@ export default function HomePage() {
       <main>
         {/* Hero Section */}
         <section
-          className="h-[440px] md:h-[480px] bg-cover bg-center flex items-start justify-center text-center pt-24 relative"
+          className="h-[460px] md:h-[500px] bg-cover bg-center flex items-start justify-center text-center pt-20 md:pt-24 relative overflow-hidden"
           style={{
             backgroundImage:
-              'linear-gradient(180deg, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.45) 100%), url(/images/hero-bg.jpg)',
+              'linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.48) 100%), url(/images/hero-bg.jpg)',
           }}
         >
-          <div className="text-white px-5 z-10">
-            <p className="text-xs font-semibold tracking-[0.25em] mb-4 text-sky-200">
+          {/* Luminous Animated Radial Ambient Orbs */}
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl pointer-events-none animate-ambient-glow" />
+          <div className="absolute top-1/2 -right-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none animate-ambient-glow delay-300" />
+
+
+          <div className="text-white px-5 z-10 max-w-3xl mx-auto">
+            <div className="animate-hero-fade-up inline-flex items-center gap-2 bg-white/12 hover:bg-white/20 backdrop-blur-md border border-white/25 text-sky-200 text-[11px] sm:text-xs font-bold tracking-[0.22em] px-3.5 py-1.5 rounded-full mb-4 shadow-sm transition">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
               WELCOME TO RESTAMP
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight drop-shadow-md">
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-[54px] font-extrabold leading-[1.12] drop-shadow-md tracking-tight animate-hero-fade-up delay-150">
               Find your next home.
               <br />
-              Make it your own.
+              <span className="bg-gradient-to-r from-white via-sky-100 to-sky-200 bg-clip-text text-transparent">
+                Make it your own.
+              </span>
             </h1>
-            <p className="mt-4 text-sm text-white/90 drop-shadow">
+            <p className="mt-3.5 sm:mt-4 text-sm sm:text-base text-white/90 drop-shadow max-w-lg mx-auto font-normal leading-relaxed animate-hero-fade-up delay-300">
               A place to live. A space to grow. A home to love.
             </p>
           </div>
         </section>
 
         {/* Search Panel */}
-        <div className="container-site">
+        <div className="container-site animate-hero-fade-up delay-450">
           <SearchPanel />
-          <p className="text-center text-[11px] text-slate-400 mt-5">
+          <p className="text-center text-[11px] text-slate-400 mt-5 font-medium tracking-wide">
             Buy · Rent · Resale · New projects · Commercial
           </p>
         </div>
@@ -97,16 +106,17 @@ export default function HomePage() {
               <Link
                 href={cat.url}
                 key={cat.name}
-                className="text-center group block"
+                className="text-center group block hover-lift transition-all duration-300"
               >
-                <div className="overflow-hidden rounded-xl bg-slate-100 aspect-[4/3] shadow-sm group-hover:shadow-md transition">
+                <div className="overflow-hidden rounded-2xl bg-slate-100 aspect-[4/3] shadow-sm group-hover:shadow-xl group-hover:shadow-sky-500/15 transition-all duration-300 relative border border-slate-100">
                   <img
                     src={cat.img}
                     alt={cat.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-                <span className="text-xs font-semibold block mt-3 text-slate-700 group-hover:text-[#087ed9] transition">
+                <span className="text-xs font-semibold block mt-3 text-slate-700 group-hover:text-[#087ed9] transition-colors duration-200">
                   {cat.name}
                 </span>
               </Link>
@@ -126,10 +136,10 @@ export default function HomePage() {
           </div>
 
           {/* Blueprint Banner Card matching Your-home-journey.png */}
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[440px] sm:min-h-[400px] md:min-h-[380px] lg:min-h-[420px]">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[440px] sm:min-h-[400px] md:min-h-[380px] lg:min-h-[420px] group">
             {/* High-resolution 2x background graphic with building cutout and blueprint grid */}
             <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none group-hover:scale-[1.01] transition-transform duration-700 ease-out"
               style={{
                 backgroundImage: `url('/images/your-home-journey@2x.png')`,
               }}
@@ -137,21 +147,22 @@ export default function HomePage() {
 
             {/* Top Right Floating Pill: Post property FREE */}
             <Link
-              href="/owner"
+              href="/sell"
               aria-label="Post property for free"
-              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
             >
               <span>Post property</span>
-              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
+              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide animate-pulse">
                 FREE
               </span>
             </Link>
 
             {/* Left Content Area */}
             <div className="relative z-10 flex flex-col justify-center h-full pt-16 pb-8 sm:py-8 md:py-10 lg:py-12 px-6 sm:px-8 md:px-10 lg:px-12 w-full max-w-full md:max-w-[55%] lg:max-w-[550px]">
-              {/* Eyebrow badge */}
+              {/* Eyebrow badge with floating animation */}
               <div className="inline-block self-start mb-3 sm:mb-5">
-                <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
+                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
+                  <Sparkles size={11} className="text-sky-200" />
                   BUY A HOME
                 </span>
               </div>
@@ -173,10 +184,10 @@ export default function HomePage() {
               <div className="mt-5 sm:mt-8">
                 <Link
                   href="/buy"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-xs sm:text-sm md:text-[15px] font-bold px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-xs sm:text-sm md:text-[15px] font-bold px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group/btn"
                 >
                   <span>Explore homes to buy</span>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+                  <ArrowRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform duration-200" />
                 </Link>
               </div>
             </div>
@@ -187,8 +198,8 @@ export default function HomePage() {
         <FeaturedHomesSection />
 
         {/* Quick Links Banner */}
-        <section className="bg-[#dff5ff] py-8">
-          <div className="container-site grid grid-cols-2 md:grid-cols-4 gap-7">
+        <section className="bg-[#dff5ff]/80 py-8 border-y border-sky-100">
+          <div className="container-site grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-7">
             {[
               ['What does your next move look like?', 'Start exploring'],
               ['A home of your own', 'Explore homes'],
@@ -198,11 +209,17 @@ export default function HomePage() {
               <Link
                 href={i === 2 ? '/rent' : i === 3 ? '/projects' : '/buy'}
                 key={a}
-                className="border-r border-sky-200 last:border-0 pr-4"
+                className="group border-r border-sky-200/80 last:border-0 pr-4 p-2.5 rounded-xl transition-all duration-200 hover:bg-white/70 hover:shadow-xs hover:-translate-y-0.5"
               >
-                <House size={19} color="#087ed9" />
-                <h3 className="text-sm font-semibold mt-3 text-slate-800">{a}</h3>
-                <p className="text-xs text-[#087ed9] font-medium mt-2">{b} →</p>
+                <div className="w-8 h-8 rounded-lg bg-sky-100/90 flex items-center justify-center text-[#087ed9] group-hover:scale-110 group-hover:bg-[#087ed9] group-hover:text-white transition-all duration-200">
+                  <House size={18} />
+                </div>
+                <h3 className="text-sm font-semibold mt-3 text-slate-800 group-hover:text-slate-900 transition-colors">
+                  {a}
+                </h3>
+                <p className="text-xs text-[#087ed9] font-semibold mt-2 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-200">
+                  {b} →
+                </p>
               </Link>
             ))}
           </div>
@@ -212,35 +229,37 @@ export default function HomePage() {
         <section className="container-site py-20">
           <p className="eyebrow">Built for a better tomorrow</p>
           <h2 className="section-title mt-2 mb-7">Discover new beginnings</h2>
-          <div className="relative rounded-2xl overflow-hidden shadow-sm">
+          <div className="relative rounded-2xl overflow-hidden shadow-sm group">
             <img
               src="/images/apartments.jpg"
               alt="New residential development"
-              className="h-80 md:h-96 w-full object-cover"
+              className="h-80 md:h-96 w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent flex items-end p-8 md:p-12">
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent flex items-end p-8 md:p-12">
               <div className="text-white max-w-lg">
-                <p className="text-xs tracking-wider font-semibold text-sky-300">
-                  DISCOVER NEW PROJECTS
-                </p>
-                <h3 className="text-2xl md:text-3xl font-bold mt-2">
+                <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/20 text-sky-200 text-xs px-3 py-1 rounded-full mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
+                  <span className="tracking-wider font-bold">DISCOVER NEW PROJECTS</span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold mt-1">
                   A community you’ll love coming home to
                 </h3>
                 <Link
                   href="/projects"
-                  className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-white underline underline-offset-4 hover:text-sky-200 transition"
+                  className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-white underline underline-offset-4 hover:text-sky-200 transition group/btn"
                 >
-                  Explore projects <ArrowRight size={14} />
+                  <span>Explore projects</span>
+                  <ArrowRight size={14} className="group-hover/btn:translate-x-1.5 transition-transform duration-200" />
                 </Link>
               </div>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-10 items-center mt-14">
-            <div className="overflow-hidden rounded-2xl shadow-sm">
+            <div className="overflow-hidden rounded-2xl shadow-sm group">
               <img
                 src="/images/community.jpg"
-                className="h-72 w-full object-cover hover:scale-105 transition duration-300"
+                className="h-72 w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 alt="Residential community"
               />
             </div>
@@ -257,9 +276,10 @@ export default function HomePage() {
               </p>
               <Link
                 href="/rent"
-                className="inline-flex gap-2 items-center bg-[#087ed9] hover:bg-sky-600 text-white rounded-md px-5 py-3 mt-5 text-xs font-semibold transition shadow-sm"
+                className="inline-flex gap-2 items-center bg-[#087ed9] hover:bg-sky-600 text-white rounded-md px-5 py-3 mt-5 text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-sky-500/20 hover:-translate-y-0.5 active:translate-y-0 group"
               >
-                Find a rental home <ArrowRight size={14} />
+                <span>Find a rental home</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
             </div>
           </div>
@@ -274,15 +294,17 @@ export default function HomePage() {
               <Link
                 href={'/buy?city=Chennai&locality=' + encodeURIComponent(loc.name)}
                 key={loc.name}
-                className="flex items-center gap-4 border border-[#f0f0f0] rounded-2xl p-4 sm:p-5 hover:border-sky-300 transition bg-white group min-h-[86px]"
+                className="flex items-center gap-4 border border-[#f0f0f0] rounded-2xl p-4 sm:p-5 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 hover:-translate-y-1.5 transition-all duration-300 bg-white group min-h-[86px]"
               >
-                <img
-                  src={loc.img}
-                  alt={loc.name}
-                  className="h-16 w-16 sm:h-17 sm:w-17 object-cover rounded-xl shrink-0 group-hover:scale-105 transition duration-300"
-                />
+                <div className="overflow-hidden rounded-xl h-16 w-16 sm:h-17 sm:w-17 shrink-0">
+                  <img
+                    src={loc.img}
+                    alt={loc.name}
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[15px] sm:text-base font-bold text-slate-900 group-hover:text-[#087ed9] transition truncate">
+                  <h3 className="text-[15px] sm:text-base font-bold text-slate-900 group-hover:text-[#087ed9] transition-colors duration-200 truncate">
                     {loc.name}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5 truncate">
@@ -291,7 +313,7 @@ export default function HomePage() {
                 </div>
                 <ArrowRight
                   size={17}
-                  className="text-slate-400 group-hover:text-[#087ed9] group-hover:translate-x-1 transition duration-200 shrink-0"
+                  className="text-slate-400 group-hover:text-[#087ed9] group-hover:translate-x-1.5 transition-all duration-200 shrink-0"
                 />
               </Link>
             ))}
@@ -300,12 +322,14 @@ export default function HomePage() {
 
         {/* Sell / Rent CTA */}
         <section className="container-site pb-20">
-          <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden bg-[#e8f7ee] border border-emerald-100">
-            <img
-              src="/images/cat-sell.jpg"
-              className="h-72 w-full object-cover"
-              alt="Handing over keys to new home"
-            />
+          <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden bg-[#e8f7ee] border border-emerald-100 group">
+            <div className="overflow-hidden h-72 w-full">
+              <img
+                src="/images/cat-sell.jpg"
+                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                alt="Handing over keys to new home"
+              />
+            </div>
             <div className="p-8 md:p-12 self-center">
               <p className="eyebrow text-emerald-800">Your property journey</p>
               <h2 className="section-title mt-3 text-slate-900">
@@ -318,9 +342,10 @@ export default function HomePage() {
               </p>
               <Link
                 href="/sell"
-                className="inline-flex gap-2 items-center bg-[#087ed9] hover:bg-sky-600 text-white rounded-md px-5 py-3 mt-6 text-xs font-semibold transition shadow-sm"
+                className="inline-flex gap-2 items-center bg-[#087ed9] hover:bg-sky-600 text-white rounded-md px-5 py-3 mt-6 text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-sky-500/20 hover:-translate-y-0.5 active:translate-y-0 group/btn"
               >
-                Post your property for free <ArrowRight size={14} />
+                <span>Post your property for free</span>
+                <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-200" />
               </Link>
             </div>
           </div>
@@ -334,16 +359,17 @@ export default function HomePage() {
               ['Own your next opportunity', '/images/commercial-1.jpg'],
               ['A space that works for you', '/images/commercial-2.jpg'],
             ].map(([title, img]) => (
-              <Link href="/buy" key={title} className="group block">
-                <div className="overflow-hidden rounded-2xl shadow-sm">
+              <Link href="/buy" key={title} className="group block hover-lift transition-all duration-300">
+                <div className="overflow-hidden rounded-2xl shadow-sm border border-slate-100">
                   <img
                     src={img}
                     alt={title}
-                    className="h-60 w-full object-cover group-hover:scale-105 transition duration-300"
+                    className="h-60 w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
                 </div>
-                <h3 className="font-semibold mt-3 text-slate-800 group-hover:text-[#087ed9] transition">
-                  {title} ↗
+                <h3 className="font-semibold mt-3 text-slate-800 group-hover:text-[#087ed9] group-hover:translate-x-1 transition-all duration-200 inline-flex items-center gap-1">
+                  <span>{title}</span>
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
                 </h3>
               </Link>
             ))}
@@ -358,7 +384,7 @@ export default function HomePage() {
             <br />
             Every step of the way.
           </h2>
-          <div className="grid md:grid-cols-3 gap-10 mt-10">
+          <div className="grid md:grid-cols-3 gap-8 sm:gap-10 mt-10">
             {[
               [MapPin, 'Find what feels right'],
               [ShieldCheck, 'The details that matter'],
@@ -366,11 +392,14 @@ export default function HomePage() {
             ].map(([Icon, label], i) => {
               const I = Icon as typeof MapPin;
               return (
-                <div key={i}>
-                  <span className="inline-flex p-4 rounded-full bg-sky-100 text-[#087ed9]">
+                <div
+                  key={i}
+                  className="group p-5 rounded-2xl hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1.5 transition-all duration-300 border border-transparent hover:border-slate-100"
+                >
+                  <span className="inline-flex p-4 rounded-full bg-sky-100 text-[#087ed9] group-hover:bg-[#087ed9] group-hover:text-white group-hover:scale-110 transition-all duration-300 shadow-xs">
                     <I size={22} />
                   </span>
-                  <h3 className="text-sm font-semibold mt-4 text-slate-800">
+                  <h3 className="text-sm font-semibold mt-4 text-slate-800 group-hover:text-[#087ed9] transition-colors">
                     {label as string}
                   </h3>
                   <p className="text-xs text-slate-500 mt-2">
@@ -384,15 +413,21 @@ export default function HomePage() {
 
         {/* Mobile App Download Section */}
         <section id="download-app" className="container-site pb-20">
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:min-h-[420px]">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] group">
             {/* High-definition smartphone mockup graphic pinned cleanly as background */}
             <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none group-hover:scale-[1.01] transition-transform duration-700 ease-out"
               style={{
                 backgroundImage: `url('/images/mobile-app@2x.webp')`,
                 imageRendering: '-webkit-optimize-contrast',
               }}
             />
+
+            {/* Floating Ratings Pill Badge */}
+            <div className="hidden sm:inline-flex items-center gap-2 absolute top-6 right-6 lg:right-10 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 text-xs text-white font-medium shadow-lg animate-float pointer-events-none">
+              <span className="text-amber-300">★ 4.9</span>
+              <span className="text-white/90">Rated by 25,000+ Verified Users</span>
+            </div>
 
             {/* Readability gradient mask for smaller screens */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-[#0074ce]/40 sm:via-[#0074ce]/80 md:via-[#0074ce]/60 md:to-transparent lg:via-[#0074ce]/20 lg:to-transparent pointer-events-none" />
@@ -417,7 +452,7 @@ export default function HomePage() {
                 <a
                   href="#download-ios"
                   aria-label="Download on the App Store"
-                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
+                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/22 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-lg shrink-0 group hover:scale-105"
                 >
                   <svg
                     className="w-4.5 h-5.5 sm:w-5 sm:h-6 shrink-0 drop-shadow-xs"
@@ -448,7 +483,7 @@ export default function HomePage() {
                 <a
                   href="#download-android"
                   aria-label="Download on Google Play"
-                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-md shrink-0 group"
+                  className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/12 hover:bg-white/22 active:scale-95 backdrop-blur-md border border-white/25 hover:border-white/40 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 shadow-sm hover:shadow-lg shrink-0 group hover:scale-105"
                 >
                   <svg
                     className="w-4.5 h-5.5 sm:w-5 sm:h-6 shrink-0 drop-shadow-xs"

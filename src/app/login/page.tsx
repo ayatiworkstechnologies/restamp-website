@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loginWithMobile } from '@/lib/profile';
 import { getSubscription } from '@/lib/ownerPlan';
+import { hasActiveAgentSubscription } from '@/lib/agentPlan';
 import { Smartphone, ShieldCheck, ArrowLeft, ArrowRight } from 'lucide-react';
 
 // Static OTP until a real SMS service is connected
@@ -19,9 +20,17 @@ const roleLabels: Record<string, string> = {
   admin: 'Administrator',
 };
 
-// Owners land on their dashboard once a plan is active, otherwise on plan selection
+// Owners land on dashboard once plan is active, agents on dashboard if active else package selection
 const afterLogin = (role: string) =>
-  role === 'owner' ? (getSubscription() ? '/owner/dashboard' : '/owner/plans') : '/profile';
+  role === 'owner'
+    ? getSubscription()
+      ? '/owner/dashboard'
+      : '/owner/plans'
+    : role === 'agent'
+    ? hasActiveAgentSubscription()
+      ? '/agent/dashboard'
+      : '/agent/packages'
+    : '/profile';
 
 function LoginForm() {
   const router = useRouter();

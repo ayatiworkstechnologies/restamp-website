@@ -668,29 +668,6 @@ export default function BuyerSearchPage() {
                 <span>Reset</span>
               </button>
             </form>
-
-            {/* Popular Chennai Localities Pills */}
-            <div className="flex flex-wrap items-center gap-2 mt-4 text-xs">
-              <span className="text-white font-semibold mr-1">Popular localities:</span>
-              {chennaiLocalities.map((loc) => {
-                const isActive =
-                  selectedLocality === loc ||
-                  (loc === 'All Chennai' && (!selectedLocality || selectedLocality === 'All Chennai'));
-                return (
-                  <button
-                    key={loc}
-                    onClick={() => updateLocality(loc)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer shadow-xs ${
-                      isActive
-                        ? 'bg-white text-slate-900 ring-2 ring-white/60 font-bold'
-                        : 'bg-white/90 text-slate-700 hover:bg-white'
-                    }`}
-                  >
-                    {loc}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </section>
 

@@ -55,14 +55,14 @@ export default function FeaturedHomesSection() {
           <button
             onClick={() => scroll('left')}
             aria-label="Previous properties"
-            className="p-2 text-[#087ed9] hover:bg-sky-50 rounded-full transition active:scale-95 cursor-pointer"
+            className="p-2 text-[#087ed9] hover:bg-sky-100/70 hover:scale-110 border border-transparent hover:border-sky-200/80 rounded-full transition-all duration-200 active:scale-90 cursor-pointer shadow-2xs"
           >
             <ArrowLeft size={22} strokeWidth={2.2} />
           </button>
           <button
             onClick={() => scroll('right')}
             aria-label="Next properties"
-            className="p-2 text-[#087ed9] hover:bg-sky-50 rounded-full transition active:scale-95 cursor-pointer"
+            className="p-2 text-[#087ed9] hover:bg-sky-100/70 hover:scale-110 border border-transparent hover:border-sky-200/80 rounded-full transition-all duration-200 active:scale-90 cursor-pointer shadow-2xs"
           >
             <ArrowRight size={22} strokeWidth={2.2} />
           </button>

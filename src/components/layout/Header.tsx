@@ -122,6 +122,27 @@ const ownerMegaData = {
   ],
 };
 
+/* 5. Large For Agents & Brokers Mega Menu Data */
+const agentMegaData = {
+  portal: [
+    { label: 'Agent Partner Portal', sub: 'Dedicated partner screen & onboarding', href: '/agent', badge: 'NEW' },
+    { label: 'Broker Deal Console', sub: 'Real-time leads & mandate management', href: '/agent/dashboard', badge: 'CRM' },
+    { label: 'Market & Deal Analytics', sub: 'Analyze live agent transactions & demand', href: '/agent#agent-analytics-hub' },
+    { label: 'Post Commercial Mandate', sub: 'Grade-A tech parks & retail leasing', href: '/sell?purpose=Commercial' },
+  ],
+  services: [
+    { label: 'RERA Verification Desk', sub: 'Verify your broker certificate', href: '/agent' },
+    { label: 'Buyer Inquiry Pipeline', sub: 'Pre-approved mortgage buyer alerts', href: '/agent/dashboard#leads' },
+    { label: 'Active Mandate Portfolio', sub: 'Syndicated prime inventory', href: '/agent/dashboard#mandates' },
+    { label: 'Agent Login / Register', sub: 'Dedicated partner authentication', href: '/agent/login' },
+  ],
+  plans: [
+    { label: '5 Locations Hub (₹2,999)', sub: 'Coverage in 5 chosen micro-markets', href: '/agent/packages' },
+    { label: '10 Locations Partner (₹4,999)', sub: 'Top 10% search placement & co-broking', href: '/agent/packages' },
+    { label: '15 Locations Syndicate (₹7,999)', sub: 'Metro-wide dominance & key account manager', href: '/agent/packages' },
+  ],
+};
+
 export default function Header() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -134,6 +155,22 @@ export default function Header() {
 
   const headerRef = useRef<HTMLElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleDropdownEnter = (name: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setActiveDropdown(name);
+  };
+
+  const handleDropdownLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 220);
+  };
 
   // Sync profile from storage & listen to updates
   useEffect(() => {
@@ -222,8 +259,11 @@ export default function Header() {
     {
       label: 'For Agents',
       links: [
+        { label: 'Agent Partner Portal', href: '/agent' },
+        { label: 'Agent Deal Analytics', href: '/agent#agent-analytics-hub' },
+        { label: 'Broker Console Dashboard', href: '/agent/dashboard' },
+        { label: 'Agent Partner Plans', href: '/agent#plans' },
         { label: 'Agent Login', href: '/login?role=agent' },
-        { label: 'New Projects', href: '/projects' },
         { label: 'Post Commercial Unit', href: '/sell?purpose=Commercial' },
       ],
     },
@@ -240,9 +280,8 @@ export default function Header() {
     <header
       ref={headerRef}
       className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-2xs"
-      onMouseLeave={() => setActiveDropdown(null)}
     >
-      <div className="container-site flex h-18 items-center justify-between gap-5 relative">
+      <div className="container-site flex h-18 items-center justify-between gap-3 lg:gap-5 relative">
         {/* Brand Logo */}
         <Link
           href="/"
@@ -262,21 +301,17 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-2 lg:gap-4 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2.5 text-sm font-medium">
           {/* 1. BUY TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => setActiveDropdown('Buy')}
+            onMouseEnter={() => handleDropdownEnter('Buy')}
+            onMouseLeave={handleDropdownLeave}
           >
             <Link
               href="/buy"
-              onClick={(e) => {
-                if (activeDropdown !== 'Buy') {
-                  e.preventDefault();
-                  setActiveDropdown('Buy');
-                }
-              }}
-              className={`flex items-center gap-1.5 py-2 px-3.5 rounded-xl transition cursor-pointer ${
+              onClick={() => setActiveDropdown(null)}
+              className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
                 pathname.startsWith('/buy') || activeDropdown === 'Buy'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
@@ -295,17 +330,13 @@ export default function Header() {
           {/* 2. RENT TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => setActiveDropdown('Rent')}
+            onMouseEnter={() => handleDropdownEnter('Rent')}
+            onMouseLeave={handleDropdownLeave}
           >
             <Link
               href="/rent"
-              onClick={(e) => {
-                if (activeDropdown !== 'Rent') {
-                  e.preventDefault();
-                  setActiveDropdown('Rent');
-                }
-              }}
-              className={`flex items-center gap-1.5 py-2 px-3.5 rounded-xl transition cursor-pointer ${
+              onClick={() => setActiveDropdown(null)}
+              className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
                 pathname.startsWith('/rent') || activeDropdown === 'Rent'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
@@ -324,17 +355,13 @@ export default function Header() {
           {/* 3. NEW PROJECTS TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => setActiveDropdown('Projects')}
+            onMouseEnter={() => handleDropdownEnter('Projects')}
+            onMouseLeave={handleDropdownLeave}
           >
             <Link
               href="/projects"
-              onClick={(e) => {
-                if (activeDropdown !== 'Projects') {
-                  e.preventDefault();
-                  setActiveDropdown('Projects');
-                }
-              }}
-              className={`flex items-center gap-1.5 py-2 px-3.5 rounded-xl transition cursor-pointer ${
+              onClick={() => setActiveDropdown(null)}
+              className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
                 pathname.startsWith('/projects') || activeDropdown === 'Projects'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
@@ -353,27 +380,51 @@ export default function Header() {
           {/* 4. FOR PROPERTY OWNERS TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => setActiveDropdown('Owner')}
+            onMouseEnter={() => handleDropdownEnter('Owner')}
+            onMouseLeave={handleDropdownLeave}
           >
             <Link
               href="/owner"
-              onClick={(e) => {
-                if (activeDropdown !== 'Owner') {
-                  e.preventDefault();
-                  setActiveDropdown('Owner');
-                }
-              }}
-              className={`flex items-center gap-1.5 py-2 px-3.5 rounded-xl transition cursor-pointer ${
-                pathname === '/owner' || pathname === '/sell' || activeDropdown === 'Owner'
+              onClick={() => setActiveDropdown(null)}
+              className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
+                pathname === '/owner' || activeDropdown === 'Owner'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
               }`}
             >
-              <span>For property owners</span>
+              <span>For Owners</span>
               <ChevronDown
                 size={14}
                 className={`transition-transform duration-200 ${
                   activeDropdown === 'Owner' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
+                }`}
+              />
+            </Link>
+          </div>
+
+          {/* 5. FOR AGENTS TAB */}
+          <div
+            className="relative py-4"
+            onMouseEnter={() => handleDropdownEnter('Agent')}
+            onMouseLeave={handleDropdownLeave}
+          >
+            <Link
+              href="/agent"
+              onClick={() => setActiveDropdown(null)}
+              className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
+                pathname.startsWith('/agent') || activeDropdown === 'Agent'
+                  ? 'text-[#087ed9] font-bold bg-sky-50'
+                  : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
+              }`}
+            >
+              <span>For Agents</span>
+              <span className="rounded bg-sky-100 text-[#087ed9] px-1.5 py-0.2 text-[9px] font-extrabold uppercase">
+                Hub
+              </span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${
+                  activeDropdown === 'Agent' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
                 }`}
               />
             </Link>
@@ -507,8 +558,13 @@ export default function Header() {
         {activeDropdown && (
           <div
             className="absolute top-full left-0 right-0 pt-2 z-50 animate-fadeIn"
-            onMouseEnter={() => {}}
-            onMouseLeave={() => setActiveDropdown(null)}
+            onMouseEnter={() => {
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+                hoverTimeoutRef.current = null;
+              }
+            }}
+            onMouseLeave={handleDropdownLeave}
           >
             <div className="rounded-[28px] border border-slate-100/90 bg-white p-7 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.18)]">
               {/* ----------------- 1. BUY LARGE DROPDOWN ----------------- */}
@@ -964,6 +1020,122 @@ export default function Header() {
                   </div>
                 </div>
               )}
+
+              {/* ----------------- 5. AGENT LARGE DROPDOWN ----------------- */}
+              {activeDropdown === 'Agent' && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                  {/* Col 1: Portal & Tools (3 cols) */}
+                  <div className="md:col-span-3">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-4">
+                      Partner Hub &amp; Tools
+                    </p>
+                    <div className="space-y-3">
+                      {agentMegaData.portal.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                              {item.label}
+                            </p>
+                            {item.badge && (
+                              <span className="rounded bg-sky-100 text-[#087ed9] px-1.5 py-0.2 text-[9px] font-extrabold uppercase">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.sub}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 2: Services & Workspaces (3 cols) */}
+                  <div className="md:col-span-3">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-4">
+                      Workspaces &amp; Inquiries
+                    </p>
+                    <div className="space-y-3">
+                      {agentMegaData.services.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                            {item.label}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.sub}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 3: Plans & Tiers (3 cols) */}
+                  <div className="md:col-span-3 rounded-2xl bg-slate-50/70 p-5 border border-slate-100">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3.5">
+                      Partner Tiers (0% Cut)
+                    </p>
+                    <div className="space-y-3">
+                      {agentMegaData.plans.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                            {item.label}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.sub}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 4: Featured Promo Card (3 cols) */}
+                  <div className="md:col-span-3 rounded-2xl bg-gradient-to-br from-slate-900 to-[#070e17] text-white p-6 flex flex-col justify-between shadow-xs border border-slate-800">
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wide text-emerald-300 uppercase">
+                        140+ Partner Brokers
+                      </span>
+                      <h4 className="text-base font-extrabold text-white mt-3 leading-tight">
+                        Scale Brokerage Revenue
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                        Direct verified buyer leads, mandate protection, and real-time deal flow analytics.
+                      </p>
+                    </div>
+
+                    <div className="pt-5 space-y-2.5">
+                      <Link
+                        href="/agent/dashboard"
+                        onClick={() => setActiveDropdown(null)}
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] py-2.5 text-xs font-bold text-white hover:bg-sky-500 shadow-sm transition"
+                      >
+                        Open Agent Console <ArrowRight size={13} />
+                      </Link>
+                      <Link
+                        href="/agent"
+                        onClick={() => setActiveDropdown(null)}
+                        className="block text-center text-[11px] font-medium text-slate-400 hover:text-white transition"
+                      >
+                        Explore Partner Network →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1062,6 +1234,16 @@ export default function Header() {
                   <span>For Property Owners</span>
                   <span className="rounded bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-[#087ed9]">
                     Owner Hub
+                  </span>
+                </Link>
+                <Link
+                  href="/agent"
+                  onClick={closeMenu}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#087ed9] transition"
+                >
+                  <span>For Agents &amp; Brokers</span>
+                  <span className="rounded bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-[#087ed9]">
+                    Agent Hub
                   </span>
                 </Link>
               </div>

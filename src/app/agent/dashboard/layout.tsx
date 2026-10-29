@@ -1,0 +1,239 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { clearProfile, getProfile, type Profile } from '@/lib/profile';
+import {
+  getAgentSubscription,
+  hasActiveAgentSubscription,
+  seedExistingPartnerSubscription,
+  type AgentSubscription,
+} from '@/lib/agentPlan';
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  CreditCard,
+  UserRound,
+  LogOut,
+  Menu,
+  X,
+  Crown,
+  ShieldCheck,
+  TrendingUp,
+  MapPin,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
+
+const agentNav: { label: string; href: string; icon: LucideIcon }[] = [
+  { label: 'Overview Console', href: '/agent/dashboard', icon: LayoutDashboard },
+  { label: 'Live Mandates', href: '/agent/dashboard#mandates', icon: Building2 },
+  { label: 'Lead Pipeline', href: '/agent/dashboard#leads', icon: Users },
+  { label: 'Upgrade Locations', href: '/agent/packages', icon: CreditCard },
+  { label: 'Market Analytics', href: '/agent#agent-analytics-hub', icon: TrendingUp },
+];
+
+export default function AgentDashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [sub, setSub] = useState<AgentSubscription | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const p = getProfile();
+    // Protect route: require agent authentication
+    if (!p) {
+      router.replace('/agent/login?next=/agent/dashboard');
+      return;
+    }
+    setProfile(p);
+
+    // If existing paid agent (e.g. Arun Kumar), ensure seed if empty
+    let activeSub = getAgentSubscription();
+    if (!activeSub && p.mobile === '9840123456') {
+      activeSub = seedExistingPartnerSubscription(p.mobile);
+    }
+
+    // Protect route: require active subscription
+    if (!activeSub || !activeSub.selectedLocations || activeSub.selectedLocations.length === 0) {
+      router.replace('/agent/packages');
+      return;
+    }
+
+    setSub(activeSub);
+
+    const refresh = () => {
+      setProfile(getProfile());
+      setSub(getAgentSubscription());
+    };
+    window.addEventListener('profile-change', refresh);
+    window.addEventListener('agent-subscription-change', refresh);
+    return () => {
+      window.removeEventListener('profile-change', refresh);
+      window.removeEventListener('agent-subscription-change', refresh);
+    };
+  }, [router]);
+
+  const logout = () => {
+    clearProfile();
+    router.push('/agent/login');
+  };
+
+  // Calculate days remaining
+  const daysRemaining = sub?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(sub.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  const sidebar = (
+    <aside className="flex h-full w-64 flex-col border-r border-slate-100 bg-white">
+      {/* Brand Header */}
+      <Link href="/" className="flex items-center gap-2 px-6 py-5">
+        <Image src="/restamplogo.svg" alt="Restamp Logo" width={32} height={32} className="h-8 w-8 object-contain" />
+        <span className="text-lg font-bold tracking-tight text-slate-900">
+          Re<span className="text-[#087ed9]">stamp</span>
+        </span>
+      </Link>
+      <div className="px-6 pb-3 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 text-[10px] font-bold uppercase tracking-wider text-[#087ed9]">
+          <ShieldCheck size={13} /> Partner Console
+        </span>
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" title="Syndicate Online" />
+      </div>
+
+      {/* Nav List */}
+      <nav className="flex-1 space-y-1 px-3">
+        {agentNav.map(({ label, href, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                active ? 'bg-sky-50 text-[#087ed9]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Subscription Card */}
+      {sub && (
+        <div className="m-3 rounded-2xl bg-[#070e17] p-4 text-white border border-slate-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-extrabold text-sky-400">
+              <Crown size={14} /> {sub.badge || sub.planName}
+            </div>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+              Active Paid
+            </span>
+          </div>
+
+          <p className="mt-2 text-xs font-bold text-slate-200">
+            {sub.selectedLocations?.length || 0} / {sub.locationLimit} Micro-Markets Covered
+          </p>
+
+          <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+            <span>Valid till:</span>
+            <span className="text-slate-300 font-medium">
+              {sub.expiresAt
+                ? new Date(sub.expiresAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : 'Active Lifetime'}
+            </span>
+          </p>
+
+          {daysRemaining !== null && (
+            <p className="text-[10px] text-sky-300 font-bold mt-0.5">
+              {daysRemaining} days remaining in cycle
+            </p>
+          )}
+
+          <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center gap-2">
+            <Link
+              href="/agent/packages"
+              className="flex-1 rounded-xl bg-[#087ed9] hover:bg-sky-500 py-1.5 text-center text-[11px] font-bold text-white transition shadow-xs"
+            >
+              Upgrade Locations
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Logout / Switch */}
+      <button
+        type="button"
+        onClick={logout}
+        className="mx-3 mb-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+      >
+        <LogOut size={18} /> Exit Console
+      </button>
+    </aside>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block lg:w-64 lg:shrink-0">{sidebar}</div>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-64">{sidebar}</div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-8">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open navigation menu"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 lg:hidden"
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Quick RERA verification indicator */}
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span>RERA Registered Channel Partner:</span>
+            <span className="font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md text-[11px] font-bold">
+              {sub?.reraNumber || 'TN/AGENT/0491/2023'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/agent/packages"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-[#087ed9] border border-sky-200 px-3.5 py-1.5 text-xs font-bold hover:bg-[#087ed9] hover:text-white transition shadow-2xs"
+            >
+              <Crown size={13} /> {sub?.badge || 'Change Package'}
+            </Link>
+
+            <Link
+              href="/agent"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+            >
+              Public Partner Hub
+            </Link>
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
+      </div>
+    </div>
+  );
+}
