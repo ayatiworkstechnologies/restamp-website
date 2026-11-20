@@ -38,34 +38,29 @@ import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
 import DualToneIcon, { DualToneIconName } from '@/components/ui/DualToneIcon';
 import DealerEnquirySection from '@/components/property/DealerEnquirySection';
-import { Property, properties, defaultAmenities, defaultNearby } from '@/data/properties';
-import { contactFor, logActivity } from '@/lib/activity';
+import { Property } from '@/data/properties';
 import { toggleWishlist, useWishlist } from '@/lib/wishlist';
+import { useOwnerContact } from '@/lib/useOwnerContact';
+import { submitEnquiry } from '@/lib/buyerEnquiry';
 
 interface PropertyDetailsViewProps {
   property: Property;
+  /** Similar backend listings (GET /buyer/listings/{id}/similar). */
+  similar?: Property[];
 }
 
-const faqAnswers: Record<string, string> = {
-  'Is the price negotiable?':
-    'Yes, slight negotiation on base price and stamp duty assistance is possible depending on the payment schedule and down payment amount.',
-  'Are home loans approved?':
-    'Yes, pre-approved by all leading financial institutions including SBI, HDFC Bank, ICICI Bank, Axis Bank, and Kotak Mahindra Bank.',
-  'Can I schedule a visit today?':
-    'Site visits can be scheduled Monday to Sunday between 9:30 AM and 6:30 PM with private chauffeur pickup available upon request.',
-  'What is the maintenance fee?':
-    'Estimated monthly maintenance is ₹3.50 – ₹4.00 per sq.ft., covering 24/7 security, clubhouse maintenance, generator power backup, and landscaped garden upkeep.',
-};
+// Questions are sent to the owner as a real enquiry; there are no canned answers.
+const QUESTION_SENT = 'Your question has been sent to the owner. Their reply will reach you on your enquiry.';
 
-export default function PropertyDetailsView({ property }: PropertyDetailsViewProps) {
+export default function PropertyDetailsView({ property, similar = [] }: PropertyDetailsViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
-  const [showNumber, setShowNumber] = useState(false);
+  // "View Number" reveals the owner's real phone via the backend.
+  const contact = useOwnerContact(property);
+  const [hideNumber, setHideNumber] = useState(false);
+  const shownNumber = !hideNumber ? contact.phone : null;
   const isLiked = useWishlist().includes(property.id);
-
-  useEffect(() => {
-    logActivity('viewed', property.id);
-  }, [property.id]);
+  const [sending, setSending] = useState(false);
   const [showMoreDesc, setShowMoreDesc] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -82,10 +77,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
   // Q&A
   const [userQuestion, setUserQuestion] = useState('');
-  const [answeredQuestion, setAnsweredQuestion] = useState<{ q: string; a: string } | null>({
-    q: 'Is the price negotiable?',
-    a: faqAnswers['Is the price negotiable?'],
-  });
+  const [answeredQuestion, setAnsweredQuestion] = useState<{ q: string; a: string } | null>(null);
 
   // Nearby carousel
   const nearbyScrollRef = useRef<HTMLDivElement>(null);
@@ -109,48 +101,72 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
     }
   };
 
+  // Only the listing's own photos; no stock images.
   const galleryImages = property.gallery && property.gallery.length > 0
     ? property.gallery
-    : [
-        property.image,
-        '/images/twin-towers.jpg',
-        '/images/apartments.jpg',
-        '/images/prop-2.jpg',
-      ];
+    : property.image ? [property.image] : [];
 
-  const amenities = property.amenities || defaultAmenities;
-  const nearby = property.nearby || defaultNearby;
+  // Sections without backend data are hidden rather than filled with samples.
+  const amenities = property.amenities || [];
+  const nearby = property.nearby || [];
 
-  const similarProperties = properties
-    .filter((p) => p.id !== property.id)
-    .slice(0, 3);
+  const similarProperties = similar.filter((p) => p.id !== property.id).slice(0, 3);
+
+  const specBadges = [
+    { label: property.beds, icon: 'bed' as const },
+    { label: property.baths, icon: 'bath' as const },
+    { label: property.floors, icon: 'layers' as const },
+    { label: property.furnishing, icon: 'sofa' as const },
+    { label: property.balconies, icon: 'balcony' as const },
+  ].filter((item): item is { label: string; icon: typeof item.icon } => !!item.label);
+
+  const detailCards = [
+    { label: 'Property type', value: property.propertyType || property.propertyCategory, iconName: 'building' as DualToneIconName },
+    { label: 'Super built-up', value: property.superBuiltUp || property.sqft, iconName: 'maximize' as DualToneIconName },
+    { label: 'Furnishing', value: property.furnishing, iconName: 'sofa' as DualToneIconName },
+    { label: 'Facing direction', value: property.facing, iconName: 'compass' as DualToneIconName },
+    { label: 'Floor level', value: property.floorLevel, iconName: 'layers' as DualToneIconName },
+  ].filter((c): c is { label: string; value: string; iconName: DualToneIconName } => !!c.value);
+
+  const specRows = [
+    { label: 'Bedrooms', value: property.beds, icon: 'bed' as DualToneIconName },
+    { label: 'Bathrooms', value: property.baths, icon: 'bath' as DualToneIconName },
+    { label: 'Total Floors', value: property.floors, icon: 'layers' as DualToneIconName },
+    { label: 'Furnishing', value: property.furnishing, icon: 'sofa' as DualToneIconName },
+    { label: 'Balconies', value: property.balconies, icon: 'balcony' as DualToneIconName },
+    { label: 'Super Built-up', value: property.superBuiltUp || property.sqft, icon: 'building' as DualToneIconName },
+    { label: 'Facing Direction', value: property.facing, icon: 'compass' as DualToneIconName },
+  ].filter((r): r is { label: string; value: string; icon: DualToneIconName } => !!r.value);
+
+  const sectionTabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'highlights', label: 'Highlights' },
+    { id: 'details', label: 'Property Details' },
+    ...(amenities.length ? [{ id: 'amenities', label: 'Amenities' }] : []),
+    ...(nearby.length ? [{ id: 'location', label: 'Location' }] : []),
+    { id: 'dealer', label: 'Dealer Details' },
+  ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push(`/buy?q=${encodeURIComponent(searchQuery)}`);
   };
 
-  const handleAskQuestion = (q: string) => {
-    if (faqAnswers[q]) {
-      setAnsweredQuestion({ q, a: faqAnswers[q] });
-    } else {
-      setAnsweredQuestion({
-        q,
-        a: `Thank you for asking about "${q}". Our property advisor will provide accurate verified details for ${property.name} right away.`,
-      });
-    }
+  const handleAskQuestion = async (q: string) => {
+    if (sending) return;
+    setSending(true);
+    const ok = await submitEnquiry(property, q);
+    setSending(false);
+    if (ok) setAnsweredQuestion({ q, a: QUESTION_SENT });
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    logActivity('message', property.id, {
-      ...contactFor(property),
-      senderName: formData.name,
-      senderPhone: formData.phone,
-      senderEmail: formData.email,
-      message: formData.message,
-    });
-    if (/visit/i.test(formData.message)) logActivity('siteVisit', property.id);
+    if (sending) return;
+    setSending(true);
+    const ok = await submitEnquiry(property, formData.message);
+    setSending(false);
+    if (!ok) return;
     setContactSubmitted(true);
     setTimeout(() => {
       setContactOpen(false);
@@ -173,7 +189,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
   // Scroll spy: Update active tab as user scrolls and sections meet the top
   useEffect(() => {
-    const sectionIds = ['overview', 'highlights', 'details', 'amenities', 'location', 'dealer'];
+    const sectionIds = sectionTabs.map((t) => t.id);
 
     const handleScroll = () => {
       if (isClickingTabRef.current) return;
@@ -199,7 +215,8 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amenities.length, nearby.length]);
 
   // Ensure active tab stays visible in horizontally scrollable nav bar
   useEffect(() => {
@@ -317,14 +334,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
         {/* Sticky Secondary Tab Navigation */}
         <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[72px] z-40 shadow-xs">
           <div className="container-site flex items-center gap-6 sm:gap-9 text-xs sm:text-sm font-semibold overflow-x-auto [&::-webkit-scrollbar]:hidden">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'highlights', label: 'Highlights' },
-              { id: 'details', label: 'Property Details' },
-              { id: 'amenities', label: 'Amenities' },
-              { id: 'location', label: 'Location' },
-              { id: 'dealer', label: 'Dealer Details' },
-            ].map((tab) => {
+            {sectionTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -350,20 +360,25 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
             {/* Left Big Hero Image */}
             <div
               onClick={() => {
+                if (!galleryImages.length) return;
                 setLightboxIndex(0);
                 setLightboxOpen(true);
               }}
               className="w-full md:w-[67%] lg:w-[68%] h-[260px] sm:h-[340px] md:h-full rounded-2xl overflow-hidden relative group cursor-pointer shadow-xs bg-slate-100 min-h-0 shrink-0"
             >
-              <img
-                src={galleryImages[0]}
-                alt={property.name}
-                className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
-              />
+              {galleryImages[0] ? (
+                <img
+                  src={galleryImages[0]}
+                  alt={property.name}
+                  className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleWishlist(property.id);
+                  void toggleWishlist(property);
                 }}
                 aria-label="Save property"
                 className="absolute top-4 right-4 p-2 rounded-full bg-white/90 shadow-md hover:scale-110 active:scale-95 transition"
@@ -378,40 +393,37 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
             {/* Right Stack of 3 Smaller Images */}
             <div className="w-full md:w-[33%] lg:w-[32%] flex flex-row md:flex-col gap-3 sm:gap-3.5 h-24 sm:h-28 md:h-full min-h-0 flex-1">
-              {galleryImages.slice(1, 3).map((img, i) => (
-                <div
-                  key={i}
-                  onClick={() => {
-                    setLightboxIndex(i + 1);
-                    setLightboxOpen(true);
-                  }}
-                  className="flex-1 min-w-0 min-h-0 w-full h-full rounded-xl sm:rounded-2xl overflow-hidden relative group cursor-pointer shadow-xs bg-slate-100"
-                >
-                  <img
-                    src={img}
-                    alt={`${property.name} photo ${i + 2}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                  />
-                </div>
-              ))}
-
-              {/* 3rd image with + 15 View All Overlay */}
-              <div
-                onClick={() => {
-                  setLightboxIndex(3);
-                  setLightboxOpen(true);
-                }}
-                className="flex-1 min-w-0 min-h-0 w-full h-full rounded-xl sm:rounded-2xl overflow-hidden relative group cursor-pointer shadow-xs bg-slate-900"
-              >
-                <img
-                  src={galleryImages[3] || galleryImages[0]}
-                  alt={`${property.name} photo 4`}
-                  className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-bold tracking-wide">
-                  + 15 View All
-                </div>
-              </div>
+              {/* Three side tiles always keep the layout; a slot with no photo shows the neutral placeholder. */}
+              {[1, 2, 3].map((slot) => {
+                const img = galleryImages[slot];
+                const more = slot === 3 ? galleryImages.length - 4 : 0;
+                return (
+                  <div
+                    key={slot}
+                    onClick={() => {
+                      if (!img) return;
+                      setLightboxIndex(slot);
+                      setLightboxOpen(true);
+                    }}
+                    className={`flex-1 min-w-0 min-h-0 w-full h-full rounded-xl sm:rounded-2xl overflow-hidden relative group shadow-xs ${img ? 'cursor-pointer' : ''} ${more > 0 ? 'bg-slate-900' : 'bg-slate-100'}`}
+                  >
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={`${property.name} photo ${slot + 1}`}
+                        className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${more > 0 ? 'opacity-60' : ''}`}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
+                    )}
+                    {more > 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-bold tracking-wide">
+                        + {more} View All
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -424,9 +436,11 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                   <h2 className="text-3xl font-extrabold text-slate-900 leading-none">
                     {property.price}
                   </h2>
-                  <p className="text-xs text-slate-400 font-medium mt-1">
-                    {property.pricePerSqft || '₹35,999 /sqft'}
-                  </p>
+                  {property.pricePerSqft && (
+                    <p className="text-xs text-slate-400 font-medium mt-1">
+                      {property.pricePerSqft}
+                    </p>
+                  )}
                 </div>
 
                 <div className="sm:border-l sm:border-slate-200 sm:pl-7">
@@ -450,16 +464,14 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                 </button>
                 <button
                   onClick={() => {
-                    if (!showNumber) logActivity('call', property.id, contactFor(property));
-                    setShowNumber(!showNumber);
+                    if (contact.phone) setHideNumber(!hideNumber);
+                    else void contact.reveal();
                   }}
                   className="px-6 h-[53px] bg-[#087ed9] hover:bg-sky-600 text-white font-semibold text-xs sm:text-sm rounded-lg transition text-center shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  {showNumber && <Phone size={14} />}
+                  {shownNumber && <Phone size={14} />}
                   <span>
-                    {showNumber
-                      ? property.phoneNumber || '+91 98401 22345'
-                      : 'View Number'}
+                    {shownNumber || 'View Number'}
                   </span>
                 </button>
               </div>
@@ -467,16 +479,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
             {/* Specs Badges Row with Accurate Dual-Tone Icons for each feature */}
             <div className="flex items-center gap-3 sm:gap-4 mt-6 pt-4 overflow-x-auto no-scrollbar pb-1 text-xs sm:text-[13px] text-slate-600 font-medium whitespace-nowrap">
-              {[
-                { label: property.beds || '3 Beds', icon: 'bed' as const },
-                { label: property.baths || '3 Baths', icon: 'bath' as const },
-                { label: property.floors || '2 Floors', icon: 'layers' as const },
-                { label: property.furnishing || 'Semifurnished', icon: 'sofa' as const },
-                { label: property.balconies || '3 Balconies', icon: 'balcony' as const },
-                { label: '3 Fans', icon: 'fan' as const },
-                { label: '6 Lights', icon: 'lightbulb' as const },
-                { label: '1 Parking', icon: 'car' as const },
-              ].map((item, idx) => (
+              {specBadges.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 sm:gap-4 shrink-0">
                   <div className="flex items-center gap-1.5 shrink-0">
                     <DualToneIcon name={item.icon} size={17} />
@@ -485,12 +488,14 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                   <span className="h-3.5 w-[1px] bg-slate-200/90 shrink-0" />
                 </div>
               ))}
+              {specRows.length > 0 && (
               <button
                 onClick={() => setSpecsModalOpen(true)}
                 className="text-[#087ed9] hover:underline font-semibold text-xs sm:text-[13px] shrink-0 cursor-pointer ml-1"
               >
-                +3 View All
+                View All
               </button>
+              )}
             </div>
           </div>
 
@@ -506,19 +511,19 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
 
             <div className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed max-w-4xl">
               <p>
-                {property.descriptionLong || property.description}
+                {property.description || property.descriptionLong}
               </p>
-              {showMoreDesc && (
-                <p className="mt-3">
-                  Premium Italian marble flooring, expansive master suites with walk-in wardrobes, floor-to-ceiling soundproof glass panels, and private landscaped sit-outs. Gated perimeter with digital biometric access, dedicated EV charging ports in parking bays, and multi-cuisine resident cafeteria inside clubhouse.
-                </p>
+              {property.descriptionLong && property.description && property.descriptionLong !== property.description && (
+                <>
+                  {showMoreDesc && <p className="mt-3">{property.descriptionLong}</p>}
+                  <button
+                    onClick={() => setShowMoreDesc(!showMoreDesc)}
+                    className="text-[#087ed9] font-bold text-xs mt-2 hover:underline cursor-pointer block"
+                  >
+                    {showMoreDesc ? 'Less <<' : 'More >>'}
+                  </button>
+                </>
               )}
-              <button
-                onClick={() => setShowMoreDesc(!showMoreDesc)}
-                className="text-[#087ed9] font-bold text-xs mt-2 hover:underline cursor-pointer block"
-              >
-                {showMoreDesc ? 'Less <<' : 'More >>'}
-              </button>
             </div>
           </section>
 
@@ -530,38 +535,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4 mt-6">
-              {[
-                {
-                  label: 'Property type',
-                  value: property.propertyCategory || 'Apartments',
-                  iconName: 'building' as DualToneIconName,
-                },
-                {
-                  label: 'Listing scope',
-                  value: 'Recommended',
-                  iconName: 'award' as DualToneIconName,
-                },
-                {
-                  label: 'Super built-up',
-                  value: property.superBuiltUp || property.sqft || '2,400 sq. ft.',
-                  iconName: 'maximize' as DualToneIconName,
-                },
-                {
-                  label: 'Furnishing',
-                  value: property.furnishing || 'Unfurnished',
-                  iconName: 'sofa' as DualToneIconName,
-                },
-                {
-                  label: 'Facing direction',
-                  value: property.facing || 'East',
-                  iconName: 'compass' as DualToneIconName,
-                },
-                {
-                  label: 'Floor level',
-                  value: property.floorLevel || '12th of 18 Floors',
-                  iconName: 'layers' as DualToneIconName,
-                },
-              ].map(({ label, value, iconName }) => (
+              {detailCards.map(({ label, value, iconName }) => (
                 <div
                   key={label}
                   className="bg-white border border-[#e5eef7] rounded-2xl p-5 flex flex-col justify-between shadow-xs hover:border-[#087ed9]/40 hover:shadow-md transition-all duration-200"
@@ -580,7 +554,8 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
             </div>
           </section>
 
-          {/* Section: Amenities */}
+          {/* Section: Amenities (only when the listing has amenity data) */}
+          {amenities.length > 0 && (
           <section className="py-9 border-b border-slate-200" id="amenities">
             <p className="eyebrow text-slate-400">AMENITIES</p>
             <h3 className="section-title text-xl sm:text-2xl mt-1 text-slate-900">
@@ -610,14 +585,16 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
               Illustrative amenities only. Availability varies by property.
             </p>
           </section>
+          )}
 
-          {/* Section: Places Nearby */}
+          {/* Section: Places Nearby (only when the listing has nearby-place data) */}
+          {nearby.length > 0 && (
           <section className="py-9 border-b border-slate-200" id="location">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="eyebrow text-slate-400">PLACES NEARBY</p>
                 <h3 className="section-title text-xl sm:text-2xl mt-1 text-slate-900">
-                  {property.locality || 'Alwarpet'}, {property.city || 'Chennai'}
+                  {[property.locality, property.city].filter(Boolean).join(', ')}
                 </h3>
               </div>
 
@@ -670,6 +647,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
               Illustrative amenities only. Availability varies by property.
             </p>
           </section>
+          )}
 
           {/* Section: Dealer & Enquiry */}
           <DealerEnquirySection property={property} />
@@ -695,7 +673,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                   <button
                     key={q}
                     type="button"
-                    onClick={() => handleAskQuestion(q)}
+                    onClick={() => void handleAskQuestion(q)}
                     className={`px-4 py-2 rounded-full text-xs font-semibold transition cursor-pointer ${
                       answeredQuestion?.q === q
                         ? 'bg-[#087ed9] text-white shadow-xs'
@@ -712,8 +690,8 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (userQuestion.trim()) {
-                    handleAskQuestion(userQuestion.trim());
-                    setUserQuestion('');
+                    const q = userQuestion.trim();
+                    void handleAskQuestion(q).then(() => setUserQuestion(''));
                   }
                 }}
                 className="mt-5 flex flex-col sm:flex-row gap-2.5 max-w-3xl"
@@ -753,7 +731,8 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
             </div>
           </section>
 
-          {/* Section: Similar Properties */}
+          {/* Section: Similar Properties (backend similar listings; hidden when there are none) */}
+          {similarProperties.length > 0 && (
           <section className="pt-4 pb-10">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -797,11 +776,12 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
               ))}
             </div>
           </section>
+          )}
         </div>
       </main>
 
       {/* Lightbox Photo Gallery Modal */}
-      {lightboxOpen && (
+      {lightboxOpen && galleryImages.length > 0 && (
         <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
           <button
             onClick={() => setLightboxOpen(false)}
@@ -945,6 +925,7 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
                     </button>
                     <button
                       type="submit"
+                      disabled={sending}
                       className="inline-flex items-center justify-center px-5 h-[53px] text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm cursor-pointer"
                     >
                       Send Enquiry
@@ -978,76 +959,15 @@ export default function PropertyDetailsView({ property }: PropertyDetailsViewPro
             </div>
 
             <div className="grid grid-cols-2 gap-3.5 py-5 text-xs sm:text-sm">
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="bed" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Bedrooms</p>
-                  <p className="font-bold text-slate-800">{property.beds || '3 Beds'}</p>
+              {specRows.map((row) => (
+                <div key={row.label} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
+                  <DualToneIcon name={row.icon} size={20} />
+                  <div>
+                    <p className="text-[11px] text-slate-400">{row.label}</p>
+                    <p className="font-bold text-slate-800">{row.value}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="bath" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Bathrooms</p>
-                  <p className="font-bold text-slate-800">{property.baths || '3 Baths'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="layers" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Total Floors</p>
-                  <p className="font-bold text-slate-800">{property.floors || '2 Floors'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="sofa" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Furnishing</p>
-                  <p className="font-bold text-slate-800">{property.furnishing || 'Semifurnished'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="balcony" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Balconies</p>
-                  <p className="font-bold text-slate-800">{property.balconies || '3 Balconies'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="fan" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Ceiling Fans</p>
-                  <p className="font-bold text-slate-800">3 Fans Fitted</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="lightbulb" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Lights & LED</p>
-                  <p className="font-bold text-slate-800">6 Lights Installed</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="car" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Parking</p>
-                  <p className="font-bold text-slate-800">1 Covered Bay</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="building" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Super Built-up</p>
-                  <p className="font-bold text-slate-800">{property.superBuiltUp || '2,400 sq. ft.'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50">
-                <DualToneIcon name="compass" size={20} />
-                <div>
-                  <p className="text-[11px] text-slate-400">Facing Direction</p>
-                  <p className="font-bold text-slate-800">{property.facing || 'East'}</p>
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="pt-3 border-t border-slate-100 flex justify-end">

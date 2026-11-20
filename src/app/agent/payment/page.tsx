@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage as apiErrorMessage } from '@/lib/api/client';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,10 +8,10 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getProfile } from '@/lib/profile';
 import {
+  activateAgentPlanViaBypass,
   useLocationPackages,
   PLACEHOLDER_PACKAGE,
   getDraftPackage,
-  activateAgentPackage,
   hasActiveAgentSubscription,
   AGENT_PROMO_CODES,
   calculateAgentPackageBill,
@@ -168,6 +169,31 @@ export default function AgentPaymentPage() {
       return;
     }
 
+    // TEMPORARY payment bypass: online payment is not connected yet, so Continue activates the
+    // plan on the backend without payment (recorded as BYPASS, never as paid) and allocates the
+    // chosen localities. No card or UPI details are needed or sent.
+    isSubmittingRef.current = true;
+    setErrorMessage('');
+    setPaymentState('processing');
+    activateAgentPlanViaBypass(pkg, selectedLocations)
+      .then(({ allocation }: Awaited<ReturnType<typeof activateAgentPlanViaBypass>>) => {
+        const notes = [
+          allocation.error,
+          allocation.unmatched.length ? `Not recognised: ${allocation.unmatched.join(', ')}` : '',
+          allocation.unavailable.length ? `Not available yet: ${allocation.unavailable.join(', ')}` : '',
+        ].filter(Boolean);
+        setPaymentResult({ paymentRecord: { transactionRef: 'Not paid (payment bypass)', id: '—' }, notes });
+        setPaymentState('success');
+      })
+      .catch((err: unknown) => {
+        setPaymentState('idle');
+        setErrorMessage(apiErrorMessage(err, 'Could not activate the plan. Please try again.'));
+      })
+      .finally(() => {
+        isSubmittingRef.current = false;
+      });
+    return;
+
     // Validate based on payment method
     if (method === 'upi') {
       if (upiId && !/^[\w.-]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim())) {
@@ -194,39 +220,11 @@ export default function AgentPaymentPage() {
       }
     }
 
-    setErrorMessage('');
-    setPaymentState('processing');
-    isSubmittingRef.current = true;
-
-    // Process payment and activate subscription
-    setTimeout(() => {
-
-      // Simulated success: no gateway is integrated, so the payment is recorded as unverified (see PAYMENTS.md)
-      const methodLabel =
-        method === 'upi'
-          ? `UPI (${upiId ? upiId.trim() : upiApp})`
-          : method === 'card'
-          ? `Card (•••• ${cardNumber.replace(/\D/g, '').slice(-4)})`
-          : `Net Banking (${selectedBank})`;
-
-      const result = activateAgentPackage(pkg, selectedLocations, {
-        total: bill.total,
-        amount: bill.basePrice,
-        discount: bill.discount,
-        gst: bill.gst,
-        promoCode: discount ? promoCode.trim().toUpperCase() : undefined,
-        method: methodLabel,
-        agentMobile: profile?.mobile,
-        agentName: profile?.name || 'Verified Agent',
-        firmName: 'Royal Realty Associates',
-        reraNumber: 'TN/AGENT/0491/2023',
-        idempotencyKey: idempotencyKeyRef.current,
-      });
-
-      isSubmittingRef.current = false;
-      setPaymentResult(result);
-      setPaymentState('success');
-    }, 1600);
+    // No real payment gateway is available on the backend, so nothing is charged,
+    // recorded or activated here; the page says so instead of simulating success.
+    isSubmittingRef.current = false;
+    setPaymentState('idle');
+    setErrorMessage('Online payment is not available yet, so this package cannot be purchased or activated. No money has been charged.');
   };
 
   return (
@@ -328,7 +326,7 @@ export default function AgentPaymentPage() {
                     {/* Verified Badge */}
                     <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80 mb-3 inline-flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Payment Verified &amp; Active
+                      Plan Active · Payment Not Taken
                     </span>
 
                     {/* Headline */}
@@ -427,6 +425,7 @@ export default function AgentPaymentPage() {
                         <span className="text-slate-500">Active Micro-Markets:</span>
                         <span className="font-bold text-[#087ed9] text-[11px] sm:text-xs">
                           {selectedLocations.length} Locations Activated
+                          {paymentResult.notes?.length ? ` · ${paymentResult.notes.join(' · ')}` : ''}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs py-1">
@@ -686,7 +685,7 @@ export default function AgentPaymentPage() {
                   ) : (
                     <>
                       <Lock size={16} />
-                      <span>Pay ₹{bill.total.toLocaleString('en-IN')} &amp; Activate Syndicate</span>
+                      <span>Continue</span>
                     </>
                   )}
                 </button>

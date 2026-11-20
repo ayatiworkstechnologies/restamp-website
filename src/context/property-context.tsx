@@ -2,10 +2,31 @@
 
 import { toast as notify } from "@/lib/notify";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { Property, PropertyStatus, AdminChecklist } from "@/types/property";
-import { initialProperties } from "@/lib/properties-data";
-import { AUTO_VERIFY_MINUTES, msUntilVerified } from "@/lib/auto-verify";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Property, PropertyStatus, PropertyType, AdminChecklist, AuditLogEntry } from "@/types/property";
+import { errorMessage } from "@/lib/api/client";
+import { getSession } from "@/lib/api/session";
+import {
+  fetchAll,
+  getAdminListing,
+  listAdminListings,
+  rejectAdminListing,
+  verifyAdminListing,
+  type AdminListingDetail,
+  type AdminListingRow,
+} from "@/lib/api/admin";
+
+/**
+ * Admin property store backed by the real backend:
+ *   GET  /admin/listings            (all listings, every owner)
+ *   GET  /admin/listings/{id}       (photos, owner, verification history)
+ *   POST /admin/listings/{id}/verify  PENDING -> VERIFIED   [properties.approve]
+ *   POST /admin/listings/{id}/reject  PENDING -> REJECTED   [properties.reject, reason required]
+ * State changes only after the backend confirms. Actions the backend has no admin
+ * endpoint for (create, edit, delete, unpublish, featured/badge, checklist) are
+ * refused with a message and change nothing. Nothing is stored in localStorage
+ * and there is no client-side auto-verification.
+ */
 
 interface ToastMessage {
   id: number;
@@ -15,6 +36,8 @@ interface ToastMessage {
 
 interface PropertyContextType {
   properties: Property[];
+  loading: boolean;
+  loadError: string;
   stats: {
     total: number;
     active: number;
@@ -32,79 +55,178 @@ interface PropertyContextType {
   toggleFeatured: (id: string) => void;
   toggleVerified: (id: string) => void;
   updateChecklist: (id: string, key: keyof AdminChecklist, value: boolean) => void;
+  /** Load photos, owner and verification history for one listing (GET /admin/listings/{id}). */
+  refreshProperty: (id: string) => Promise<void>;
+  /** Re-read all listings from the backend. */
+  reload: () => Promise<void>;
   resetToDefault: () => void;
 }
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
-const STORAGE_KEY = "restamp_admin_properties_v1";
+const TYPE_LABEL: Record<string, PropertyType> = {
+  APARTMENT: "Apartment",
+  VILLA: "Villa",
+  HOUSE: "Independent House",
+  PLOT: "Plot",
+  AGRICULTURAL_LAND: "Plot",
+  COMMERCIAL: "Commercial",
+};
+
+const fmt = (iso: string | null | undefined) =>
+  iso
+    ? new Date(iso.endsWith("Z") || iso.includes("+") ? iso : `${iso}Z`).toLocaleString("en-GB", {
+        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+      })
+    : "";
+
+/** Verification status is the admin review state; "Active" = verified (live only if also AVAILABLE). */
+function statusOf(v: string): PropertyStatus {
+  if (v === "VERIFIED") return "Active";
+  if (v === "REJECTED") return "Rejected";
+  return "Pending";
+}
+
+const http = (u: string | null | undefined) => (u && /^https?:\/\//i.test(u) ? u : "");
+
+function fromRow(r: AdminListingRow): Property {
+  const cover = http(r.cover_image_url);
+  return {
+    id: String(r.listing_id),
+    title: r.title,
+    description: "",
+    type: TYPE_LABEL[r.property_type] || ("Apartment" as PropertyType),
+    bhk: 0,
+    bathrooms: 0,
+    balconies: 0,
+    carpetAreaSqFt: 0,
+    superBuiltUpAreaSqFt: 0,
+    price: Math.round(r.price_paise / 100),
+    status: statusOf(r.verification_status),
+    locality: r.locality,
+    address: [r.locality, r.city, r.pincode].filter(Boolean).join(", "),
+    city: r.city,
+    state: "Tamil Nadu",
+    pincode: r.pincode,
+    furnishing: "" as Property["furnishing"],
+    floor: "",
+    totalFloors: 0,
+    facing: "" as Property["facing"],
+    parking: "",
+    ageOfProperty: "",
+    possessionStatus: "" as Property["possessionStatus"],
+    reraVerified: false,
+    featured: false,
+    verifiedBadge: r.verification_status === "VERIFIED",
+    images: cover ? [cover] : [],
+    amenities: [],
+    owner: {
+      id: String(r.owner_user_id),
+      name: r.owner_name || `User #${r.owner_user_id}`,
+      phone: "",
+      email: "",
+      isKycVerified: false,
+      accountType: "Individual Owner",
+      joinedDate: "",
+      totalListings: 0,
+    },
+    documents: [],
+    adminChecklist: {
+      legalDocumentsVerified: false,
+      pricingValidated: false,
+      physicalInspectionDone: false,
+      highResolutionPhotos: false,
+      ownerIdentityConfirmed: false,
+    },
+    auditLog: [],
+    submittedAt: fmt(r.submitted_at),
+    updatedAt: fmt(r.submitted_at),
+    initials: r.title.slice(0, 2).toUpperCase(),
+    tint: "#EBF3FE",
+  };
+}
+
+function withDetail(base: Property, d: AdminListingDetail): Property {
+  const l = d.listing;
+  const gallery = (l.gallery || []).map(http).filter(Boolean);
+  const history: AuditLogEntry[] = [...d.verification_history]
+    .sort((a, b) => b.attempt_no - a.attempt_no)
+    .map((h) => ({
+      id: `VER-${l.listing_id}-${h.attempt_no}`,
+      action: h.action || h.result,
+      actor: h.actor || (h.triggered_by_user_id ? `User #${h.triggered_by_user_id}` : "System"),
+      role: h.actor === "SYSTEM" ? "Automatic" : "Recorded",
+      timestamp: fmt(h.triggered_at),
+      notes: [h.result, h.reason].filter(Boolean).join(" · ") || undefined,
+    }));
+  const lastReject = d.verification_history.filter((h) => h.result === "REJECTED").sort((a, b) => b.attempt_no - a.attempt_no)[0];
+  return {
+    ...base,
+    title: l.title,
+    description: l.description || "",
+    status: statusOf(l.verification_status),
+    bhk: l.bedrooms ?? 0,
+    bathrooms: l.bathrooms ?? 0,
+    balconies: l.balconies ?? 0,
+    carpetAreaSqFt: l.area_value ?? 0,
+    superBuiltUpAreaSqFt: l.super_built_up_area ?? 0,
+    furnishing: (l.furnishing || "") as Property["furnishing"],
+    facing: (l.facing || "") as Property["facing"],
+    images: gallery.length ? gallery : base.images,
+    amenities: l.amenities || [],
+    address: [l.address_line, l.locality, l.city, l.pincode].filter(Boolean).join(", "),
+    owner: { ...base.owner, name: d.owner.display_name || base.owner.name },
+    auditLog: history,
+    rejectionReason: lastReject?.reason || undefined,
+    rejectionCategory: lastReject?.category || undefined,
+  };
+}
 
 export function PropertyProvider({ children }: { children: React.ReactNode }) {
-  const [properties, setProperties] = useState<Property[]>(initialProperties);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [busy, setBusy] = useState<Set<string>>(new Set());
   const toast: ToastMessage | null = null;
-
-  // Load from localStorage on client mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProperties(parsed);
-        }
-      }
-    } catch {
-      // fallback to initial
-    } finally {
-      setIsHydrated(true);
-    }
-  }, []);
-
-  // Save to localStorage when properties change (only after initial hydration)
-  useEffect(() => {
-    if (!isHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
-    } catch (e) {
-      console.error("Failed to save properties to localStorage", e);
-    }
-  }, [properties, isHydrated]);
-
-  // Automatic verification: Pending listings go live AUTO_VERIFY_MINUTES after submission.
-  useEffect(() => {
-    if (!isHydrated) return;
-    const tick = () => {
-      const now = Date.now();
-      setProperties((prev) => {
-        let changed = 0;
-        const next = prev.map((p) => {
-          if (p.status !== "Pending" || msUntilVerified(p.submittedAt, now) > 0) return p;
-          changed++;
-          const ts = new Date(now).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-          return {
-            ...p,
-            status: "Active" as PropertyStatus,
-            updatedAt: ts,
-            auditLog: [
-              { id: `LOG-${now.toString().slice(-6)}-${p.id}`, action: "Auto-verified", actor: "System", role: "Automatic", timestamp: ts, notes: `Went live automatically ${AUTO_VERIFY_MINUTES} minutes after submission.` },
-              ...(p.auditLog || []),
-            ],
-          };
-        });
-        return changed ? next : prev;
-      });
-    };
-    tick();
-    const t = setInterval(tick, 15000);
-    return () => clearInterval(t);
-  }, [isHydrated]);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
     notify[type](message);
   };
-
   const hideToast = () => notify.dismiss();
+
+  const reload = useCallback(async () => {
+    if (!getSession()) {
+      setProperties([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const rows = await fetchAll(listAdminListings);
+      setProperties(rows.map(fromRow));
+      setLoadError("");
+    } catch (e) {
+      setLoadError(errorMessage(e, "Could not load listings."));
+      notify.error(errorMessage(e, "Could not load listings."), { id: "admin-listings-error" });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const replace = (p: Property) => setProperties((prev) => prev.map((x) => (x.id === p.id ? p : x)));
+
+  const refreshProperty = useCallback(async (id: string) => {
+    try {
+      const d = await getAdminListing(Number(id));
+      setProperties((prev) => prev.map((x) => (x.id === id ? withDetail(x, d) : x)));
+    } catch (e) {
+      notify.error(errorMessage(e, "Could not load this listing."));
+    }
+  }, []);
 
   const stats = useMemo(() => {
     const total = properties.length;
@@ -116,134 +238,75 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     return { total, active, pending, rejected, draft, totalValue };
   }, [properties]);
 
+  const unsupported = (what: string) =>
+    notify.error(`${what} is not available: the backend has no admin endpoint for it. Nothing was changed.`);
+
   const updateProperty = (id: string, updates: Partial<Property>) => {
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, ${now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-
-    setProperties((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        return {
-          ...item,
-          ...updates,
-          updatedAt: timestamp,
-          auditLog: [
-            {
-              id: `LOG-${Date.now().toString().slice(-4)}`,
-              action: "Listing Updated",
-              actor: "Admin",
-              role: "Administrator",
-              timestamp,
-              notes: "Property details modified by admin.",
-            },
-            ...(item.auditLog || []),
-          ],
-        };
-      })
-    );
-
-    showToast(`Property ${id} updated successfully.`);
-  };
-
-  const deleteProperty = (id: string) => {
-    setProperties((prev) => prev.filter((p) => p.id !== id));
-    showToast(`Property ${id} was deleted from database.`, "info");
-  };
-
-  const addProperty = (newProp: Omit<Property, "id" | "submittedAt" | "updatedAt" | "auditLog">) => {
-    const randomNum = Math.floor(1030 + Math.random() * 900);
-    const newId = `RST-${randomNum}`;
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-    const formattedTime = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const timestamp = `${formattedDate}, ${formattedTime}`;
-
-    const createdProperty: Property = {
-      ...newProp,
-      id: newId,
-      submittedAt: timestamp,
-      updatedAt: timestamp,
-      initials: newProp.title.slice(0, 2).toUpperCase(),
-      tint: "#EBF3FE",
-      auditLog: [
-        {
-          id: `LOG-${Date.now().toString().slice(-4)}`,
-          action: "Listing Created",
-          actor: "Admin",
-          role: "Administrator",
-          timestamp,
-          notes: "Property created directly from admin console.",
-        },
-      ],
-    };
-
-    setProperties((prev) => [createdProperty, ...prev]);
-    showToast(`Property ${newId} created successfully!`, "success");
-    return newId;
-  };
-
-  const toggleFeatured = (id: string) => {
-    setProperties((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        const nextState = !item.featured;
-        return { ...item, featured: nextState };
-      })
-    );
-    showToast("Featured status updated.");
-  };
-
-  const toggleVerified = (id: string) => {
-    setProperties((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        const nextState = !item.verifiedBadge;
-        return { ...item, verifiedBadge: nextState };
-      })
-    );
-    showToast("Verified badge updated.");
-  };
-
-  const updateChecklist = (id: string, key: keyof AdminChecklist, value: boolean) => {
-    setProperties((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        return {
-          ...item,
-          adminChecklist: {
-            ...item.adminChecklist,
-            [key]: value,
-          },
-        };
-      })
-    );
-  };
-
-  const resetToDefault = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
+    const current = properties.find((p) => p.id === id);
+    if (!current) return;
+    const nextStatus = updates.status;
+    const otherKeys = Object.keys(updates).filter((k) => k !== "status" && k !== "rejectionReason" && k !== "rejectionCategory");
+    // Empty / zero / unset count as the same value (the edit form fills unset numbers with 0).
+    const norm = (v: unknown) => (v === undefined || v === null || v === "" || v === 0 ? null : JSON.stringify(v));
+    const changedOther = otherKeys.some((k) => norm((updates as Record<string, unknown>)[k]) !== norm((current as unknown as Record<string, unknown>)[k]));
+    if (changedOther) {
+      unsupported("Editing listing details");
+      return;
     }
-    setProperties(initialProperties);
-    showToast("Reset demo data to initial state.", "info");
+    if (!nextStatus || nextStatus === current.status) return;
+    if (busy.has(id)) return;
+
+    if (current.status !== "Pending" || (nextStatus !== "Active" && nextStatus !== "Rejected")) {
+      notify.error(
+        current.status !== "Pending"
+          ? "Only listings pending verification can be approved or rejected. Nothing was changed."
+          : `Changing a listing to "${nextStatus}" is not available from the admin console.`,
+      );
+      return;
+    }
+
+    let reason = updates.rejectionReason?.trim() || "";
+    if (nextStatus === "Rejected" && !reason) {
+      reason = (window.prompt("Reason for rejecting this listing (shown to the owner):") || "").trim();
+      if (!reason) {
+        notify.info("Rejection cancelled: a reason is required.");
+        return;
+      }
+    }
+
+    setBusy((s) => new Set(s).add(id));
+    const call = nextStatus === "Active" ? verifyAdminListing(Number(id)) : rejectAdminListing(Number(id), reason.slice(0, 500), updates.rejectionCategory);
+    call
+      .then((d) => {
+        replace(withDetail(current, d));
+        showToast(nextStatus === "Active" ? `Listing ${id} verified.` : `Listing ${id} rejected.`);
+      })
+      .catch((e) => notify.error(errorMessage(e, "The backend did not accept this change.")))
+      .finally(() =>
+        setBusy((s) => {
+          const n = new Set(s);
+          n.delete(id);
+          return n;
+        }),
+      );
   };
+
+  const deleteProperty = () => unsupported("Deleting listings");
+  const addProperty = () => {
+    unsupported("Creating listings from the admin console");
+    return "";
+  };
+  const toggleFeatured = () => unsupported("Featured status");
+  const toggleVerified = () => unsupported("The verified badge (it follows verification status)");
+  const updateChecklist = () => unsupported("The review checklist");
+  const resetToDefault = () => void reload();
 
   return (
     <PropertyContext.Provider
       value={{
         properties,
+        loading,
+        loadError,
         stats,
         toast,
         showToast,
@@ -254,6 +317,8 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
         toggleFeatured,
         toggleVerified,
         updateChecklist,
+        refreshProperty,
+        reload,
         resetToDefault,
       }}
     >

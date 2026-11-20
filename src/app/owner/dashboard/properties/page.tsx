@@ -3,37 +3,74 @@
 import { confirmDialog } from "@/components/common/confirm-dialog";
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { clearDraft, deleteListing, getDraft, getOwnerListings, type OwnerListing } from '@/lib/ownerListings';
+import { fetchOwnerListings, removeOwnerListing, type OwnerListing } from '@/lib/ownerListings';
+import { discardLatestDraft, loadLatestDraft } from '@/lib/ownerDrafts';
+import { errorMessage } from '@/lib/api/client';
+import { toast } from '@/lib/notify';
 import { card, rupees, shortDate } from '../ui';
 import { BedDouble, Bath, MapPin, PlusCircle, Ruler, Search, Trash2 } from 'lucide-react';
 
 const TABS = ['All', 'Active', 'Pending', 'Rejected', 'Expired', 'Closed', 'Draft'] as const;
 type Tab = (typeof TABS)[number];
 type Row = OwnerListing & { tab: Exclude<Tab, 'All'> };
-const tabOf = (l: OwnerListing): Row['tab'] => (l.status === 'Draft' ? 'Draft' : l.status === 'Pending Verification' ? 'Pending' : 'Active');
+// Backend verification and availability states -> the existing tabs.
+const tabOf = (l: OwnerListing): Row['tab'] =>
+  l.status === 'Draft'
+    ? 'Draft'
+    : l.status === 'Pending Verification'
+      ? 'Pending'
+      : l.status === 'Rejected'
+        ? 'Rejected'
+        : l.status === 'Expired'
+          ? 'Expired'
+          : l.status === 'Live'
+            ? 'Active'
+            : 'Closed';
 
 export default function OwnerPropertiesPage() {
   const [listings, setListings] = useState<Row[]>([]);
   const [tab, setTab] = useState<Tab>('All');
   const [query, setQuery] = useState('');
 
-  const load = () => {
-    const draft = getDraft();
-    const rows: Row[] = getOwnerListings().map((l) => ({ ...l, tab: tabOf(l) }));
-    if (draft) rows.unshift({ ...draft.listing, id: `draft-${draft.listing.id}`, status: 'Draft', tab: 'Draft' });
+  const [loaded, setLoaded] = useState(false);
+
+  // Real listings from GET /owner/listings (only the signed-in owner's), plus the backend
+  // draft (GET /owner/drafts), so a draft saved on another device is shown too.
+  const load = async () => {
+    let rows: Row[] = [];
+    const [listings, draft] = await Promise.allSettled([fetchOwnerListings(), loadLatestDraft()]);
+    if (listings.status === 'fulfilled') rows = listings.value.map((l) => ({ ...l, tab: tabOf(l) }));
+    else toast.error(errorMessage(listings.reason, 'Could not load your properties. Please try again.'));
+    if (draft.status === 'rejected') toast.error(errorMessage(draft.reason, 'Could not load your saved draft.'));
+    else if (draft.value) rows.unshift({ ...draft.value.listing, id: `draft-${draft.value.draftId}`, status: 'Draft', tab: 'Draft' });
     setListings(rows);
+    setLoaded(true);
   };
-  useEffect(load, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
   const remove = async (l: Row) => {
     if (l.tab === 'Draft') {
       if (!(await confirmDialog({ title: 'Delete draft', body: 'Are you sure you want to delete this draft? Your saved progress will be permanently removed.' }))) return;
-      clearDraft();
+      // Deletes the backend draft (/owner/drafts) and this browser's copy.
+      try {
+        await discardLatestDraft();
+      } catch (e) {
+        toast.error(errorMessage(e, 'Could not delete this draft. Please try again.'));
+        return;
+      }
     } else {
       if (!(await confirmDialog({ title: 'Delete listing', body: 'Are you sure you want to remove this listing from the marketplace? This action cannot be undone.' }))) return;
-      deleteListing(l.id);
+      try {
+        await removeOwnerListing(l.id);
+      } catch (e) {
+        toast.error(errorMessage(e, 'Could not remove this listing. Please try again.'));
+        return;
+      }
+      toast.success('Listing removed');
     }
-    load();
+    await load();
   };
 
   const shown = useMemo(() => {
@@ -79,7 +116,7 @@ export default function OwnerPropertiesPage() {
         </label>
       </div>
 
-      {shown.length === 0 ? (
+      {!loaded ? null : shown.length === 0 ? (
         <div className={`${card} py-16 text-center`}>
           <p className="font-semibold text-slate-900">
             {tab === 'All' ? 'No Properties Yet' : tab === 'Draft' ? 'No Saved Drafts Yet' : `No ${tab} Properties`}
@@ -128,7 +165,7 @@ export default function OwnerPropertiesPage() {
                   {l.tab === 'Draft' ? (
                     <Link href="/owner/dashboard/add-property" className="text-xs font-semibold text-[#087ed9] hover:underline">Continue draft →</Link>
                   ) : (
-                    <span className="text-[11px] text-slate-400">Listed {shortDate(l.createdAt)}</span>
+                    <span className="text-[11px] text-slate-400">{l.createdAt ? `Listed ${shortDate(l.createdAt)}` : ''}</span>
                   )}
                   <button type="button" onClick={() => remove(l)} className="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-600 cursor-pointer">
                     <Trash2 size={13} /> {l.tab === 'Draft' ? 'Delete Draft' : 'Remove'}

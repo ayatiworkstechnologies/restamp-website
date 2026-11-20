@@ -40,6 +40,7 @@ function UserManagementContent() {
     activateUser,
     updateUser,
     addUser,
+    refreshUser,
   } = useUserStore();
 
   // Filters state
@@ -119,10 +120,15 @@ function UserManagementContent() {
     };
   }, [users]);
 
+  // Open modals follow the store, so backend-confirmed changes show immediately.
+  const liveSelectedUser = selectedUser ? users.find((u) => u.id === selectedUser.id) ?? selectedUser : null;
+
   // Modal handlers
   const handleInspect = (user: User) => {
     setSelectedUser(user);
     setIsDetailOpen(true);
+    // Phone and activity counts come from GET /admin/users/{id}.
+    void refreshUser(user.id);
   };
 
   const handleOpenSuspend = (user: User) => {
@@ -227,7 +233,7 @@ function UserManagementContent() {
 
       {/* Modals */}
       <UserDetailModal
-        user={selectedUser}
+        user={liveSelectedUser}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         onSuspend={(u) => {
@@ -241,7 +247,7 @@ function UserManagementContent() {
       />
 
       <UserSuspendModal
-        user={selectedUser}
+        user={liveSelectedUser}
         isOpen={isSuspendOpen}
         onClose={() => setIsSuspendOpen(false)}
         onSuspend={(id, reason) => {
@@ -253,7 +259,7 @@ function UserManagementContent() {
       />
 
       <UserEditModal
-        user={selectedUser}
+        user={liveSelectedUser}
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSave={(id, updates) => {

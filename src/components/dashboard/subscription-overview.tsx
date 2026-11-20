@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Briefcase, CalendarClock, Home, IndianRupee, UserRound, UserCheck } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { useUserStore } from "@/context/user-context";
-import { useSubscriptionData, EXPIRING_WINDOW_DAYS } from "@/lib/subscription-store";
+import { useSubscriptionData, EXPIRING_WINDOW_DAYS } from "@/lib/admin-billing";
 import { ROLE_LABEL, type SubscriberRole } from "@/types/subscription";
 import { inr } from "@/components/subscriptions/ui";
 

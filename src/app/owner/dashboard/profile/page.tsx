@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getProfile, saveProfile, type Profile } from '@/lib/profile';
+import { apiPatch, errorMessage } from '@/lib/api/client';
+import { getSession, isPlaceholderName, updateSession } from '@/lib/api/session';
+import { toast } from '@/lib/notify';
 import { getSubscription, type OwnerSubscription } from '@/lib/ownerPlan';
 import { card, shortDate } from '../ui';
 import {
@@ -30,8 +33,13 @@ export default function OwnerProfilePage() {
   const [sub, setSub] = useState<OwnerSubscription | null>(null);
   const [saved, setSaved] = useState(false);
 
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
-    setMe(getProfile());
+    const profile = getProfile();
+    // The name is the backend account's display name (GET /auth/me at login), unless it is still the phone number.
+    const backendName = getSession()?.displayName;
+    setMe(profile && backendName && !isPlaceholderName(backendName) ? { ...profile, name: backendName } : profile);
     setSub(getSubscription());
   }, []);
 
@@ -42,8 +50,24 @@ export default function OwnerProfilePage() {
     setSaved(false);
   };
 
-  const submit = (e: React.FormEvent) => {
+  // The backend stores only the display name (PATCH /users/me). Email and city
+  // stay in this browser's profile; "Saved" appears only after the backend confirms.
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    const name = me.name.trim();
+    if (name) {
+      setSaving(true);
+      try {
+        const out = await apiPatch<{ display_name: string }>('/users/me', { display_name: name });
+        updateSession({ displayName: out.display_name });
+      } catch (err) {
+        toast.error(errorMessage(err, 'Could not save your profile. Please try again.'));
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
     saveProfile(me);
     setSaved(true);
     window.dispatchEvent(new Event('profile-change'));

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, Suspense } from "react";
+import React, { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Menu,
@@ -41,6 +41,7 @@ function PropertyManagementContent() {
     stats,
     updateProperty,
     addProperty,
+    refreshProperty,
   } = usePropertyStore();
 
   // Filters state
@@ -54,16 +55,20 @@ function PropertyManagementContent() {
     featuredOnly: false,
   });
 
+  // Open the ?id= listing once (not again on every store update).
+  const openedFromUrl = useRef<string | null>(null);
   // Handle URL params on initial load
   useEffect(() => {
     if (initialId) {
       const match = properties.find((p) => p.id === initialId);
-      if (match) {
+      if (match && match.id !== openedFromUrl.current) {
+        openedFromUrl.current = match.id;
         setSelectedProperty(match);
         setIsDetailOpen(true);
+        void refreshProperty(match.id);
       }
     }
-  }, [initialId, properties]);
+  }, [initialId, properties, refreshProperty]);
 
   const handleFilterChange = (newFilters: Partial<PropertyFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -123,10 +128,15 @@ function PropertyManagementContent() {
     };
   }, [properties]);
 
+  // The open modal follows the store, so backend-confirmed changes show immediately.
+  const liveSelected = selectedProperty ? properties.find((p) => p.id === selectedProperty.id) ?? selectedProperty : null;
+
   // Modal open handlers
   const handleInspect = (prop: Property) => {
     setSelectedProperty(prop);
     setIsDetailOpen(true);
+    // Photos, owner and verification history come from GET /admin/listings/{id}.
+    void refreshProperty(prop.id);
   };
 
   const handleOpenEdit = (prop: Property) => {
@@ -240,7 +250,7 @@ function PropertyManagementContent() {
 
       {/* Modals */}
       <PropertyDetailModal
-        property={selectedProperty}
+        property={liveSelected}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         onEdit={(prop) => {
@@ -250,7 +260,7 @@ function PropertyManagementContent() {
       />
 
       <PropertyEditModal
-        property={selectedProperty}
+        property={liveSelected}
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSave={(id, updates) => {

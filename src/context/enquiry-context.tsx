@@ -1,12 +1,25 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { toast as notify } from "@/lib/notify";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Enquiry, EnquiryStatus } from "@/types/enquiry";
-import { initialEnquiries } from "@/lib/enquiries-data";
-import { usePropertyStore } from "@/context/property-context";
+import { errorMessage } from "@/lib/api/client";
+import { getSession } from "@/lib/api/session";
+import { fetchAll, getAdminEnquiry, listAdminEnquiries, type AdminEnquiryRow } from "@/lib/api/admin";
+
+/**
+ * Admin enquiry store, READ-ONLY on the real backend:
+ *   GET /admin/enquiries, GET /admin/enquiries/{id}   [enquiries.view]
+ * The backend gives admins no write access to buyer-owner conversations, so
+ * status changes, notes, creation and deletion are refused with a message.
+ * Buyer and owner phone numbers are not part of the admin enquiry response.
+ * Status mapping: NEW -> Active, CONTACTED -> Addressed, CLOSED -> Archived.
+ */
 
 interface EnquiryContextType {
   enquiries: Enquiry[];
+  loading: boolean;
+  loadError: string;
   stats: {
     total: number;
     active: number;
@@ -16,168 +29,123 @@ interface EnquiryContextType {
   };
   updateEnquiryStatus: (id: string, newStatus: EnquiryStatus) => void;
   updateAdminNotes: (id: string, notes: string) => void;
-  addEnquiry: (
-    newEnquiry: Omit<Enquiry, "id" | "createdAt" | "updatedAt">
-  ) => string;
+  addEnquiry: (newEnquiry: Omit<Enquiry, "id" | "createdAt" | "updatedAt">) => string;
   deleteEnquiry: (id: string) => void;
   batchUpdateStatus: (ids: string[], status: EnquiryStatus) => void;
+  /** Full message thread for one enquiry (GET /admin/enquiries/{id}). */
+  refreshEnquiry: (id: string) => Promise<void>;
+  reload: () => Promise<void>;
   resetToDefaultEnquiries: () => void;
 }
 
 const EnquiryContext = createContext<EnquiryContextType | undefined>(undefined);
 
-const ENQUIRY_STORAGE_KEY = "restamp_admin_enquiries_v2";
+const STATUS: Record<string, EnquiryStatus> = { NEW: "Active", CONTACTED: "Addressed", CLOSED: "Archived" };
+
+const fmt = (iso: string | null | undefined) =>
+  iso
+    ? new Date(iso.endsWith("Z") || iso.includes("+") ? iso : `${iso}Z`).toLocaleString("en-GB", {
+        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+      })
+    : "";
+
+function fromRow(r: AdminEnquiryRow): Enquiry {
+  return {
+    id: String(r.id),
+    buyer: { name: r.buyer_name || `User #${r.buyer_user_id}`, phone: "", email: "", city: "" },
+    property: {
+      id: String(r.property_listing_id),
+      title: r.listing_title || `Listing #${r.property_listing_id}`,
+      location: "",
+      type: "",
+      price: 0,
+      ownerName: r.owner_name || `User #${r.owner_user_id}`,
+      ownerPhone: "",
+    },
+    type: "General Enquiry",
+    status: STATUS[r.status] || "Active",
+    channel: "Web Portal",
+    message: r.last_message || "",
+    adminNotes: r.closing_reason ? `Closed: ${r.closing_reason}` : undefined,
+    createdAt: fmt(r.created_at),
+    updatedAt: fmt(r.last_message_at || r.created_at),
+  };
+}
 
 export function EnquiryProvider({ children }: { children: React.ReactNode }) {
-  const [enquiries, setEnquiries] = useState<Enquiry[]>(initialEnquiries);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const { showToast } = usePropertyStore();
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  // Load from localStorage
-  useEffect(() => {
+  const reload = useCallback(async () => {
+    if (!getSession()) {
+      setEnquiries([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
-      const stored = localStorage.getItem(ENQUIRY_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setEnquiries(parsed);
-        }
-      }
-    } catch {
-      // fallback
+      setEnquiries((await fetchAll(listAdminEnquiries)).map(fromRow));
+      setLoadError("");
+    } catch (e) {
+      setLoadError(errorMessage(e, "Could not load enquiries."));
+      notify.error(errorMessage(e, "Could not load enquiries."), { id: "admin-enquiries-error" });
     } finally {
-      setIsHydrated(true);
+      setLoading(false);
     }
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
-    if (!isHydrated) return;
+    void reload();
+  }, [reload]);
+
+  const refreshEnquiry = useCallback(async (id: string) => {
     try {
-      localStorage.setItem(ENQUIRY_STORAGE_KEY, JSON.stringify(enquiries));
+      const d = await getAdminEnquiry(Number(id));
+      const thread = d.messages
+        .map((m) => [fmt(m.created_at ?? null), m.sender, m.body].filter(Boolean).join(" · "))
+        .join("\n");
+      setEnquiries((prev) => prev.map((e) => (e.id === id ? { ...fromRow(d), message: thread || e.message } : e)));
     } catch (e) {
-      console.error("Failed to save enquiries to localStorage", e);
+      notify.error(errorMessage(e, "Could not load this enquiry."));
     }
-  }, [enquiries, isHydrated]);
+  }, []);
 
   const stats = useMemo(() => {
     const total = enquiries.length;
-    const active = enquiries.filter((e) => e.status === "Active").length;
+    const activeItems = enquiries.filter((e) => e.status === "Active");
     const addressed = enquiries.filter((e) => e.status === "Addressed").length;
     const archived = enquiries.filter((e) => e.status === "Archived").length;
-    const activeItems = enquiries.filter((e) => e.status === "Active");
-
-    return {
-      total,
-      active,
-      addressed,
-      archived,
-      activeItems,
-    };
+    return { total, active: activeItems.length, addressed, archived, activeItems };
   }, [enquiries]);
 
-  const updateEnquiryStatus = (id: string, newStatus: EnquiryStatus) => {
-    setEnquiries((prev) =>
-      prev.map((e) => {
-        if (e.id === id) {
-          return {
-            ...e,
-            status: newStatus,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return e;
-      })
-    );
+  const readOnly = () =>
+    notify.error("Enquiries are read-only for admins: buyer-owner conversations can't be changed here. Nothing was changed.");
 
-    showToast(
-      `Enquiry ${id} status changed to "${newStatus}".`,
-      "success"
-    );
+  const updateEnquiryStatus = () => readOnly();
+  const updateAdminNotes = () => readOnly();
+  const addEnquiry = () => {
+    readOnly();
+    return "";
   };
-
-  const updateAdminNotes = (id: string, notes: string) => {
-    setEnquiries((prev) =>
-      prev.map((e) => {
-        if (e.id === id) {
-          return {
-            ...e,
-            adminNotes: notes,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return e;
-      })
-    );
-
-    showToast(`Remarks saved for enquiry ${id}.`, "success");
-  };
-
-  const addEnquiry = (
-    newEnquiry: Omit<Enquiry, "id" | "createdAt" | "updatedAt">
-  ): string => {
-    const nextNum = enquiries.length + 1001;
-    const id = `ENQ-${nextNum}`;
-    const now = new Date().toISOString();
-
-    const created: Enquiry = {
-      ...newEnquiry,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setEnquiries((prev) => [created, ...prev]);
-
-    showToast(
-      `Created enquiry ${id} for buyer ${created.buyer.name}.`,
-      "success"
-    );
-
-    return id;
-  };
-
-  const deleteEnquiry = (id: string) => {
-    setEnquiries((prev) => prev.filter((e) => e.id !== id));
-    showToast(`Enquiry ${id} removed from log.`, "info");
-  };
-
-  const batchUpdateStatus = (ids: string[], status: EnquiryStatus) => {
-    setEnquiries((prev) =>
-      prev.map((e) => {
-        if (ids.includes(e.id)) {
-          return {
-            ...e,
-            status,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return e;
-      })
-    );
-
-    showToast(
-      `${ids.length} inquiries marked as "${status}".`,
-      "success"
-    );
-  };
-
-  const resetToDefaultEnquiries = () => {
-    setEnquiries(initialEnquiries);
-    localStorage.removeItem(ENQUIRY_STORAGE_KEY);
-    showToast("Enquiries restored to default seed.", "info");
-  };
+  const deleteEnquiry = () => readOnly();
+  const batchUpdateStatus = () => readOnly();
+  const resetToDefaultEnquiries = () => void reload();
 
   return (
     <EnquiryContext.Provider
       value={{
         enquiries,
+        loading,
+        loadError,
         stats,
         updateEnquiryStatus,
         updateAdminNotes,
         addEnquiry,
         deleteEnquiry,
         batchUpdateStatus,
+        refreshEnquiry,
+        reload,
         resetToDefaultEnquiries,
       }}
     >

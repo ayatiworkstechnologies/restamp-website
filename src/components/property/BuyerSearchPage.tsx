@@ -15,6 +15,11 @@ import {
   MapPin,
   Briefcase,
 } from 'lucide-react';
+import { searchListings, type ListingSearch } from '@/lib/api/buyer';
+import { errorMessage } from '@/lib/api/client';
+import { cardToProperty } from '@/lib/api/mappers';
+import { submitEnquiry } from '@/lib/buyerEnquiry';
+import { toast } from '@/lib/notify';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
@@ -25,7 +30,9 @@ import FullFiltersModal, {
   filterPropertiesWithValues,
   chennaiLocalities,
 } from '@/components/property/FullFiltersModal';
-import { properties, Property } from '@/data/properties';
+import type { Property } from '@/data/properties';
+
+const DEAL_BY_PURPOSE: Record<string, ListingSearch['deal']> = { Buy: 'BUY', Resale: 'RESALE', Rent: 'RENT', Lease: 'LEASE' };
 
 const purposeTabs = ['Buy', 'Resale', 'Rent', 'Lease'] as const;
 type PurposeType = (typeof purposeTabs)[number];
@@ -100,6 +107,11 @@ export default function BuyerSearchPage() {
     amenities: [],
     verifiedOnly: false,
   });
+
+  // Backend properties state
+  const [backendProperties, setBackendProperties] = useState<Property[]>([]);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(true);
+  const [isSendingEnquiry, setIsSendingEnquiry] = useState(false);
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
@@ -210,6 +222,37 @@ export default function BuyerSearchPage() {
     }
   }, [initialQuery, initialLocality, initialPurposeParam, initialType]);
 
+  // Listings come only from the backend (GET /buyer/listings, public, verified + available only).
+  // Deal, locality, text and price sort are applied by the backend; the remaining
+  // filters (type groups, BHK, budget, ...) run on these real results below.
+  const backendLocality = filterValues.locality && filterValues.locality !== 'All Chennai' && filterValues.locality !== 'All localities'
+    ? filterValues.locality
+    : undefined;
+  const backendQuery = searchQuery.trim() || undefined;
+  const backendSort: ListingSearch['sort'] =
+    selectedSort === 'price-asc' ? 'price_asc' : selectedSort === 'price-desc' ? 'price_desc' : 'relevance';
+  useEffect(() => {
+    const controller = new AbortController();
+    setIsLoadingProperties(true);
+    searchListings(
+      { deal: DEAL_BY_PURPOSE[selectedPurpose], locality: backendLocality, q: backendQuery, sort: backendSort },
+      1,
+      100,
+      controller.signal,
+    )
+      .then((page) => {
+        setBackendProperties(page.items.map(cardToProperty));
+        setIsLoadingProperties(false);
+      })
+      .catch((e) => {
+        if (controller.signal.aborted) return;
+        setBackendProperties([]);
+        setIsLoadingProperties(false);
+        toast.error(errorMessage(e, 'Could not load properties. Please try again.'));
+      });
+    return () => controller.abort();
+  }, [selectedPurpose, backendLocality, backendQuery, backendSort]);
+
   // Submit search query
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,37 +345,11 @@ export default function BuyerSearchPage() {
 
   // Filter properties with full filter values + search query + sort
   const filteredProperties = useMemo(() => {
-    const list = filterPropertiesWithValues(properties, filterValues);
-
-    return list
-      .filter((prop) => {
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase().trim();
-          const matchName = prop.name.toLowerCase().includes(q);
-          const matchLocality = prop.locality?.toLowerCase().includes(q);
-          const matchCity = prop.city?.toLowerCase().includes(q);
-          const matchArea = prop.area?.toLowerCase().includes(q);
-          const matchType = prop.propertyType?.toLowerCase().includes(q);
-          const matchBuilder = prop.builderName?.toLowerCase().includes(q);
-          if (!matchName && !matchLocality && !matchCity && !matchArea && !matchType && !matchBuilder) {
-            return false;
-          }
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        if (selectedSort === 'price-asc') {
-          return (a.priceMin || 0) - (b.priceMin || 0);
-        }
-        if (selectedSort === 'price-desc') {
-          return (b.priceMax || 0) - (a.priceMax || 0);
-        }
-        if (selectedSort === 'newest') {
-          return b.id - a.id;
-        }
-        return a.id - b.id;
-      });
-  }, [filterValues, searchQuery, selectedSort]);
+    // Text search and price sort were already applied by the backend.
+    const list = filterPropertiesWithValues(backendProperties, filterValues);
+    // The backend has no "newest" sort; listing ids increase as listings are created.
+    return selectedSort === 'newest' ? [...list].sort((a, b) => b.id - a.id) : list;
+  }, [backendProperties, filterValues, selectedSort]);
 
   const handleContact = (property: Property) => {
     setSelectedProperty(property);
@@ -345,8 +362,14 @@ export default function BuyerSearchPage() {
     });
   };
 
-  const handleEnquirySubmit = (e: React.FormEvent) => {
+  const handleEnquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedProperty || isSendingEnquiry) return;
+    // POST /buyer/enquiries with the message the buyer wrote; success only after the backend accepts.
+    setIsSendingEnquiry(true);
+    const ok = await submitEnquiry(selectedProperty, formData.message);
+    setIsSendingEnquiry(false);
+    if (!ok) return;
     setContactSubmitted(true);
     setTimeout(() => {
       setSelectedProperty(null);
@@ -358,12 +381,12 @@ export default function BuyerSearchPage() {
     Buy: {
       eyebrow: 'PROPERTIES IN CHENNAI',
       title: 'Find a place to call your own in Chennai',
-      subtitle: 'Explore new launches, beach villas and prime apartments across Chennai directly from verified builders.',
+      subtitle: 'Explore new launches, beach villas and apartments listed on Restamp across Chennai.',
     },
     Resale: {
       eyebrow: 'FEATURED CHENNAI RESALE PROPERTIES',
       title: 'Discover homes worth owning in Chennai',
-      subtitle: 'Ready-to-move homes in Chennai with verified clear titles and immediate registration.',
+      subtitle: 'Browse ready-to-move resale homes listed across Chennai.',
     },
     Rent: {
       eyebrow: 'RENTAL HOMES IN CHENNAI',
@@ -934,7 +957,7 @@ export default function BuyerSearchPage() {
               {filteredProperties.length} {selectedPurpose} properties in {filterValues.locality === 'All Chennai' ? 'Chennai' : filterValues.locality}
             </h2>
             <p className="text-xs text-slate-400">
-              Verified Chennai listings · Updated daily
+              Chennai property listings on Restamp
             </p>
           </div>
 
@@ -947,7 +970,7 @@ export default function BuyerSearchPage() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : isLoadingProperties ? null : (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center max-w-lg mx-auto my-12 shadow-xs">
               <Search size={40} className="text-slate-300 mx-auto mb-3" />
               <h3 className="text-lg font-bold text-slate-900">No properties found</h3>
@@ -1085,7 +1108,7 @@ export default function BuyerSearchPage() {
             purpose: filterValues.purpose,
           })
         }
-        allProperties={properties}
+        allProperties={backendProperties}
       />
 
       <Footer />

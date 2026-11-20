@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearProfile, getProfile, type Profile } from '@/lib/profile';
 import { NotificationBell } from '@/components/common/notification-bell';
-import { getSubscription, type OwnerSubscription } from '@/lib/ownerPlan';
+import { getSubscription, syncOwnerSubscription, type OwnerSubscription } from '@/lib/ownerPlan';
 import { Building2, CalendarCheck, CreditCard, MessageSquareText, Crown, Headset, LayoutDashboard, LogOut, Menu, PlusCircle, UserRound, X, type LucideIcon } from 'lucide-react';
 
 const nav: { label: string; href: string; icon: LucideIcon }[] = [
@@ -31,13 +31,29 @@ export default function OwnerDashboardLayout({ children }: { children: React.Rea
   useEffect(() => {
     const profile = getProfile();
     if (!profile) return router.replace('/login?role=owner');
-    const subscription = getSubscription();
-    if (!subscription) return router.replace('/owner/plans');
-    setMe(profile);
-    setSub(subscription);
-    const refresh = () => setMe(getProfile());
+    // The owner's plan comes from the backend (GET /subscriptions/me), so a plan assigned or
+    // changed by an admin applies here at once. If the backend can't be reached, the last
+    // confirmed copy is used.
+    let cancelled = false;
+    syncOwnerSubscription()
+      .catch(() => getSubscription())
+      .then((subscription) => {
+        if (cancelled) return;
+        if (!subscription) return router.replace('/owner/plans');
+        setMe(profile);
+        setSub(subscription);
+      });
+    // Session expired, refused (401) or logged out elsewhere in this tab: back to login.
+    const refresh = () => {
+      const current = getProfile();
+      if (!current) return router.replace('/login?role=owner');
+      setMe(current);
+    };
     window.addEventListener('profile-change', refresh);
-    return () => window.removeEventListener('profile-change', refresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('profile-change', refresh);
+    };
   }, [router]);
 
   useEffect(() => setOpen(false), [pathname]);

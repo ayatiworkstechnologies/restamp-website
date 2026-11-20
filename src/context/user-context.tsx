@@ -1,12 +1,35 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { User, UserStatus, normalizeUserRole } from "@/types/user";
-import { initialUsers } from "@/lib/users-data";
-import { usePropertyStore } from "@/context/property-context";
+import { toast as notify } from "@/lib/notify";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { User, UserRole, UserStatus } from "@/types/user";
+import { errorMessage } from "@/lib/api/client";
+import { getSession } from "@/lib/api/session";
+import {
+  fetchAll,
+  getAdminUser,
+  listAdminUsers,
+  reactivateAdminUser,
+  suspendAdminUser,
+  type AdminUserDetail,
+  type AdminUserRow,
+} from "@/lib/api/admin";
+
+/**
+ * Admin user store backed by the real backend:
+ *   GET  /admin/users, GET /admin/users/{id}            [users.view]
+ *   POST /admin/users/{id}/suspend (reason required)    [users.suspend]
+ *   POST /admin/users/{id}/reactivate                   [users.suspend]
+ * The backend refuses suspending yourself or another admin's protected
+ * account; its message is shown. There is no admin endpoint to create, edit,
+ * delete users, change their role or keep admin notes, so those actions are
+ * refused with a message. Changes appear only after the backend confirms.
+ */
 
 interface UserContextType {
   users: User[];
+  loading: boolean;
+  loadError: string;
   stats: {
     total: number;
     buyers: number;
@@ -24,46 +47,92 @@ interface UserContextType {
   deleteUser: (userId: string) => void;
   addAdminNote: (userId: string, content: string, adminName?: string) => void;
   batchSuspend: (userIds: string[], reason: string) => void;
+  /** Phone, providers and activity counts for one user (GET /admin/users/{id}). */
+  refreshUser: (userId: string) => Promise<void>;
+  reload: () => Promise<void>;
   resetToDefaultUsers: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = "restamp_admin_users_v1";
-
 const tints = ["#E6EBFF", "#E7F3EC", "#FDF0DB", "#EDE9FE", "#FCE7F3", "#DCFCE7", "#FEF3C7"];
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<User[]>(() => initialUsers.map(normalizeUserRole));
-  const [isHydrated, setIsHydrated] = useState(false);
-  const { showToast } = usePropertyStore();
+const ROLE: Record<string, UserRole> = { BUYER: "buyer", OWNER: "owner", BROKER: "agent" };
+const STATUS: Record<string, UserStatus> = { active: "Active", suspended: "Suspended", closed: "Inactive" };
 
-  // Load from localStorage
-  useEffect(() => {
+const fmtDate = (iso: string | null | undefined) =>
+  iso ? new Date(iso.endsWith("Z") || iso.includes("+") ? iso : `${iso}Z`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "";
+
+function fromRow(r: AdminUserRow): User {
+  const name = r.display_name || `User #${r.user_id}`;
+  return {
+    id: String(r.user_id),
+    name,
+    email: "",
+    phone: "",
+    initials: name.replace(/[^A-Za-z0-9 ]/g, "").slice(0, 2).toUpperCase() || "U",
+    tint: tints[r.user_id % tints.length],
+    // Users without a current role yet are listed as buyers (the default mode).
+    role: ROLE[r.current_role || ""] || "buyer",
+    status: STATUS[r.status] || "Inactive",
+    city: "",
+    state: "",
+    joinedDate: fmtDate(r.joined_at),
+    lastActive: "",
+    emailVerified: false,
+    phoneVerified: true, // every account signs in with a verified phone OTP or a provider
+    adminNotes: [],
+    auditLog: [],
+  };
+}
+
+function withDetail(base: User, d: AdminUserDetail): User {
+  return {
+    ...base,
+    name: d.display_name || base.name,
+    phone: d.phone || "",
+    status: STATUS[d.status] || base.status,
+    role: ROLE[d.current_role || ""] || base.role,
+    totalListingsCount: d.activity.listings_owned,
+  };
+}
+
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [pending, setPending] = useState<Set<string>>(new Set());
+
+  const reload = useCallback(async () => {
+    if (!getSession()) {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
-      const stored = localStorage.getItem(USER_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setUsers((parsed as User[]).map(normalizeUserRole));
-        }
-      }
-    } catch {
-      // fallback
+      setUsers((await fetchAll(listAdminUsers)).map(fromRow));
+      setLoadError("");
+    } catch (e) {
+      setLoadError(errorMessage(e, "Could not load users."));
+      notify.error(errorMessage(e, "Could not load users."), { id: "admin-users-error" });
     } finally {
-      setIsHydrated(true);
+      setLoading(false);
     }
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
-    if (!isHydrated) return;
+    void reload();
+  }, [reload]);
+
+  const refreshUser = useCallback(async (userId: string) => {
     try {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(users));
+      const d = await getAdminUser(Number(userId));
+      setUsers((prev) => prev.map((u) => (u.id === userId ? withDetail(u, d) : u)));
     } catch (e) {
-      console.error("Failed to save users to localStorage", e);
+      notify.error(errorMessage(e, "Could not load this user."));
     }
-  }, [users, isHydrated]);
+  }, []);
 
   const stats = useMemo(() => {
     const total = users.length;
@@ -75,217 +144,65 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return { total, buyers, owners, agents, suspended, active };
   }, [users]);
 
+  const run = async (userId: string, call: () => Promise<AdminUserDetail>, okMsg: string) => {
+    if (pending.has(userId)) return false;
+    setPending((s) => new Set(s).add(userId));
+    try {
+      const d = await call();
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...withDetail(u, d), suspensionReason: undefined } : u)));
+      notify.success(okMsg);
+      return true;
+    } catch (e) {
+      notify.error(errorMessage(e, "The backend did not accept this change."));
+      return false;
+    } finally {
+      setPending((s) => {
+        const n = new Set(s);
+        n.delete(userId);
+        return n;
+      });
+    }
+  };
+
   const suspendUser = (userId: string, reason: string) => {
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, ${now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-
-    setUsers((prev) =>
-      prev.map((user) => {
-        if (user.id !== userId) return user;
-
-        return {
-          ...user,
-          status: "Suspended" as UserStatus,
-          suspensionReason: reason,
-          auditLog: [
-            {
-              id: `AUD-${Date.now().toString().slice(-4)}`,
-              action: "Account Suspended",
-              actor: "RESTAMP Admin",
-              timestamp,
-              details: `Account suspended: ${reason}`,
-            },
-            ...(user.auditLog || []),
-          ],
-        };
-      })
-    );
-
-    showToast(`User ${userId} has been suspended.`, "error");
+    const r = reason.trim();
+    if (!r) {
+      notify.error("A suspension reason is required.");
+      return;
+    }
+    void run(userId, () => suspendAdminUser(Number(userId), r.slice(0, 500)), "Account suspended.").then((ok) => {
+      if (ok) setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, suspensionReason: r } : u)));
+    });
   };
 
-  const activateUser = (userId: string) => {
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, ${now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+  const activateUser = (userId: string) => void run(userId, () => reactivateAdminUser(Number(userId)), "Account reactivated.");
 
-    setUsers((prev) =>
-      prev.map((user) => {
-        if (user.id !== userId) return user;
-
-        return {
-          ...user,
-          status: "Active" as UserStatus,
-          suspensionReason: undefined,
-          auditLog: [
-            {
-              id: `AUD-${Date.now().toString().slice(-4)}`,
-              action: "Account Re-activated",
-              actor: "RESTAMP Admin",
-              timestamp,
-              details: "Account restored to Active standing.",
-            },
-            ...(user.auditLog || []),
-          ],
-        };
-      })
-    );
-
-    showToast(`User ${userId} is now Active.`);
-  };
+  const unsupported = (what: string) =>
+    notify.error(`${what} is not available: the backend has no admin endpoint for it. Nothing was changed.`);
 
   const updateUser = (userId: string, updates: Partial<User>) => {
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, ${now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-
-    setUsers((prev) =>
-      prev.map((user) => {
-        if (user.id !== userId) return user;
-
-        return {
-          ...user,
-          ...updates,
-          auditLog: [
-            {
-              id: `AUD-${Date.now().toString().slice(-4)}`,
-              action: "Profile Updated",
-              actor: "RESTAMP Admin",
-              timestamp,
-              details: "User profile details modified by admin.",
-            },
-            ...(user.auditLog || []),
-          ],
-        };
-      })
-    );
-
-    showToast(`User ${userId} updated.`);
+    // Only a status change maps to a real backend action.
+    const keys = Object.keys(updates);
+    if (keys.length === 1 && updates.status === "Active") return activateUser(userId);
+    if (keys.every((k) => k === "status" || k === "suspensionReason") && updates.status === "Suspended")
+      return suspendUser(userId, updates.suspensionReason || "");
+    unsupported("Editing user details or roles");
   };
-
-  const addUser = (
-    newUser: Omit<User, "id" | "joinedDate" | "lastActive" | "auditLog" | "adminNotes" | "initials" | "tint">
-  ) => {
-    const randomNum = Math.floor(2100 + Math.random() * 800);
-    const newId = `USR-${randomNum}`;
-    const initials = newUser.name
-      .split(" ")
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-    const tint = tints[Math.floor(Math.random() * tints.length)];
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, Today`;
-
-    const created: User = {
-      ...newUser,
-      id: newId,
-      initials,
-      tint,
-      joinedDate: timestamp,
-      lastActive: "Just now",
-      adminNotes: [],
-      auditLog: [
-        {
-          id: `AUD-${Date.now().toString().slice(-4)}`,
-          action: "User Created",
-          actor: "Admin",
-          timestamp,
-          details: `User registered directly via admin console as ${newUser.role}.`,
-        },
-      ],
-    };
-
-    setUsers((prev) => [created, ...prev]);
-    showToast(`User ${newId} created successfully!`);
-    return newId;
+  const addUser = () => {
+    unsupported("Creating users from the admin console");
+    return "";
   };
-
-  const deleteUser = (userId: string) => {
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
-    showToast(`User ${userId} was deleted.`, "info");
-  };
-
-  const addAdminNote = (userId: string, content: string, adminName: string = "RESTAMP Admin") => {
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, ${now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-
-    setUsers((prev) =>
-      prev.map((user) => {
-        if (user.id !== userId) return user;
-
-        const newNote = {
-          id: `NOTE-${Date.now().toString().slice(-4)}`,
-          adminName,
-          content,
-          timestamp,
-        };
-
-        return {
-          ...user,
-          adminNotes: [newNote, ...(user.adminNotes || [])],
-        };
-      })
-    );
-
-    showToast("Internal admin note added.");
-  };
-
-  const batchSuspend = (userIds: string[], reason: string) => {
-    if (userIds.length === 0) return;
-    const now = new Date();
-    const timestamp = `${now.toLocaleDateString("en-GB")}, Batch`;
-
-    setUsers((prev) =>
-      prev.map((user) => {
-        if (!userIds.includes(user.id)) return user;
-
-        return {
-          ...user,
-          status: "Suspended" as UserStatus,
-          suspensionReason: reason,
-          auditLog: [
-            {
-              id: `AUD-${Date.now().toString().slice(-4)}`,
-              action: "Batch Suspended",
-              actor: "Admin",
-              timestamp,
-              details: `Batch suspension: ${reason}`,
-            },
-            ...(user.auditLog || []),
-          ],
-        };
-      })
-    );
-
-    showToast(`Suspended ${userIds.length} users.`, "error");
-  };
-
-  const resetToDefaultUsers = () => {
-    try {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    } catch {
-      // ignore
-    }
-    setUsers(initialUsers.map(normalizeUserRole));
-    showToast("Reset users data to initial seed.", "info");
-  };
+  const deleteUser = () => unsupported("Deleting users");
+  const addAdminNote = () => unsupported("Admin notes");
+  const batchSuspend = (userIds: string[], reason: string) => userIds.forEach((id) => suspendUser(id, reason));
+  const resetToDefaultUsers = () => void reload();
 
   return (
     <UserContext.Provider
       value={{
         users,
+        loading,
+        loadError,
         stats,
         suspendUser,
         activateUser,
@@ -294,6 +211,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         deleteUser,
         addAdminNote,
         batchSuspend,
+        refreshUser,
+        reload,
         resetToDefaultUsers,
       }}
     >

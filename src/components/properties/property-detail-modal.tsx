@@ -59,9 +59,7 @@ export function PropertyDetailModal({
 
   const images = property.images && property.images.length > 0
     ? property.images
-    : [
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-      ];
+    : [];
 
   const statusColors = {
     Active: "bg-[#e7f8ee] text-[#199864] border-[#b4eed3]",
@@ -182,16 +180,22 @@ export function PropertyDetailModal({
               {/* Image Gallery */}
               <div className="space-y-3">
                 <div className="relative h-64 sm:h-80 w-full overflow-hidden rounded-2xl border border-[#e2e8f2] bg-slate-100">
+                  {images.length > 0 ? (
                   <img
                     src={images[selectedImageIndex] || images[0]}
                     alt={property.title}
                     className="h-full w-full object-cover"
                   />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
+                  )}
+                  {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
                     <span>
                       Photo {selectedImageIndex + 1} of {images.length}
                     </span>
                   </div>
+                  )}
 
                   {/* Badges on image */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">

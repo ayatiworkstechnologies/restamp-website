@@ -22,7 +22,7 @@ import {
   limitLabel,
   useActor,
 } from "@/components/subscriptions/ui";
-import { deletePlan, planIsReferenced, setPlanStatus, useSubscriptionData, type PlanDraft } from "@/lib/subscription-store";
+import { deletePlan, planIsReferenced, setPlanStatus, useSubscriptionData, type PlanDraft } from "@/lib/admin-billing";
 import { BILLING_LABEL, ROLE_FEATURES, ROLE_LABEL, type PlanStatus, type SubscriberRole, type SubscriptionPlan } from "@/types/subscription";
 
 const ROLES: SubscriberRole[] = ["buyer", "owner", "agent"];
@@ -52,14 +52,15 @@ export default function SubscriptionPlansPage() {
     toast.success(msg);
   };
 
-  const runPending = (reason: string) => {
+  // Backend writes; the dialog shows the backend's error and stays open if one is refused.
+  const runPending = async (reason: string) => {
     if (!pending || !actor) return;
     void reason;
     if (pending.kind === "delete") {
-      deletePlan(pending.plan.id, actor);
-      done(`Deleted draft "${pending.plan.name}".`);
+      await deletePlan(pending.plan.id, actor);
+      done(`Archived "${pending.plan.name}".`);
     } else {
-      setPlanStatus(pending.plan.id, pending.to, actor);
+      await setPlanStatus(pending.plan.id, pending.to, actor);
       done(`"${pending.plan.name}" is now ${pending.to}.`);
     }
   };

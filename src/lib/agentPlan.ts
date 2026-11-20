@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react';
+import { apiGet, apiPost, errorMessage } from '@/lib/api/client';
+import { withRole } from '@/lib/api/auth';
+import { bypassActivate, listPublicPlans, type PublicPlan } from '@/lib/api/subscriptions';
 import { useMemo } from 'react';
 import type { SubscriptionPlan } from '@/types/subscription';
 import { getPlan as getStorePlan, recordCheckout, usePublicPlans } from '@/lib/subscription-store';
@@ -181,9 +185,117 @@ export const PLACEHOLDER_PACKAGE: LocationPackage = {
 const byLocations = (a: LocationPackage, b: LocationPackage) => a.locationLimit - b.locationLimit;
 
 /** Purchasable packages, ordered by coverage. Empty array while loading. */
+/** Backend agent plan -> the LocationPackage shape the existing agent screens render. */
+function packageFromBackend(p: PublicPlan): LocationPackage {
+  const days = p.duration_days ?? 30;
+  const price = Math.round(p.price_paise / 100);
+  return {
+    id: p.code,
+    name: p.name,
+    tagline: p.description || '',
+    badge: '',
+    locationLimit: p.location_limit ?? 0,
+    price,
+    monthlyEquivalent: Math.round(price / Math.max(1, Math.round(days / 30))),
+    validityDays: days,
+    mandateLimit: p.listing_limit === null || p.listing_limit < 0 ? 999 : p.listing_limit,
+    popular: p.recommended,
+    commissionCut: COMMISSION_COPY,
+    features: p.features || [],
+  };
+}
+
+let agentPackageCache: LocationPackage[] = [];
+
+/** Admin-managed agent plans from the backend (GET /subscriptions/plans?role=BROKER). */
 export function useLocationPackages(): LocationPackage[] {
-  const plans = usePublicPlans('agent');
-  return useMemo(() => (plans ?? []).map(toLocationPackage).sort(byLocations), [plans]);
+  const [list, setList] = useState<LocationPackage[]>(agentPackageCache);
+  useEffect(() => {
+    let cancelled = false;
+    listPublicPlans('BROKER')
+      .then((items) => {
+        agentPackageCache = items.filter((p) => p.price_paise > 0).map(packageFromBackend).sort(byLocations);
+        if (!cancelled) setList(agentPackageCache);
+      })
+      .catch(() => !cancelled && setList([]));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return list;
+}
+
+type BrokerPlanStatus = {
+  has_plan: boolean;
+  plan_code?: string;
+  plan_name?: string;
+  price_paise?: number;
+  locality_limit?: number;
+  start_date?: string | null;
+  valid_until?: string | null;
+  localities?: string[];
+};
+
+const isoZ = (v?: string | null) => (v ? (v.endsWith('Z') || v.includes('+') ? v : `${v}Z`) : null);
+
+/**
+ * Re-read the agent's plan from the backend (GET /broker/plan) and keep the existing
+ * local copy in step with it (the backend is the source of truth; the copy lets the
+ * existing synchronous agent screens read it). Resolves to the plan or null.
+ */
+export async function syncAgentSubscription(): Promise<AgentSubscription | null> {
+  const st = await withRole('BROKER', () => apiGet<BrokerPlanStatus>('/broker/plan'));
+  try {
+    if (!st.has_plan || !st.plan_code) {
+      localStorage.removeItem(AGENT_SUB_KEY);
+      return null;
+    }
+    const prev = getAgentSubscription();
+    const sub: AgentSubscription = {
+      planId: st.plan_code,
+      planName: st.plan_name || st.plan_code,
+      category: prev?.category || 'Residential',
+      locationLimit: st.locality_limit ?? 0,
+      selectedLocations: st.localities || [],
+      listingLimit: prev?.listingLimit ?? 999,
+      price: Math.round((st.price_paise ?? 0) / 100),
+      discount: 0,
+      gst: 0,
+      totalPaid: 0, // payment bypass / admin assignment: nothing was paid
+      paymentStatus: 'pending',
+      startedAt: isoZ(st.start_date) || new Date().toISOString(),
+      expiresAt: isoZ(st.valid_until),
+    };
+    localStorage.setItem(AGENT_SUB_KEY, JSON.stringify(sub));
+    return sub;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Continue on the payment page (TEMPORARY payment bypass):
+ *  1. POST /subscriptions/bypass activates the plan for this agent (BYPASS, never paid; idempotent);
+ *  2. POST /broker/plan/localities allocates the chosen localities under that plan (plan limit
+ *     enforced by the backend; unknown or disabled names are reported back);
+ *  3. the agent's plan is re-read from the backend.
+ */
+export async function activateAgentPlanViaBypass(pkg: LocationPackage, localities: string[]) {
+  await bypassActivate('BROKER', pkg.id);
+  let allocation: { unmatched: string[]; unavailable: string[]; error: string | null } = { unmatched: [], unavailable: [], error: null };
+  if (localities.length) {
+    try {
+      const r = await withRole('BROKER', () =>
+        apiPost<{ unmatched_localities?: string[]; unavailable_localities?: string[] }>('/broker/plan/localities', { localities }),
+      );
+      allocation = { unmatched: r.unmatched_localities || [], unavailable: r.unavailable_localities || [], error: null };
+    } catch (e) {
+      allocation.error = errorMessage(e, 'Your plan is active, but the localities could not be added.');
+    }
+  }
+  const sub = await syncAgentSubscription();
+  if (!sub || sub.planId !== pkg.id) throw new Error('The plan could not be confirmed. Please try again.');
+  return { sub, allocation };
 }
 
 /** Any agent package by id, including archived ones (for existing subscriptions). */

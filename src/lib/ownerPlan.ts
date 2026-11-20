@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { bypassActivate, getMySubscriptions, listPublicPlans, type PublicPlan } from '@/lib/api/subscriptions';
+import { getSession } from '@/lib/api/session';
 import type { SubscriptionPlan } from '@/types/subscription';
 import { BILLING_LABEL } from '@/types/subscription';
 import { getPlan as getStorePlan, recordCheckout, usePublicPlans } from '@/lib/subscription-store';
@@ -42,14 +44,83 @@ export function toOwnerPlan(p: SubscriptionPlan): OwnerPlan {
 
 const EMPTY_CATALOG: Record<'Residential' | 'Commercial', OwnerPlan[]> = { Residential: [], Commercial: [] };
 
-/** Admin-managed owner plans. Residential and Commercial share one catalog. Empty while loading. */
+/** Backend owner plan -> the OwnerPlan shape the existing screens render. */
+function fromBackend(p: PublicPlan): OwnerPlan {
+  const limit = p.listing_limit === null || p.listing_limit < 0 ? 999 : p.listing_limit;
+  return {
+    id: p.code,
+    name: p.name,
+    price: Math.round(p.price_paise / 100),
+    priceSub1: `${BILLING_LABEL[(p.billing_cycle as keyof typeof BILLING_LABEL)] ?? 'One-time'} payment · ${p.duration_days ? `${p.duration_days} Days` : 'Until deal closed'}`,
+    priceSub2: limit >= 999 ? 'Unlimited property posts' : `${limit} property post${limit === 1 ? '' : 's'}`,
+    validityDays: p.duration_days,
+    listingLimit: limit,
+    popular: p.recommended,
+    features: p.features || [],
+  };
+}
+
+let ownerPlanCache: OwnerPlan[] = [];
+
+/** Admin-managed owner plans from the backend (GET /subscriptions/plans?role=OWNER). Empty while loading. */
 export function useOwnerPlans(): Record<'Residential' | 'Commercial', OwnerPlan[]> {
-  const plans = usePublicPlans('owner');
-  return useMemo(() => {
-    if (!plans) return EMPTY_CATALOG;
-    const list = plans.map(toOwnerPlan);
-    return { Residential: list, Commercial: list };
-  }, [plans]);
+  const [plans, setPlans] = useState<OwnerPlan[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    listPublicPlans('OWNER')
+      .then((items) => {
+        ownerPlanCache = items.map(fromBackend);
+        if (!cancelled) setPlans(ownerPlanCache);
+      })
+      .catch(() => !cancelled && setPlans([]));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return useMemo(() => (plans ? { Residential: plans, Commercial: plans } : EMPTY_CATALOG), [plans]);
+}
+
+/**
+ * Re-read the owner's current plan from the backend (GET /subscriptions/me) and keep
+ * the existing local copy in step with it (the backend is the source of truth; the
+ * copy only lets existing synchronous screens read it). Resolves to the plan or null.
+ */
+export async function syncOwnerSubscription(): Promise<OwnerSubscription | null> {
+  if (!getSession()) return getSubscription();
+  const me = await getMySubscriptions();
+  const entry = me.subscriptions.OWNER;
+  const s = entry?.subscription;
+  try {
+    if (!s) {
+      localStorage.removeItem(SUB_KEY);
+      return null;
+    }
+    const limit = s.plan.listing_limit === null || s.plan.listing_limit < 0 ? 999 : s.plan.listing_limit;
+    const sub: OwnerSubscription = {
+      planId: s.plan.code,
+      planName: s.plan.name,
+      listingLimit: limit,
+      startedAt: s.start_date ? `${s.start_date}Z`.replace(/ZZ$/, 'Z') : new Date().toISOString(),
+      expiresAt: s.end_date ? `${s.end_date}Z`.replace(/ZZ$/, 'Z') : null,
+      paymentId: String(s.id),
+    };
+    localStorage.setItem(SUB_KEY, JSON.stringify(sub));
+    return sub;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Continue on the payment page (TEMPORARY payment bypass): the backend activates the
+ * plan without payment (POST /subscriptions/bypass, recorded as BYPASS, never as paid),
+ * then the current plan is re-read from the backend.
+ */
+export async function activateOwnerPlan(plan: OwnerPlan): Promise<{ sub: OwnerSubscription }> {
+  await bypassActivate('OWNER', plan.id);
+  const sub = await syncOwnerSubscription();
+  if (!sub || sub.planId !== plan.id) throw new Error('The plan could not be confirmed. Please try again.');
+  return { sub };
 }
 
 export const GST_RATE = 0.18;
@@ -80,10 +151,10 @@ export type OwnerSubscription = {
 const SUB_KEY = 'restamp_owner_subscription';
 const PAYMENTS_KEY = 'restamp_owner_payments';
 
-export const findPlan = (id: string) => {
+export const findPlan = (id: string) => ownerPlanCache.find((p) => p.id === id) ?? (() => {
   const p = getStorePlan(id);
   return p ? toOwnerPlan(p) : undefined;
-};
+})();
 
 export function priceBreakdown(plan: OwnerPlan, discount: number) {
   const afterDiscount = Math.max(0, plan.price - discount);

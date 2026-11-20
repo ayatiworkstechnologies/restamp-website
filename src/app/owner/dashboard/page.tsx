@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getOwnerListings, getDraft, type OwnerListing } from '@/lib/ownerListings';
+import { fetchOwnerListings, type OwnerListing } from '@/lib/ownerListings';
+import { loadLatestDraft } from '@/lib/ownerDrafts';
+import { errorMessage } from '@/lib/api/client';
+import { toast } from '@/lib/notify';
 import { getSubscription, type OwnerSubscription } from '@/lib/ownerPlan';
 import { getProfile } from '@/lib/profile';
 import { timeAgo, useOwnerLeads, visitBucket } from '@/lib/ownerLeads';
@@ -37,9 +40,15 @@ export default function OwnerDashboardPage() {
   const { leads, visits } = useOwnerLeads();
 
   useEffect(() => {
-    setListings(getOwnerListings());
+    // Real listings (GET /owner/listings), newest first.
+    fetchOwnerListings()
+      .then(setListings)
+      .catch((e) => toast.error(errorMessage(e, 'Could not load your properties.')));
     setSub(getSubscription());
-    setHasDraft(!!getDraft());
+    // Unfinished draft from the backend (/owner/drafts), so drafts saved on any device show here.
+    loadLatestDraft()
+      .then((d) => setHasDraft(!!d))
+      .catch(() => setHasDraft(false));
     setFirstName((getProfile()?.name || '').split(' ')[0]);
   }, []);
 
@@ -87,8 +96,8 @@ export default function OwnerDashboardPage() {
                 <span className="absolute left-3 top-3 rounded-md bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700">Primary Listing</span>
               </div>
               <div className="flex flex-col p-6">
-                <span className={`self-start rounded-full px-2.5 py-1 text-[11px] font-semibold ${primary.status === 'Pending Verification' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {primary.status === 'Pending Verification' ? 'Going live in 5 min' : 'Live'}
+                <span className={`self-start rounded-full px-2.5 py-1 text-[11px] font-semibold ${primary.status === 'Live' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                  {primary.status}
                 </span>
                 <h2 className="mt-3 text-xl font-bold text-slate-900">
                   {[primary.bhk, primary.propertyType].filter(Boolean).join(' ')} for {primary.purpose}

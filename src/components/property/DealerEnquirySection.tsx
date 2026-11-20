@@ -4,6 +4,8 @@ import { snackbar, toast } from '@/lib/notify';
 import React, { useState } from 'react';
 import { Phone, CheckCircle, ChevronDown, Check, ShieldCheck, Mail, MessageSquare } from 'lucide-react';
 import type { Property } from '@/data/properties';
+import { useOwnerContact } from '@/lib/useOwnerContact';
+import { submitEnquiry } from '@/lib/buyerEnquiry';
 
 interface DealerEnquirySectionProps {
   property: Property;
@@ -11,7 +13,8 @@ interface DealerEnquirySectionProps {
 
 export default function DealerEnquirySection({ property }: DealerEnquirySectionProps) {
   // State for dealer details
-  const [showPhone, setShowPhone] = useState(false);
+  // The listing owner's real number, revealed through the backend on request.
+  const contact = useOwnerContact(property);
   const [phoneCopied, setPhoneCopied] = useState(false);
 
   // Form state
@@ -25,23 +28,23 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const dealerName = property.builderName || 'AKSHABI HOMES';
-  const dealerPhone = property.phoneNumber || '+91 98401 23456';
-  const dealerAddress = property.address || (property.locality && property.city ? `${property.locality}, ${property.city}` : 'Aruppukkottai, Tamil Nadu');
+  // Buyers contact the owner directly. Backend owner name when it has a safe one; otherwise a neutral label.
+  const dealerName = contact.ownerName || property.builderName || 'Owner';
+  const dealerAddress = property.address || [property.locality, property.city].filter(Boolean).join(', ');
   const maxChars = 400;
 
   const handlePhoneClick = () => {
-    if (!showPhone) {
-      setShowPhone(true);
+    if (!contact.phone) {
+      void contact.reveal();
     } else {
-      navigator.clipboard?.writeText(dealerPhone.replace(/\s+/g, ''));
+      navigator.clipboard?.writeText(contact.phone.replace(/\s+/g, ''));
       setPhoneCopied(true);
       snackbar('Phone number copied');
       setTimeout(() => setPhoneCopied(false), 2000);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setErrorMsg('Please enter your name');
@@ -59,17 +62,18 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
     setErrorMsg('');
     setIsSubmitting(true);
 
+    // POST /buyer/enquiries: success is shown only after the backend accepts it.
+    const ok = await submitEnquiry(property, message);
+    setIsSubmitting(false);
+    if (!ok) return;
+    setSubmitted(true);
+    toast.success('Enquiry sent', { description: 'It has been sent to the owner.' });
     setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      toast.success('Enquiry sent', { description: 'The dealer will contact you shortly.' });
-      setTimeout(() => {
-        setSubmitted(false);
-        setName('');
-        setPhone('');
-        setMessage('I am interested in this Property.');
-      }, 4000);
-    }, 700);
+      setSubmitted(false);
+      setName('');
+      setPhone('');
+      setMessage('I am interested in this Property.');
+    }, 4000);
   };
 
   return (
@@ -138,7 +142,7 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
                       className="inline-flex items-center gap-2 bg-[#20c997] hover:bg-[#1bb587] text-white text-xs sm:text-[13px] font-bold px-4 py-2 rounded-lg transition duration-200 shadow-xs cursor-pointer active:scale-98"
                     >
                       <Phone size={14} className="fill-white" />
-                      <span>{showPhone ? dealerPhone : 'View Phone Number'}</span>
+                      <span>{contact.phone || 'View Phone Number'}</span>
                     </button>
                     {phoneCopied && (
                       <p className="text-[11px] text-emerald-600 font-semibold mt-1 animate-in fade-in">
@@ -151,31 +155,13 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
 
               {/* Stats & Meta Information */}
               <div className="mt-5 space-y-2.5 text-xs sm:text-[13px] text-slate-700">
-                <p>
-                  <span className="text-slate-600">Properties Listed: </span>
-                  <span className="font-extrabold text-[#087ed9]">25</span>
-                </p>
-
-                <p className="leading-relaxed">
-                  <span className="font-semibold text-slate-800">Localities : </span>
-                  <span className="text-slate-600">
-                    Melakottaiyur, Nellikuppam, Kandigai, Nallambakkam, Rathinamangalam, Vandalur Kelambakkam Road
-                  </span>
-                </p>
-
-                <div className="pt-1">
-                  <p className="font-bold text-slate-900">
-                    About {dealerName}
-                  </p>
-                  <p className="text-slate-600 mt-0.5 leading-relaxed">
-                    Promoters of residential projects
-                  </p>
-                </div>
-
+                {/* Listing counts, localities and an "about" text are not provided by the backend, so they are not shown. */}
+                {dealerAddress && (
                 <p className="pt-0.5">
                   <span className="font-semibold text-slate-800">Address : </span>
                   <span className="text-slate-600">{dealerAddress}</span>
                 </p>
+                )}
               </div>
             </div>
           </div>
@@ -192,8 +178,7 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
                 <div>
                   <h4 className="font-bold text-sm sm:text-base">Enquiry Sent Successfully!</h4>
                   <p className="text-xs sm:text-sm text-emerald-700 mt-1 leading-relaxed">
-                    Your interest in <strong>{property.name}</strong> has been shared with <strong>{dealerName}</strong>. 
-                    You will receive confirmation and updates via Email & SMS shortly.
+                    Your interest in <strong>{property.name}</strong> has been shared with <strong>{dealerName}</strong>.
                   </p>
                 </div>
               </div>

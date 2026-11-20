@@ -5,9 +5,9 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
-import { properties, type Property } from '@/data/properties';
+import type { Property } from '@/data/properties';
 import { getProfile, type Profile } from '@/lib/profile';
-import { contactFor, useActivity, type Activity, type ActivityType } from '@/lib/activity';
+import { useBuyerActivity, type ActivityEntry, type ActivityType } from '@/lib/activity';
 import { Phone, MessageSquare, UserRound, Eye, Pencil, ChevronRight } from 'lucide-react';
 
 type TabKey = 'calls' | 'messages' | 'agents' | 'viewed';
@@ -37,8 +37,8 @@ const tabs: {
     key: 'agents',
     label: 'Agents',
     icon: UserRound,
-    emptyTitle: 'No agents contacted',
-    emptyText: 'Builders and agents you call or message will be listed here.',
+    emptyTitle: 'No agent history yet',
+    emptyText: 'Agent contact history is not available yet. Your calls and messages are listed in the Calls and Messages tabs.',
   },
   {
     key: 'viewed',
@@ -55,10 +55,10 @@ const activityTypeByTab: Partial<Record<TabKey, ActivityType>> = {
   viewed: 'viewed',
 };
 
-const findProperty = (id: number) => properties.find((p) => p.id === id);
 
 export default function ActivityPage() {
-  const activity = useActivity();
+  // Real activity of the signed-in account (GET /buyer/call-events, /buyer/enquiries, /buyer/viewed).
+  const activity = useBuyerActivity();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('calls');
 
@@ -66,46 +66,24 @@ export default function ActivityPage() {
     setProfile(getProfile());
   }, []);
 
-  const lists = useMemo(() => {
-    const byType = (type: ActivityType) =>
-      activity
-        .filter((a) => a.type === type)
-        .map((a) => findProperty(a.propertyId))
-        .filter((p): p is Property => p !== undefined);
-
-    const entries = (type: ActivityType) =>
-      activity
-        .filter((a) => a.type === type)
-        .map((a) => ({ ...a, property: findProperty(a.propertyId) }))
-        .filter((a): a is Activity & { property: Property } => a.property !== undefined);
-
-    const contacted = [...byType('call'), ...byType('message')];
-    const agents = new Map<string, { name: string; role: string; phone: string; properties: Property[] }>();
-    contacted.forEach((p) => {
-      const name = p.builderName || 'Skyline Properties';
-      const agent = agents.get(name) ?? {
-        name,
-        role: p.postedBy || 'Builder',
-        phone: p.phoneNumber || '+91 98402 11234',
-        properties: [],
-      };
-      if (!agent.properties.some((x) => x.id === p.id)) agent.properties.push(p);
-      agents.set(name, agent);
-    });
-
-    return {
-      calls: entries('call'),
-      messages: entries('message'),
-      viewed: byType('viewed'),
-      agents: [...agents.values()],
-    };
-  }, [activity]);
+  const lists = useMemo(
+    () => ({
+      calls: activity.calls,
+      messages: activity.messages,
+      viewed: activity.viewed.map((e) => e.property),
+      // The backend has no "agents contacted" record (owner names/numbers are not part of
+      // these responses), so nothing is listed here rather than invented contacts.
+      agents: [] as { name: string; role: string; phone: string; properties: Property[] }[],
+    }),
+    [activity],
+  );
 
   const current = tabs.find((t) => t.key === activeTab)!;
   const displayName = profile?.name || (profile ? `+91 ${profile.mobile}` : 'Guest');
   const timeFor = (id: number) => {
     const type = activityTypeByTab[activeTab];
-    const entry = type && activity.find((a) => a.type === type && a.propertyId === id);
+    const all = [...activity.calls, ...activity.messages, ...activity.viewed];
+    const entry = type && all.find((a) => a.type === type && a.propertyId === id);
     return entry ? new Date(entry.at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : null;
   };
 
@@ -174,13 +152,13 @@ export default function ActivityPage() {
 
           {/* Tab content */}
           <div className="mt-6">
-            {lists[activeTab].length === 0 ? (
+            {activity.status === 'loading' ? null : activity.status === 'error' || lists[activeTab].length === 0 ? (
               <div className="rounded-2xl border border-slate-100 bg-white px-6 py-14 text-center shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)]">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
                   <current.icon size={24} />
                 </div>
-                <h2 className="mt-4 font-bold text-slate-900">{current.emptyTitle}</h2>
-                <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">{current.emptyText}</p>
+                <h2 className="mt-4 font-bold text-slate-900">{activity.status === 'error' ? 'Activity could not be loaded' : current.emptyTitle}</h2>
+                <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">{activity.status === 'error' ? activity.error : current.emptyText}</p>
                 <Link
                   href="/buy"
                   className="mt-5 inline-flex items-center gap-1 rounded-full bg-[#087ed9] px-5 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition"
@@ -255,16 +233,20 @@ export default function ActivityPage() {
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
-function ContactEntry({ entry, isCall }: { entry: Activity & { property: Property }; isCall: boolean }) {
+function ContactEntry({ entry, isCall }: { entry: ActivityEntry; isCall: boolean }) {
   const { property } = entry;
-  // Entries logged before details were stored fall back to the property's contact
-  const d = entry.details ?? contactFor(property);
-  const tel = `tel:${d.contactPhone.replace(/\s/g, '')}`;
+  // Backend activity carries no owner phone; the number and call link are shown only when known.
+  const d = entry.details ?? { contactName: 'Owner', contactRole: 'Owner', contactPhone: '' };
+  const tel = d.contactPhone ? `tel:${d.contactPhone.replace(/\s/g, '')}` : '';
 
   return (
     <article className="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-50 transition">
       <Link href={`/properties/${property.id}`} className="shrink-0">
-        <img src={property.image} alt={property.name} className="h-14 w-14 rounded-lg object-cover bg-slate-100" />
+        {property.image ? (
+          <img src={property.image} alt={property.name} className="h-14 w-14 rounded-lg object-cover bg-slate-100" />
+        ) : (
+          <div className="h-14 w-14 rounded-lg object-cover bg-slate-100" />
+        )}
       </Link>
 
       <div className="min-w-0 flex-1">
@@ -278,11 +260,12 @@ function ContactEntry({ entry, isCall }: { entry: Activity & { property: Propert
           <span className="shrink-0 text-xs text-slate-400">{formatTime(entry.at)}</span>
         </div>
         <p className="mt-0.5 truncate text-xs text-slate-500">
-          {d.contactName} · {d.contactPhone}
+          {[d.contactName, d.contactPhone].filter(Boolean).join(' · ')}
         </p>
         {!isCall && <p className="mt-1 truncate text-xs text-slate-600">{d.message || 'Enquiry about this property.'}</p>}
       </div>
 
+      {tel && (
       <a
         href={tel}
         aria-label={`Call ${d.contactName}`}
@@ -290,6 +273,7 @@ function ContactEntry({ entry, isCall }: { entry: Activity & { property: Propert
       >
         <Phone size={15} />
       </a>
+      )}
     </article>
   );
 }

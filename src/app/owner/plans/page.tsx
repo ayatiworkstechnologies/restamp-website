@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getProfile, saveProfile } from '@/lib/profile';
+import { errorMessage } from '@/lib/api/client';
 import {
-  activatePlan,
+  activateOwnerPlan,
+  syncOwnerSubscription,
   getSubscription,
   useOwnerPlans,
   priceBreakdown,
@@ -49,19 +51,25 @@ export default function OwnerPlansPage() {
   useEffect(() => {
     if (!getProfile()) router.replace('/login?role=owner');
     setCurrent(getSubscription());
+    // The current plan comes from the backend (GET /subscriptions/me).
+    syncOwnerSubscription().then(setCurrent).catch(() => undefined);
   }, [router]);
 
-  const finish = (p: OwnerPlan, payment?: Parameters<typeof activatePlan>[1]) => {
-    const saved = activatePlan(p, payment);
-    if (!saved) {
-      setPayError('Could not save your plan. Please try again.');
+  // Activates the plan on the backend (temporary payment bypass: no payment is taken or recorded as paid).
+  const finish = async (p: OwnerPlan) => {
+    let saved: { sub: OwnerSubscription };
+    try {
+      saved = await activateOwnerPlan(p);
+    } catch (e) {
+      setPayError(errorMessage(e, 'Could not activate your plan. Please try again.'));
       return false;
     }
     // Choosing a plan makes this account an owner
     const me = getProfile();
     if (me && me.role !== 'owner') saveProfile({ ...me, role: 'owner' });
     setCurrent(saved.sub);
-    setResult({ ...saved, total: payment?.total ?? 0, method: payment?.method });
+    // No paymentId: nothing was paid, so the success screen shows "Plan Activated" without an amount.
+    setResult({ sub: saved.sub, total: 0 });
     setStage('success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return true;
@@ -69,7 +77,7 @@ export default function OwnerPlansPage() {
 
   const choose = (p: OwnerPlan) => {
     if (p.price === 0) {
-      finish(p);
+      void finish(p);
       return;
     }
     setPlan(p);
@@ -92,31 +100,14 @@ export default function OwnerPlansPage() {
     }
   };
 
-  const pay = () => {
-    if (!plan) return;
-    let methodLabel: string;
-    if (method === 'upi') {
-      if (!/^[\w.-]{2,}@[a-zA-Z]{2,}$/.test(upiId.trim())) {
-        setPayError('Enter a valid UPI ID, e.g. name@okhdfcbank');
-        return;
-      }
-      methodLabel = `UPI · ${upiId.trim()}`;
-    } else {
-      const digits = cardNo.replace(/\D/g, '');
-      if (digits.length < 15) return setPayError('Enter a valid card number');
-      if (!cardName.trim()) return setPayError('Enter the name on the card');
-      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) return setPayError('Enter expiry as MM/YY');
-      if (!/^\d{3,4}$/.test(cvv)) return setPayError('Enter a valid CVV');
-      methodLabel = `Card · •••• ${digits.slice(-4)}`;
-    }
+  // Continue: online payment is not connected yet, so the payment step is bypassed and the
+  // backend activates the plan (recorded as BYPASS, never as paid). No card/UPI details are needed.
+  const pay = async () => {
+    if (!plan || paying) return;
     setPayError('');
     setPaying(true);
-    const bill = priceBreakdown(plan, discount);
-    // Demo payment: no real gateway is connected yet
-    setTimeout(() => {
-      setPaying(false);
-      finish(plan, { ...bill, promoCode: discount ? promo.trim().toUpperCase() : undefined, method: methodLabel });
-    }, 1500);
+    await finish(plan);
+    setPaying(false);
   };
 
   return (
@@ -356,7 +347,7 @@ export default function OwnerPlansPage() {
                       </div>
                     )}
                     <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                      Demo payment — no money is charged. Card details are not saved.
+                      Online payment is not connected yet. Press Continue to activate this plan now — no money is charged and no card details are needed.
                     </p>
                   </div>
                 </div>
@@ -426,7 +417,7 @@ export default function OwnerPlansPage() {
                           className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#087ed9] h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition disabled:opacity-70 cursor-pointer"
                         >
                           <Lock size={14} />
-                          {paying ? 'Processing payment…' : `Pay Now ${rupees(bill.total)}`}
+                          {paying ? 'Activating…' : 'Continue'}
                         </button>
                         <p className="mt-3 flex items-center justify-center gap-1 text-[11px] text-slate-400">
                           <ShieldCheck size={12} /> Secure checkout · RESTAMP Property Owner terms apply

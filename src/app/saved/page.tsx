@@ -1,27 +1,22 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/property/PropertyCard';
-import { properties } from '@/data/properties';
-import { clearWishlist, useWishlist } from '@/lib/wishlist';
+import { clearWishlist, useSavedListings } from '@/lib/wishlist';
+import { loginHref } from '@/lib/api/session';
 import { Heart, Search } from 'lucide-react';
 
 const filters = ['All', 'Buy', 'Resale', 'Rent', 'Lease'] as const;
 type Filter = (typeof filters)[number];
 
 export default function SavedPage() {
-  const ids = useWishlist();
+  // Saved listings come from the backend (GET /buyer/saved), most recent first.
+  const { items: saved, state, error } = useSavedListings();
   const [filter, setFilter] = useState<Filter>('All');
   const [confirmClear, setConfirmClear] = useState(false);
-
-  // Keep the order the user saved them in (most recent first)
-  const saved = useMemo(
-    () => ids.map((id) => properties.find((p) => p.id === id)).filter((p) => p !== undefined),
-    [ids]
-  );
   const visible = filter === 'All' ? saved : saved.filter((p) => p.purpose === filter);
 
   return (
@@ -96,7 +91,19 @@ export default function SavedPage() {
             </div>
           )}
 
-          {saved.length === 0 ? (
+          {state !== 'ready' ? (
+            <p className="mt-10 text-center text-sm text-slate-500">
+              {state === 'loading' ? (
+                'Loading your saved homes…'
+              ) : state === 'error' ? (
+                error
+              ) : (
+                <Link href={loginHref('/saved')} className="font-semibold text-[#087ed9] hover:underline">
+                  Log in to see your saved homes
+                </Link>
+              )}
+            </p>
+          ) : saved.length === 0 ? (
             <div className="mt-10 rounded-2xl border border-slate-100 bg-white px-6 py-16 text-center shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)]">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
                 <Heart size={28} />

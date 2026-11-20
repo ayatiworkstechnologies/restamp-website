@@ -11,6 +11,7 @@ import {
   hasActiveAgentSubscription,
   seedExistingPartnerSubscription,
   type AgentSubscription,
+  syncAgentSubscription,
 } from '@/lib/agentPlan';
 import {
   LayoutDashboard,
@@ -55,27 +56,33 @@ export default function AgentDashboardLayout({ children }: { children: React.Rea
     }
     setProfile(p);
 
-    // If existing paid agent (e.g. Arun Kumar), ensure seed if empty
-    let activeSub = getAgentSubscription();
-    if (!activeSub && p.mobile === '9840123456') {
-      activeSub = seedExistingPartnerSubscription(p.mobile);
-    }
-
-    // Protect route: require active subscription
-    if (!activeSub || !activeSub.selectedLocations || activeSub.selectedLocations.length === 0) {
-      router.replace('/agent/packages');
-      return;
-    }
-
-    setSub(activeSub);
+    // The agent's plan comes from the backend (GET /broker/plan), so plans activated via
+    // Continue or assigned by an admin apply here. If the backend can't be reached, the last
+    // confirmed copy is used. No seeded/demo subscriptions.
+    let cancelled = false;
+    syncAgentSubscription()
+      .catch(() => getAgentSubscription())
+      .then((activeSub) => {
+        if (cancelled) return;
+        // Protect route: require an active agent plan
+        if (!activeSub) {
+          router.replace('/agent/packages');
+          return;
+        }
+        setSub(activeSub);
+      });
 
     const refresh = () => {
-      setProfile(getProfile());
+      // Session expired, refused (401) or logged out: back to login.
+      const current = getProfile();
+      if (!current) return router.replace('/login?role=agent');
+      setProfile(current);
       setSub(getAgentSubscription());
     };
     window.addEventListener('profile-change', refresh);
     window.addEventListener('agent-subscription-change', refresh);
     return () => {
+      cancelled = true;
       window.removeEventListener('profile-change', refresh);
       window.removeEventListener('agent-subscription-change', refresh);
     };

@@ -4,7 +4,7 @@ import BuyerSearchPage from '@/components/property/BuyerSearchPage';
 export const metadata = {
   title: 'Buy Properties in Chennai - Verified Homes, Apartments & Villas | Restamp',
   description:
-    'Explore curated homes, luxury apartments, and residential projects by verified developers across Chennai with transparent pricing on Restamp.',
+    'Explore homes, apartments, and residential properties listed across Chennai on Restamp.',
 };
 
 export default function BuyPage() {

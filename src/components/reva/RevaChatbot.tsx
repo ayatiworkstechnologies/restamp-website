@@ -4,9 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, Globe, Mic, Phone, RotateCcw, Send, Square, Volume2, VolumeX, X } from "lucide-react";
-import { properties, getPropertyById, type Property } from "@/data/properties";
-import { getWishlist } from "@/lib/wishlist";
-import { getActivity, contactFor, logActivity } from "@/lib/activity";
+import type { Property } from "@/data/properties";
+import { listSaved, listVisits, revealContact, searchListings as apiSearchListings } from "@/lib/api/buyer";
+import { cardToProperty, isBackendProperty } from "@/lib/api/mappers";
+import { getSession, loginHref } from "@/lib/api/session";
+import { errorMessage } from "@/lib/api/client";
+import { formatIndianPhone } from "@/lib/useOwnerContact";
+import { toast } from "@/lib/notify";
 import { getProfile } from "@/lib/profile";
 import { RevaLogo, RevaOrb } from "./RevaOrb";
 import {
@@ -59,18 +63,16 @@ function roleFromProfile(): RevaRole {
   return r === "owner" ? "Owner" : r === "agent" ? "Agent" : "Buyer";
 }
 
-function searchListings(q: string) {
-  const words = q.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
-  if (!words.length) return [];
-  return properties
-    .map((p) => {
-      const hay = [p.name, p.locality, p.area, p.city, p.bhk, p.propertyType, p.type, p.propertyCategory].filter(Boolean).join(" ").toLowerCase();
-      return { p, score: words.filter((w) => hay.includes(w)).length };
-    })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 8)
-    .map((x) => x.p);
+// Real listings matching the visitor's words (backend text search; empty on failure).
+async function searchListings(q: string): Promise<Property[]> {
+  const text = q.trim();
+  if (text.length < 2) return [];
+  try {
+    const page = await apiSearchListings({ q: text }, 1, 8);
+    return page.items.map(cardToProperty);
+  } catch {
+    return [];
+  }
 }
 
 // Minimal typing for the Web Speech API (not in the TS DOM lib).
@@ -224,7 +226,7 @@ export function RevaChatbot() {
       if (awaitingContact.current) {
         awaitingContact.current = false;
         await new Promise((r) => setTimeout(r, 350));
-        const found = searchListings(question);
+        const found = await searchListings(question);
         if (found.length) {
           reply(
             bot({
@@ -264,23 +266,33 @@ export function RevaChatbot() {
         let listings: Property[] | undefined;
         let visits: Visit[] | undefined;
         let note = "";
+        // Listings and saved homes are real backend data (never the local sample catalogue).
         if (dataKind === "listings") {
-          listings = properties.slice(0, 6);
+          listings = await apiSearchListings({}, 1, 6)
+            .then((page) => page.items.map(cardToProperty))
+            .catch(() => []);
         } else if (dataKind === "saved") {
-          listings = getWishlist()
-            .map((id) => getPropertyById(id))
-            .filter((p): p is Property => !!p)
-            .slice(0, 10);
+          listings = getSession()
+            ? await listSaved(1, 10, { passive: true })
+                .then((page) => page.items.map(cardToProperty))
+                .catch(() => [])
+            : [];
           if (!listings.length)
             note = lang === "ta" ? "\n\nநீங்கள் இன்னும் எந்தச் சொத்தையும் சேமிக்கவில்லை. சேமிக்க இதயக் குறியீட்டைத் தட்டவும்." : "\n\nYou haven't saved any properties yet. Tap the heart on a property to save it.";
         } else if (dataKind === "visits") {
-          visits = getActivity()
-            .filter((a) => a.type === "siteVisit")
-            .slice(0, 10)
-            .map((a, i) => {
-              const p = getPropertyById(a.propertyId);
-              return { id: `${a.propertyId}-${i}`, title: p?.name ?? "Property", locality: [p?.locality, p?.city].filter(Boolean).join(", "), at: a.at };
-            });
+          // The signed-in buyer's own visits (GET /buyer/visits); none for guests or on failure.
+          visits = getSession()
+            ? await listVisits(1, 10)
+                .then((page) =>
+                  page.items.map((v) => ({
+                    id: String(v.id),
+                    title: v.listing?.title || "Property",
+                    locality: [v.listing?.locality, v.listing?.city].filter(Boolean).join(", "),
+                    at: v.scheduled_at,
+                  })),
+                )
+                .catch(() => [])
+            : [];
           if (!visits.length)
             note = lang === "ta" ? "\n\nஉங்களுக்கு இன்னும் பார்வை நேரங்கள் இல்லை. ஒரு சொத்தைத் திறந்து 'Schedule Visit' தட்டவும்." : "\n\nYou have no site visits yet. Open a property and tap Schedule Visit.";
         }
@@ -305,14 +317,25 @@ export function RevaChatbot() {
     }
   }, [open, busy, submit]);
 
-  const pickContact = (p: Property) => {
-    const c = contactFor(p);
-    logActivity("call", p.id, c);
+  // Owner contact through the audited backend reveal (POST /buyer/listings/{id}/contact).
+  const pickContact = async (p: Property) => {
+    if (!isBackendProperty(p)) return;
+    if (!getSession()) {
+      window.location.assign(loginHref(window.location.pathname));
+      return;
+    }
+    let revealed;
+    try {
+      revealed = await revealContact(p.id);
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not load the owner's number. Please try again."));
+      return;
+    }
     const m: Msg = {
       id: `m-${++nextId.current}`,
       from: "assistant",
       text: lang === "ta" ? `${p.name} உரிமையாளர் தொடர்பு விவரங்கள்:` : `Here are the contact details for ${p.name}:`,
-      contact: { property: p, name: c.contactName, role: c.contactRole, phone: c.contactPhone },
+      contact: { property: p, name: revealed.ownerName || "Owner", role: "Owner", phone: formatIndianPhone(revealed.phone) },
     };
     setMessages((items) => [...items, m]);
   };

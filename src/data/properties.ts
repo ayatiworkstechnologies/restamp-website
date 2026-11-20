@@ -1,4 +1,6 @@
 export interface Property {
+  /** 'backend' = built from a real backend listing (id is its listing_id). Unset = local catalogue entry. */
+  source?: 'backend';
   id: number;
   badge: string;
   type?: string;

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
 import { Card, EmptyState, Pagination, RoleBadge, TableSkeleton, fmtDateTime, inr, selectCls, usePaged } from "@/components/subscriptions/ui";
-import { useSubscriptionData } from "@/lib/subscription-store";
+import { useSubscriptionData } from "@/lib/admin-billing";
 import { ROLE_LABEL, type SubscriberRole } from "@/types/subscription";
 
 export default function PricingHistoryPage() {

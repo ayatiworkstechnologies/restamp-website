@@ -3,17 +3,22 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PostPropertyWizard from '@/components/owner/PostPropertyWizard';
-import { getOwnerListings } from '@/lib/ownerListings';
-import { getSubscription } from '@/lib/ownerPlan';
+import { getMySubscriptions } from '@/lib/api/subscriptions';
 import { card } from '../ui';
 
 export default function OwnerAddPropertyPage() {
   const [limitReached, setLimitReached] = useState<boolean | null>(null);
 
   // Checked once on entry so finishing the last allowed listing still shows its success screen
+  // Uses the backend's own count and limit (GET /subscriptions/me), the same ones it enforces
+  // when a listing is created. If the check can't run, the wizard opens and the backend decides.
   useEffect(() => {
-    const sub = getSubscription();
-    setLimitReached(!!sub && getOwnerListings().length >= sub.listingLimit);
+    getMySubscriptions()
+      .then((me) => {
+        const u = me.subscriptions.OWNER?.usage || {};
+        setLimitReached(typeof u.listings_remaining === 'number' && u.listings_remaining <= 0);
+      })
+      .catch(() => setLimitReached(false));
   }, []);
 
   if (limitReached === null) return null;

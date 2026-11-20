@@ -29,7 +29,7 @@ import {
 import { usePropertyStore } from "@/context/property-context";
 import { useEnquiryStore } from "@/context/enquiry-context";
 import { useAdminAuth } from "@/context/admin-auth-context";
-import { useSubscriptionData } from "@/lib/subscription-store";
+import { useSubscriptionData } from "@/lib/admin-billing";
 
 type BadgeKey = "pendingApprovals" | "openEnquiries" | "expiringSubs";
 

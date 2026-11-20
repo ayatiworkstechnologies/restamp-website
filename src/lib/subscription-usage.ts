@@ -11,10 +11,11 @@ export interface UsageLine {
 }
 
 /** Properties belonging to a directory user (explicit links or matching owner phone). */
-export function linkedProperties(user: Pick<User, "phone" | "listedPropertyIds">, properties: Property[]) {
+export function linkedProperties(user: Pick<User, "id" | "phone" | "listedPropertyIds">, properties: Property[]) {
   const phone = normalizePhone(user.phone);
   const ids = new Set(user.listedPropertyIds ?? []);
-  return properties.filter((p) => ids.has(p.id) || normalizePhone(p.owner.phone) === phone);
+  // Backend data links listings by owner user id; phone matching only when a phone is known.
+  return properties.filter((p) => ids.has(p.id) || p.owner.id === user.id || (!!phone && normalizePhone(p.owner.phone) === phone));
 }
 
 /**
@@ -24,18 +25,21 @@ export function linkedProperties(user: Pick<User, "phone" | "listedPropertyIds">
  * so the numbers agree.
  */
 export function usageFor(sub: UserSubscription, users: User[], properties: Property[]): UsageLine[] {
-  const user = users.find((u) => u.role === sub.role && normalizePhone(u.phone) === normalizePhone(sub.subscriberPhone));
+  // Subscriptions carry the backend user id ("uid:<id>"); legacy records matched by phone.
+  const user = users.find(
+    (u) => u.role === sub.role && (sub.subscriberPhone === `uid:${u.id}` || (!!u.phone && normalizePhone(u.phone) === normalizePhone(sub.subscriberPhone))),
+  );
   const live = user ? linkedProperties(user, properties).filter((p) => p.status === "Active" || p.status === "Pending").length : undefined;
   const L = sub.snapshot.limits;
   if (sub.role === "buyer") {
-    return [{ key: "savedPropertyLimit", label: "Saved", used: user?.savedPropertyIds?.length ?? sub.usage.savedUsed ?? 0, limit: L.savedPropertyLimit }];
+    return [{ key: "savedPropertyLimit", label: "Leads", used: sub.usage.savedUsed ?? 0, limit: L.savedPropertyLimit }];
   }
   if (sub.role === "owner") {
-    return [{ key: "listingLimit", label: "Listings", used: live ?? sub.usage.listingsUsed ?? 0, limit: L.listingLimit }];
+    return [{ key: "listingLimit", label: "Listings", used: sub.usage.listingsUsed ?? live ?? 0, limit: L.listingLimit }];
   }
   return [
     { key: "locationLimit", label: "Locations", used: sub.usage.locationsUsed ?? 0, limit: L.locationLimit },
-    { key: "listingLimit", label: "Listings", used: live ?? sub.usage.listingsUsed ?? 0, limit: L.listingLimit },
+    { key: "listingLimit", label: "Listings", used: sub.usage.listingsUsed ?? live ?? 0, limit: L.listingLimit },
   ];
 }
 

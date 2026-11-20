@@ -7,32 +7,59 @@ import { Check, Info, Loader2 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getProfile, type Profile } from '@/lib/profile';
-import { GST_RATE } from '@/lib/ownerPlan';
-import { recordCheckout, useSubscriptionData, normalizePhone } from '@/lib/subscription-store';
-import { BILLING_LABEL, type SubscriptionPlan } from '@/types/subscription';
+import { getBuyerPlanStatus, type BuyerPlanCard, type BuyerPlanStatus } from '@/lib/api/buyer';
+import { bypassActivate, listPublicPlans } from '@/lib/api/subscriptions';
+import { errorMessage } from '@/lib/api/client';
 
 const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
-const limitText = (n: number | undefined) => (n === undefined || n < 0 ? 'Unlimited shortlist' : `Shortlist up to ${n} properties`);
+// Backend plans limit owner-contact reveals ("leads"), not the shortlist.
+const limitText = (limit: number | null) => (limit === null ? 'Unlimited owner contacts' : `Contact up to ${limit} property owners`);
 
+/**
+ * Buyer plans from the backend: GET /buyer/plans (public catalogue) and
+ * GET /buyer/plan (the signed-in buyer's plan and lead usage).
+ * Plans: GET /subscriptions/plans?role=BUYER (the admin-managed catalogue).
+ * Continue (TEMPORARY payment bypass): POST /subscriptions/bypass activates the plan
+ * on the backend without payment (recorded as BYPASS, never as paid); the current
+ * plan is then re-read from GET /buyer/plan. No payment gateway is called.
+ * The backend does not state whether prices include GST, so no GST is shown.
+ */
 export default function BuyerPlansPage() {
   const router = useRouter();
-  const { ready, plans, subscriptions } = useSubscriptionData();
+  const [ready, setReady] = useState(false);
+  const [buyerPlans, setBuyerPlans] = useState<BuyerPlanCard[]>([]);
+  const [loadError, setLoadError] = useState('');
+  const [current, setCurrent] = useState<BuyerPlanStatus | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
-  const [selected, setSelected] = useState<SubscriptionPlan | null>(null);
+  const [selected, setSelected] = useState<BuyerPlanCard | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState<string | null>(null);
 
-  useEffect(() => setMe(getProfile()), []);
-
-  const buyerPlans = plans.filter((p) => p.role === 'buyer' && p.status === 'active' && p.visible);
-  const current = me
-    ? subscriptions.find(
-        (s) => s.role === 'buyer' && normalizePhone(s.subscriberPhone) === normalizePhone(me.mobile) && (s.status === 'active' || s.status === 'expiring'),
+  useEffect(() => {
+    const profile = getProfile();
+    setMe(profile);
+    listPublicPlans('BUYER')
+      .then((items) =>
+        setBuyerPlans(
+          items.map((p) => ({
+            code: p.code,
+            name: p.name,
+            price_paise: p.price_paise,
+            duration_days: p.duration_days ?? 0,
+            lead_limit: p.lead_limit === null || p.lead_limit < 0 ? null : p.lead_limit,
+            leads_label: p.description || '',
+            is_free: p.is_free,
+          })),
+        ),
       )
-    : undefined;
+      .catch((e) => setLoadError(errorMessage(e, 'Could not load buyer plans.')))
+      .finally(() => setReady(true));
+    // Current plan only for a signed-in buyer; a failure just leaves the strip hidden.
+    if (profile) getBuyerPlanStatus().then(setCurrent).catch(() => setCurrent(null));
+  }, []);
 
-  const choose = (p: SubscriptionPlan) => {
+  const choose = (p: BuyerPlanCard) => {
     setError('');
     if (!me) {
       router.push('/login?role=buyer&next=/plans');
@@ -41,33 +68,28 @@ export default function BuyerPlansPage() {
     setSelected(p);
   };
 
-  const confirm = () => {
-    if (!selected || !me || busy) return;
+  // Continue: payment is bypassed for now; the backend activates the plan (never recorded as paid).
+  const confirm = async () => {
+    if (!selected || busy) return;
+    if (selected.is_free) {
+      setError('The free plan is already included with every buyer account.');
+      return;
+    }
     setBusy(true);
+    setError('');
     try {
-      const gst = Math.round(selected.price * GST_RATE);
-      recordCheckout({
-        role: 'buyer',
-        planId: selected.id,
-        subscriberName: me.name || 'Buyer',
-        subscriberPhone: me.mobile,
-        baseAmount: selected.price,
-        discount: 0,
-        gst,
-        total: selected.price + gst,
-        method: selected.price === 0 ? 'Free plan' : 'Test checkout',
-        transactionRef: `BUY-${normalizePhone(me.mobile)}-${selected.id}-${Date.now()}`,
-      });
+      await bypassActivate('BUYER', selected.code);
+      setCurrent(await getBuyerPlanStatus());
       setDone(selected.name);
       setSelected(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not activate the plan.');
+      setError(errorMessage(e, 'Could not activate the plan. Please try again.'));
     } finally {
       setBusy(false);
     }
   };
 
-  const gst = selected ? Math.round(selected.price * GST_RATE) : 0;
+  const price = (p: BuyerPlanCard) => Math.round(p.price_paise / 100);
 
   return (
     <>
@@ -79,13 +101,17 @@ export default function BuyerPlansPage() {
 
           {current && (
             <p className="mt-6 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-slate-700">
-              Your current plan: <strong>{current.snapshot.name}</strong>
-              {current.expiresAt ? ` · valid until ${new Date(current.expiresAt).toLocaleDateString('en-IN')}` : ''}
+              Your current plan: <strong>{current.plan_name}</strong>
+              {current.lead_limit === null
+                ? ` · ${current.leads_used} owner contacts used (unlimited)`
+                : ` · ${current.leads_used} of ${current.lead_limit} owner contacts used`}
+              {current.leads_remaining !== null ? ` · ${current.leads_remaining} remaining` : ''}
+              {current.valid_until ? ` · valid until ${new Date(current.valid_until).toLocaleDateString('en-IN')}` : ''}
             </p>
           )}
           {done && (
             <p className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              {done} is now active. <Link href="/saved" className="font-semibold underline">Go to your shortlist</Link>
+              {done} is now active. <Link href="/buy" className="font-semibold underline">Browse properties</Link>
             </p>
           )}
 
@@ -94,32 +120,34 @@ export default function BuyerPlansPage() {
               [0, 1, 2].map((i) => <div key={i} className="h-72 animate-pulse rounded-3xl border border-slate-200 bg-white" />)}
             {ready && buyerPlans.length === 0 && (
               <p className="col-span-full rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
-                No buyer plans are available right now.
+                {loadError || 'No buyer plans are available right now.'}
               </p>
             )}
             {buyerPlans.map((p) => {
-              const isCurrent = current?.planId === p.id;
+              const isCurrent = current?.plan_code === p.code;
+              // The backend marks no plan as recommended, so the badge is never shown.
+              const recommended = false;
               return (
                 <div
-                  key={p.id}
+                  key={p.code}
                   className={`relative flex flex-col rounded-3xl border bg-white p-6 shadow-sm ${
-                    p.recommended ? 'border-[#087ed9] ring-1 ring-[#087ed9]' : 'border-slate-200'
+                    recommended ? 'border-[#087ed9] ring-1 ring-[#087ed9]' : 'border-slate-200'
                   }`}
                 >
-                  {p.recommended && (
+                  {recommended && (
                     <span className="absolute -top-3 left-6 rounded-full bg-[#087ed9] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
                       Recommended
                     </span>
                   )}
                   <h2 className="text-lg font-bold text-slate-900">{p.name}</h2>
-                  <p className="mt-1 min-h-10 text-sm text-slate-500">{p.description}</p>
+                  {/* No plan description in the backend; the line keeps its space empty. */}
+                  <p className="mt-1 min-h-10 text-sm text-slate-500">{''}</p>
                   <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                    {p.price === 0 ? 'Free' : inr(p.price)}
-                    {p.price > 0 && <span className="ml-1 text-sm font-medium text-slate-500">+ GST · {BILLING_LABEL[p.billingCycle]}</span>}
+                    {p.is_free ? 'Free' : inr(price(p))}
                   </div>
                   <ul className="mt-5 flex-1 space-y-2 text-sm text-slate-700">
-                    <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#087ed9]" />{limitText(p.limits.savedPropertyLimit)}</li>
-                    <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#087ed9]" />{p.validityDays ? `Valid for ${p.validityDays} days` : 'No expiry'}</li>
+                    <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#087ed9]" />{limitText(p.lead_limit)}</li>
+                    <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#087ed9]" />{`Valid for ${p.duration_days} days`}</li>
                   </ul>
                   <button
                     type="button"
@@ -127,7 +155,7 @@ export default function BuyerPlansPage() {
                     onClick={() => choose(p)}
                     className="mt-6 rounded-xl bg-[#087ed9] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#066db9] disabled:cursor-default disabled:bg-slate-200 disabled:text-slate-500"
                   >
-                    {isCurrent ? 'Current plan' : p.price === 0 ? 'Use free plan' : 'Choose plan'}
+                    {isCurrent ? 'Current plan' : p.is_free ? 'Use free plan' : 'Choose plan'}
                   </button>
                 </div>
               );
@@ -138,21 +166,17 @@ export default function BuyerPlansPage() {
             <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900">Confirm {selected.name}</h2>
               <dl className="mt-4 max-w-sm space-y-1.5 text-sm">
-                <div className="flex justify-between"><dt className="text-slate-500">Plan price</dt><dd>{inr(selected.price)}</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">GST (18%)</dt><dd>{inr(gst)}</dd></div>
-                <div className="flex justify-between border-t border-slate-100 pt-1.5 font-bold"><dt>Total</dt><dd>{inr(selected.price + gst)}</dd></div>
+                <div className="flex justify-between"><dt className="text-slate-500">Plan price</dt><dd>{inr(price(selected))}</dd></div>
               </dl>
-              {selected.price > 0 && (
-                <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                  <Info size={14} className="mt-0.5 shrink-0" />
-                  Test checkout: no payment gateway is connected yet, so no money is charged and the payment is recorded as unverified.
-                </p>
-              )}
+              <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                <Info size={14} className="mt-0.5 shrink-0" />
+                Online payment is not connected yet. Press Continue to activate this plan now — no money is charged.
+              </p>
               {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
               <div className="mt-5 flex gap-3">
                 <button type="button" onClick={confirm} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-[#087ed9] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#066db9] disabled:opacity-60">
                   {busy && <Loader2 size={16} className="animate-spin" />}
-                  {selected.price === 0 ? 'Activate' : `Pay ${inr(selected.price + gst)}`}
+                  {selected.is_free ? 'Activate' : 'Continue'}
                 </button>
                 <button type="button" onClick={() => setSelected(null)} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                   Cancel

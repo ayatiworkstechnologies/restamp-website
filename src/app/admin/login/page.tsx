@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Smartphone, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAdminAuth } from '@/context/admin-auth-context';
-import { DEMO_ADMIN_OTP } from '@/lib/admin-auth';
 
 const OTP_LENGTH = 6;
 
@@ -14,7 +13,9 @@ function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/admin';
-  const { loginWithMobile, isAuthenticated, isLoading } = useAdminAuth();
+  const { loginWithMobile, requestOtp, isAuthenticated, isLoading } = useAdminAuth();
+  // Shown only when the backend returns it (local development / staging); production never does.
+  const [debugCode, setDebugCode] = useState<string | null>(null);
 
   const [step, setStep] = useState<'mobile' | 'otp'>('mobile');
   const [mobile, setMobile] = useState('');
@@ -30,7 +31,7 @@ function AdminLoginForm() {
     }
   }, [isAuthenticated, isLoading, router, redirectUrl]);
 
-  const sendOtp = (e: React.FormEvent) => {
+  const sendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = mobile.replace(/\D/g, '');
     if (!/^[6-9]\d{9}$/.test(clean)) {
@@ -38,6 +39,14 @@ function AdminLoginForm() {
       return;
     }
     setError('');
+    setIsVerifying(true);
+    const res = await requestOtp(clean);
+    setIsVerifying(false);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    setDebugCode(res.debugCode);
     setOtp(Array(OTP_LENGTH).fill(''));
     setStep('otp');
     setTimeout(() => otpRefs.current[0]?.focus(), 50);
@@ -68,23 +77,25 @@ function AdminLoginForm() {
     otpRefs.current[Math.min(digits.length, OTP_LENGTH - 1)]?.focus();
   };
 
-  const verifyOtp = (e: React.FormEvent) => {
+  const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isVerifying) return;
     const code = otp.join('');
-    if (code !== DEMO_ADMIN_OTP) {
-      setError('Incorrect admin OTP code. Please use demo OTP: 123456');
+    if (code.length !== OTP_LENGTH) {
+      setError('Enter the 6-digit OTP.');
       return;
     }
 
     setIsVerifying(true);
     setError('');
 
-    const success = loginWithMobile(mobile, code);
-    if (success) {
+    // Real OTP verify, then the server-side admin check (GET /admin/me).
+    const failure = await loginWithMobile(mobile.replace(/\D/g, ''), code);
+    if (!failure) {
       router.push(redirectUrl);
     } else {
       setIsVerifying(false);
-      setError('Admin verification failed. Please try again.');
+      setError(failure);
     }
   };
 
@@ -194,9 +205,11 @@ function AdminLoginForm() {
               </p>
             </div>
 
-            <p className="rounded-xl bg-sky-50 border border-sky-100 px-3.5 py-2.5 text-center text-xs text-sky-900 font-medium">
-              Demo Admin OTP: <span className="font-extrabold tracking-widest text-[#087ed9] ml-1">{DEMO_ADMIN_OTP}</span>
-            </p>
+            {debugCode && (
+              <p className="rounded-xl bg-sky-50 border border-sky-100 px-3.5 py-2.5 text-center text-xs text-sky-900 font-medium">
+                Demo OTP: <span className="font-extrabold tracking-widest text-[#087ed9] ml-1">{debugCode}</span>
+              </p>
+            )}
 
             <div className="flex justify-between gap-2 pt-1" onPaste={pasteOtp}>
               {otp.map((digit, i) => (

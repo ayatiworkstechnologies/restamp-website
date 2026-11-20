@@ -26,10 +26,7 @@ import {
 } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { activities } from "@/lib/dashboard-data";
 import { SubscriptionOverview } from "@/components/dashboard/subscription-overview";
-import { verifyCountdown } from "@/lib/auto-verify";
-import { useNow } from "@/lib/use-now";
 import { usePropertyStore } from "@/context/property-context";
 import { useUserStore } from "@/context/user-context";
 import { useEnquiryStore } from "@/context/enquiry-context";
@@ -138,9 +135,22 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<StatusFilter>("All");
 
   const { properties, stats } = usePropertyStore();
-  const now = useNow(1000);
-  const { stats: userStats } = useUserStore();
-  const { stats: enquiryStats } = useEnquiryStore();
+  const { stats: userStats, users } = useUserStore();
+  const { stats: enquiryStats, enquiries } = useEnquiryStore();
+
+  // Recent activity from real backend records: newest listing submissions, enquiries and registrations.
+  const activities = useMemo(() => {
+    const ts = (v: string) => {
+      const t = Date.parse(v);
+      return Number.isNaN(t) ? 0 : t;
+    };
+    const items = [
+      ...properties.map((p) => ({ id: `p-${p.id}`, title: "Property submitted", description: p.title, at: ts(p.submittedAt), time: p.submittedAt, kind: p.status === "Active" ? "approval" : "property", href: undefined as string | undefined })),
+      ...enquiries.map((e) => ({ id: `e-${e.id}`, title: "Buyer enquiry", description: e.property.title, at: ts(e.createdAt), time: e.createdAt, kind: "enquiry", href: `/admin-dashboard/enquiries?id=${e.id}` })),
+      ...users.map((u) => ({ id: `u-${u.id}`, title: "User registered", description: u.name, at: ts(u.joinedDate), time: u.joinedDate, kind: "user", href: undefined as string | undefined })),
+    ];
+    return items.filter((i) => i.at > 0).sort((a, b) => b.at - a.at).slice(0, 4);
+  }, [properties, enquiries, users]);
 
   const dynamicStats = [
     {
@@ -592,7 +602,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#b0bac9]">
                           <Clock3 size={12} />
-                          {verifyCountdown(item.submittedAt, now)}
+                          {item.submittedAt ? `Submitted ${item.submittedAt}` : "Awaiting review"}
                         </div>
                       </div>
                       <Link
@@ -695,7 +705,7 @@ export default function DashboardPage() {
             <div className="rounded-[18px] border border-[#e9edf4] bg-white p-5 shadow-[0_3px_18px_#15223d06] sm:p-6">
               <SectionHeading
                 title="Recent Activity"
-                subtitle="Sample data: not yet connected to live platform events"
+                subtitle="Latest submissions, enquiries and registrations"
                 icon={<Activity size={17} className="text-[#5475d7]" />}
               />
               <div className="mt-5 space-y-4">
@@ -721,7 +731,7 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         {event.kind === "enquiry" ? (
                           <Link
-                            href="/admin-dashboard/enquiries?id=ENQ-1003"
+                            href={event.href || "/admin-dashboard/enquiries"}
                             className="text-xs font-bold text-[#3b4960] hover:text-[#2854cb] hover:underline"
                           >
                             {event.title}

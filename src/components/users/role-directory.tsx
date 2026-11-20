@@ -18,7 +18,8 @@ import {
   useSubscriptionData,
   type Actor,
   type SubscriptionView,
-} from "@/lib/subscription-store";
+  subscriberKey,
+} from "@/lib/admin-billing";
 import { linkedProperties, usageFor } from "@/lib/subscription-usage";
 import type { User, UserStatus } from "@/types/user";
 import type { SubscriberRole, SubscriptionPlan, SubscriptionStatus } from "@/types/subscription";
@@ -95,7 +96,8 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
     return users
       .filter((u) => u.role === role)
       .map((user) => {
-        const subs = subscriptions.filter((s) => s.role === role && normalizePhone(s.subscriberPhone) === normalizePhone(user.phone));
+        // Subscriptions are linked to the backend user id.
+        const subs = subscriptions.filter((s) => s.role === role && s.subscriberPhone === subscriberKey(user.id));
         return { user, subs, current: pickCurrent(subs) };
       });
   }, [users, subscriptions, role]);
@@ -489,8 +491,9 @@ function RoleDetail({
   const [subAction, setSubAction] = useState<"assign" | "extend" | "cancel" | "restore" | null>(null);
   const phone = normalizePhone(user.phone);
   const linked = user.role === "buyer" ? [] : linkedProperties(user, properties);
-  const leads = enquiries.filter((e) => normalizePhone(e.property.ownerPhone) === phone);
-  const buyerEnquiries = enquiries.filter((e) => normalizePhone(e.buyer.phone) === phone);
+  // Admin data carries no phone numbers; without one nothing can be matched (never "everything").
+  const leads = phone ? enquiries.filter((e) => normalizePhone(e.property.ownerPhone) === phone) : [];
+  const buyerEnquiries = phone ? enquiries.filter((e) => normalizePhone(e.buyer.phone) === phone) : [];
   const count = (s: string) => linked.filter((p) => p.status === s).length;
 
   return (
@@ -680,10 +683,10 @@ function AssignPlanDialog({
     setDays(p?.validityDays ? String(p.validityDays) : "");
   };
 
-  const submit = () => {
+  const submit = async () => {
     try {
-      grantSubscription(
-        { role: user.role, planId, subscriberName: user.name, subscriberPhone: user.phone, validityDays: days.trim() === "" ? null : Number(days), reason },
+      await grantSubscription(
+        { role: user.role, planId, subscriberName: user.name, subscriberPhone: subscriberKey(user.id), validityDays: days.trim() === "" ? null : Number(days), reason },
         actor,
       );
       onClose();
@@ -744,9 +747,9 @@ function ExtendDialog({ sub, actor, onClose }: { sub: SubscriptionView; actor: A
   const n = Number(days);
   const base = Math.max(Date.now(), sub.expiresAt ? new Date(sub.expiresAt).getTime() : Date.now());
   const preview = Number.isInteger(n) && n > 0 ? fmtDate(new Date(base + n * 864e5).toISOString()) : "—";
-  const submit = () => {
+  const submit = async () => {
     try {
-      extendSubscription(sub.id, n, reason, actor);
+      await extendSubscription(sub.id, n, reason, actor);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not extend.");

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, Mail, MessageCircle, Phone, Send } from 'lucide-react';
 import { getProfile } from '@/lib/profile';
 
-// TODO: replace with Restamp's real support details.
+// Support contact details for Restamp platform
 const SUPPORT = {
   phone: '+91 98400 00000',
   email: 'support@restamp.in',

@@ -18,15 +18,19 @@ import {
 } from 'lucide-react';
 import { getProfile } from '@/lib/profile';
 import {
-  clearDraft,
   emptyListing,
-  getDraft,
-  publishListing,
-  saveDraft,
   type ListingPhoto,
   type OwnerListing,
   type PhotoCategory,
 } from '@/lib/ownerListings';
+import {
+  discardWizardDraft,
+  loadLatestDraft,
+  saveWizardDraft,
+  type ResumableDraft,
+} from '@/lib/ownerDrafts';
+import { publishBlockers, publishWizardListing, type PublishProgress } from '@/lib/ownerPublish';
+import { errorMessage } from '@/lib/api/client';
 
 /* ---------- Options (taken from the Restamp owner app) ---------- */
 
@@ -370,7 +374,13 @@ export default function PostPropertyWizard({
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
   const [notice, setNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
-  const [resumable, setResumable] = useState<ReturnType<typeof getDraft>>(null);
+  // Backend draft (/owner/drafts) offered for resuming, and the draft being edited.
+  const [resumable, setResumable] = useState<ResumableDraft | null>(null);
+  const [draftId, setDraftId] = useState<number | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  // Survives retries: a created listing is never created again, an uploaded photo never re-uploaded.
+  const publishProgress = useRef<PublishProgress>({ listingId: null, uploadedPhotoIds: [] });
   const [published, setPublished] = useState<OwnerListing | null>(null);
   const [photoCategory, setPhotoCategory] = useState<PhotoCategory>('Exterior');
   const [showAllFeatures, setShowAllFeatures] = useState(false);
@@ -379,8 +389,12 @@ export default function PostPropertyWizard({
   const cameraRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const draft = getDraft();
-    if (draft) setResumable(draft);
+    loadLatestDraft()
+      .then((draft) => {
+        setResumable(draft);
+        if (draft) setDraftId(draft.draftId);
+      })
+      .catch((err) => setNotice({ tone: 'error', text: errorMessage(err, 'Could not load your saved draft.') }));
     const me = getProfile();
     setListing((l) => ({
       ...l,
@@ -415,16 +429,29 @@ export default function PostPropertyWizard({
     goTo(step + 1);
   };
 
-  const onSaveDraft = () => {
-    const ok = saveDraft(listing, step);
-    setNotice(
-      ok
-        ? { tone: 'ok', text: 'Draft saved. You can continue this listing later.' }
-        : { tone: 'error', text: 'Could not save draft. Try removing a few photos.' }
-    );
+  // Saves the COMPLETE wizard state to the backend draft (PUT replaces it). "Draft saved" only after the backend confirms.
+  const onSaveDraft = async () => {
+    if (savingDraft) return;
+    setSavingDraft(true);
+    try {
+      const out = await saveWizardDraft(listing, step, draftId);
+      setDraftId(out.draftId);
+      setNotice(
+        out.photosKeptLocally || listing.photos.length === 0
+          ? { tone: 'ok', text: 'Draft saved. You can continue this listing later.' }
+          : {
+              tone: 'error',
+              text: 'Draft saved, but this browser could not store the photos. Your details are saved; please add the photos again when you continue.',
+            }
+      );
+    } catch (err) {
+      setNotice({ tone: 'error', text: errorMessage(err, 'Could not save draft. Please try again.') });
+    } finally {
+      setSavingDraft(false);
+    }
   };
 
-  const onPublish = () => {
+  const onPublish = async () => {
     for (let s = 0; s < 5; s++) {
       const e = validate(s, listing);
       if (Object.keys(e).length) {
@@ -434,10 +461,36 @@ export default function PostPropertyWizard({
         return;
       }
     }
-    if (!publishListing(listing)) {
-      setNotice({ tone: 'error', text: 'Could not publish your property. Try removing a few photos and publish again.' });
+    if (publishing) return;
+    // Never publish in a way that silently drops (or the backend would reject) what the owner entered.
+    const lost = publishBlockers(listing);
+    if (lost.length) {
+      setNotice({
+        tone: 'error',
+        text: `This listing can't be published yet: ${lost.join(', ')} cannot be saved on a published listing. Save Draft keeps everything you entered.`,
+      });
       return;
     }
+    // POST /owner/listings, then each photo to POST /owner/listings/{id}/photos.
+    setPublishing(true);
+    setNotice(null);
+    const result = await publishWizardListing(listing, publishProgress.current);
+    setPublishing(false);
+    if (!result.ok && result.stage === 'create') {
+      setNotice({ tone: 'error', text: errorMessage(result.error, 'Could not publish your property. Please try again.') });
+      return;
+    }
+    if (!result.ok) {
+      setNotice({
+        tone: 'error',
+        text: `Your listing was created and is pending verification, but ${result.failed} photo${result.failed === 1 ? '' : 's'} could not be uploaded (${errorMessage(result.error, 'upload failed')}). Press Publish again to retry the remaining photos.`,
+      });
+      return;
+    }
+    // Fully confirmed by the backend: the draft has been used, so remove it (a failure here is not fatal).
+    await discardWizardDraft(draftId).catch(() => undefined);
+    setDraftId(null);
+    publishProgress.current = { listingId: null, uploadedPhotoIds: [] };
     setPublished(listing);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -469,8 +522,8 @@ export default function PostPropertyWizard({
         </div>
         <h2 className="mt-5 text-xl font-bold text-slate-900">Property submitted!</h2>
         <p className="mt-2 text-sm text-slate-500">
-          Your listing is <span className="font-semibold text-amber-600">being verified</span>. It goes live for
-          buyers automatically in 5 minutes.
+          Your listing is <span className="font-semibold text-amber-600">being verified</span>. It becomes visible to
+          buyers once verification is complete.
         </p>
         <div className="mt-6 flex items-center gap-4 rounded-xl bg-slate-50 p-3 text-left">
           {published.photos[0] && <img src={published.photos[0].src} alt="" className="h-16 w-16 rounded-lg object-cover" />}
@@ -557,7 +610,14 @@ export default function PostPropertyWizard({
                 onClick={() => {
                   setListing(resumable.listing);
                   setStep(resumable.step);
+                  setDraftId(resumable.draftId);
                   setResumable(null);
+                  if (resumable.missingPhotos > 0) {
+                    setNotice({
+                      tone: 'error',
+                      text: `${resumable.missingPhotos} photo${resumable.missingPhotos === 1 ? ' was' : 's were'} saved on another device or browser and ${resumable.missingPhotos === 1 ? 'is' : 'are'} not available here. Please add ${resumable.missingPhotos === 1 ? 'it' : 'them'} again.`,
+                    });
+                  }
                 }}
                 className="rounded-lg bg-[#087ed9] px-3 py-1.5 font-semibold text-white hover:bg-sky-600 transition cursor-pointer"
               >
@@ -565,9 +625,14 @@ export default function PostPropertyWizard({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  clearDraft();
-                  setResumable(null);
+                onClick={async () => {
+                  try {
+                    await discardWizardDraft(resumable.draftId);
+                    setResumable(null);
+                    setDraftId(null);
+                  } catch (err) {
+                    setNotice({ tone: 'error', text: errorMessage(err, 'Could not discard the draft. Please try again.') });
+                  }
                 }}
                 className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-600 hover:border-slate-300 transition cursor-pointer"
               >
@@ -1101,6 +1166,7 @@ export default function PostPropertyWizard({
               <button
                 type="button"
                 onClick={onPublish}
+                disabled={publishing}
                 className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-6 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition cursor-pointer"
               >
                 Publish Property

@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import type { BillingCycle, PlanLimits, PlanStatus, SubscriberRole, SubscriptionPlan } from "@/types/subscription";
 import { BILLING_LABEL, ROLE_FEATURES, ROLE_LABEL } from "@/types/subscription";
-import { diffPlan, savePlan, validatePlan, type PlanDraft } from "@/lib/subscription-store";
+import { diffPlan, validatePlan, type PlanDraft } from "@/lib/subscription-store";
+import { savePlan } from "@/lib/admin-billing";
 import OwnerAssistancePlans from "@/components/owner/OwnerAssistancePlans";
 import { toOwnerPlan } from "@/lib/ownerPlan";
 import { Modal, Notice, btnPrimary, btnSecondary, inputCls, inr, limitLabel, selectCls, useActor } from "@/components/subscriptions/ui";
@@ -112,10 +113,11 @@ export function PlanEditor({
     if (Object.keys(e).length === 0) setStep("preview");
   };
 
-  const publish = () => {
+  const publish = async () => {
     if (!actor) return;
     try {
-      onSaved(savePlan(draft, actor));
+      // Saved on the backend (POST/PATCH /admin/plans); the editor closes only after it confirms.
+      onSaved(await savePlan(draft, actor));
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "Could not save plan.");
     }

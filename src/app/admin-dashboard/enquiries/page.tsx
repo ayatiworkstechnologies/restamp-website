@@ -37,7 +37,7 @@ function EnquiryManagementContent() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  const { enquiries, stats, addEnquiry } = useEnquiryStore();
+  const { enquiries, stats, addEnquiry, refreshEnquiry } = useEnquiryStore();
 
   // Filters state
   const [filters, setFilters] = useState<EnquiryFilters>({
@@ -67,6 +67,8 @@ function EnquiryManagementContent() {
   const handleInspect = (enquiry: Enquiry) => {
     setSelectedEnquiry(enquiry);
     setIsDetailOpen(true);
+    // The full message thread comes from GET /admin/enquiries/{id}.
+    void refreshEnquiry(enquiry.id);
   };
 
   // Status counts for tabs

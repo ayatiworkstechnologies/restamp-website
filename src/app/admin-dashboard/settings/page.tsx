@@ -22,6 +22,7 @@ import { PlatformConfigView } from "@/components/settings/platform-config-view";
 import { SecurityAuditView } from "@/components/settings/security-audit-view";
 import { AdminUserModal } from "@/components/settings/admin-user-modal";
 import { useSettingsStore } from "@/context/settings-context";
+import { useAdminAuth } from "@/context/admin-auth-context";
 import { AdminUser } from "@/types/settings";
 
 type SettingsTab = "staff" | "roles" | "config" | "audit";
@@ -39,6 +40,7 @@ function SettingsManagementContent() {
 
   const { adminUsers, roles, auditLogs, addAdminUser, updateAdminUser } =
     useSettingsStore();
+  const { admin } = useAdminAuth();
 
   useEffect(() => {
     if (searchParams.get("tab")) {
@@ -97,13 +99,13 @@ function SettingsManagementContent() {
             {/* Admin Profile */}
             <div className="flex items-center gap-2 border-l border-[#e8ecf4] pl-3">
               <div className="h-8 w-8 rounded-full bg-[#162d66] text-white flex items-center justify-center font-bold text-xs">
-                RS
+                {(admin?.name || "A").slice(0, 2).toUpperCase()}
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-xs font-semibold text-[#101828]">
-                  Ramesh Sundaram
+                  {admin?.name || ""}
                 </p>
-                <p className="text-[10px] text-[#64748b]">Super Admin</p>
+                <p className="text-[10px] text-[#64748b]">{admin?.role || ""}</p>
               </div>
             </div>
           </div>

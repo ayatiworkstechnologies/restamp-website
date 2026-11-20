@@ -7,11 +7,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { loginWithMobile } from '@/lib/profile';
 import { getSubscription } from '@/lib/ownerPlan';
 import { hasActiveAgentSubscription } from '@/lib/agentPlan';
+import { apiGet, apiPost, errorMessage, isApiError } from '@/lib/api/client';
+import { clearSession, saveSession, updateSession, type BackendRole } from '@/lib/api/session';
 import { Smartphone, ShieldCheck, ArrowLeft, ArrowRight } from 'lucide-react';
 
-// Static OTP until a real SMS service is connected
-const DEMO_OTP = '123456';
 const OTP_LENGTH = 6;
+
+// Backend contracts (Restamp-backend app/schemas.py): POST /auth/otp/request
+// returns `debug_code` only in local/staging, never in production;
+// POST /auth/otp/verify returns TokenOut; GET /auth/me returns MeOut.
+type OtpRequestOut = { message: string; debug_code?: string };
+type TokenOut = { access_token: string; token_type: string; expires_in: number; user_id: number; role: string | null };
+type MeOut = { id: number; display_name: string; role: string | null; providers: string[]; is_admin: boolean };
+
+const asBackendRole = (r: string | null): BackendRole | null =>
+  r === 'BUYER' || r === 'OWNER' || r === 'BROKER' ? r : null;
 
 const roleLabels: Record<string, string> = {
   buyer: 'Buyer',
@@ -51,15 +61,35 @@ function LoginForm() {
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
+  // Shown only when the backend returns it (local/staging); production never does.
+  const [debugCode, setDebugCode] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const sendOtp = (e: React.FormEvent) => {
+  const requestCode = async (): Promise<boolean> => {
+    setBusy(true);
+    setDebugCode(null);
+    try {
+      const res = await apiPost<OtpRequestOut>('/auth/otp/request', { phone: `+91${mobile}` });
+      setDebugCode(res?.debug_code ?? null);
+      return true;
+    } catch (err) {
+      setError(errorMessage(err, 'Could not send the OTP. Please try again.'));
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     if (!/^[6-9]\d{9}$/.test(mobile)) {
       setError('Enter a valid 10-digit mobile number');
       return;
     }
     setError('');
+    if (!(await requestCode())) return;
     setOtp(Array(OTP_LENGTH).fill(''));
     setStep('otp');
     setTimeout(() => otpRefs.current[0]?.focus(), 0);
@@ -85,20 +115,47 @@ function LoginForm() {
     otpRefs.current[Math.min(digits.length, OTP_LENGTH - 1)]?.focus();
   };
 
-  const verifyOtp = (e: React.FormEvent) => {
+  const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.join('') !== DEMO_OTP) {
-      setError('Incorrect OTP. Please try again.');
+    if (busy) return;
+    const code = otp.join('');
+    if (code.length < OTP_LENGTH) {
+      setError('Enter the full 6-digit OTP.');
       return;
     }
     setError('');
-    const me = loginWithMobile(mobile, role);
-    router.push(next ?? afterLogin(me.role));
+    setBusy(true);
+    try {
+      const tok = await apiPost<TokenOut>('/auth/otp/verify', { phone: `+91${mobile}`, code });
+      saveSession({
+        token: tok.access_token,
+        userId: tok.user_id,
+        role: asBackendRole(tok.role),
+        displayName: '',
+        isAdmin: false,
+        expiresAt: Date.now() + tok.expires_in * 1000,
+      });
+      // Name and admin flag come from the backend's view of the account.
+      const me = await apiGet<MeOut>('/auth/me');
+      updateSession({ displayName: me.display_name, role: asBackendRole(me.role), isAdmin: me.is_admin });
+      // Local profile is a UI cache for the existing pages (portal choice,
+      // header, plan screens); it never authorizes anything.
+      const profile = loginWithMobile(mobile, role);
+      router.push(next ?? afterLogin(profile.role));
+    } catch (err) {
+      clearSession();
+      setError(
+        isApiError(err, 'login') ? 'Incorrect OTP. Please try again.' : errorMessage(err, 'Could not verify the OTP. Please try again.'),
+      );
+    } finally {
+      setBusy(false);
+    }
   };
 
+  // No backend Google/Apple sign-in is wired on the website yet; never sign
+  // anyone in as a stand-in account.
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {
-    const me = loginWithMobile(provider === 'Google' ? '9876543210' : '9876543211', role || 'buyer');
-    router.push(next ?? afterLogin(me.role));
+    setError(`${provider} sign-in is not available yet. Please continue with your mobile number.`);
   };
 
   return (
@@ -247,9 +304,11 @@ function LoginForm() {
               </p>
             </div>
 
-            <p className="rounded-xl bg-sky-50 border border-sky-100 px-3.5 py-2.5 text-center text-xs text-sky-900 font-medium">
-              Demo OTP: <span className="font-extrabold tracking-widest text-[#087ed9] ml-1">{DEMO_OTP}</span>
-            </p>
+            {debugCode && (
+              <p className="rounded-xl bg-sky-50 border border-sky-100 px-3.5 py-2.5 text-center text-xs text-sky-900 font-medium">
+                Demo OTP: <span className="font-extrabold tracking-widest text-[#087ed9] ml-1">{debugCode}</span>
+              </p>
+            )}
 
             <div className="flex justify-between gap-2 pt-1" onPaste={pasteOtp}>
               {otp.map((digit, i) => (
@@ -293,7 +352,11 @@ function LoginForm() {
               </button>
               <button
                 type="button"
-                onClick={() => setOtp(Array(OTP_LENGTH).fill(''))}
+                onClick={async () => {
+                  setError('');
+                  setOtp(Array(OTP_LENGTH).fill(''));
+                  await requestCode();
+                }}
                 className="text-[#087ed9] hover:underline cursor-pointer font-semibold"
               >
                 Resend OTP

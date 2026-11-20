@@ -22,7 +22,7 @@ import {
   useActor,
   usePaged,
 } from "@/components/subscriptions/ui";
-import { EXPIRING_WINDOW_DAYS, setSubscriptionAdminStatus, useSubscriptionData, type SubscriptionView } from "@/lib/subscription-store";
+import { EXPIRING_WINDOW_DAYS, setSubscriptionAdminStatus, useSubscriptionData, type SubscriptionView } from "@/lib/admin-billing";
 import { remaining, usageFor } from "@/lib/subscription-usage";
 import { useUserStore } from "@/context/user-context";
 import { usePropertyStore } from "@/context/property-context";

@@ -22,7 +22,7 @@ import {
   selectCls,
   usePaged,
 } from "@/components/subscriptions/ui";
-import { useSubscriptionData } from "@/lib/subscription-store";
+import { useSubscriptionData } from "@/lib/admin-billing";
 import { ROLE_LABEL, type PaymentVerification, type SubscriberRole } from "@/types/subscription";
 
 const VERIFICATIONS: PaymentVerification[] = ["verified", "unverified", "pending", "failed", "refunded"];
@@ -31,6 +31,11 @@ export default function PaymentsPage() {
   const { ready, payments, subscriptions } = useSubscriptionData();
   const [pdfBusy, setPdfBusy] = useState<string | null>(null);
   const downloadPdf = async (p: PaymentRecord) => {
+    // An invoice is only truthful for a real, verified payment; none exists without a gateway.
+    if (p.verification !== "verified") {
+      toast.error("No invoice: this payment was not verified by a payment gateway (no money was charged).");
+      return;
+    }
     setPdfBusy(p.id);
     try {
       const inv = buildInvoice(p, subscriptions.find((s) => s.id === p.subscriptionId));

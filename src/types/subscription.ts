@@ -166,7 +166,7 @@ export const ROLE_FEATURES: Record<
   { key: keyof PlanLimits; label: string; enforced: boolean; note: string }[]
 > = {
   buyer: [
-    { key: "savedPropertyLimit", label: "Saved property limit", enforced: true, note: "Shortlist blocks saves above this number" },
+    { key: "savedPropertyLimit", label: "Owner contacts (leads)", enforced: true, note: "Owner-number reveals are blocked above this number" },
   ],
   owner: [
     { key: "listingLimit", label: "Maximum property listings", enforced: true, note: "Add Property is blocked once reached" },

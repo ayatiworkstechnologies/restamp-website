@@ -1,15 +1,29 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import PropertyCard from '@/components/property/PropertyCard';
-import { properties, Property } from '@/data/properties';
+import type { Property } from '@/data/properties';
+import { searchListings } from '@/lib/api/buyer';
+import { cardToProperty } from '@/lib/api/mappers';
+import { submitEnquiry } from '@/lib/buyerEnquiry';
 
 export default function FeaturedHomesSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
+  const [sending, setSending] = useState(false);
+  // Real listings only. The backend has no "featured" endpoint, so this shows
+  // the public search's default (relevance) order; nothing renders if it fails.
+  const [properties, setProperties] = useState<Property[]>([]);
+  useEffect(() => {
+    const controller = new AbortController();
+    searchListings({}, 1, 12, controller.signal)
+      .then((page) => setProperties(page.items.map(cardToProperty)))
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -30,14 +44,22 @@ export default function FeaturedHomesSection() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedProperty || sending) return;
+    setSending(true);
+    const ok = await submitEnquiry(selectedProperty, formData.message);
+    setSending(false);
+    if (!ok) return;
     setContactSubmitted(true);
     setTimeout(() => {
       setSelectedProperty(null);
       setContactSubmitted(false);
     }, 2200);
   };
+
+  // No real listings (or the request failed): show nothing instead of an empty carousel.
+  if (properties.length === 0) return null;
 
   return (
     <section className="container-site pb-20">
@@ -85,7 +107,7 @@ export default function FeaturedHomesSection() {
       </div>
 
       <p className="text-[12px] text-slate-400 mt-4">
-        Sample properties and illustrative pricing. Verified developer listings.
+        Properties available on Restamp.
       </p>
 
       {/* Contact Enquiry Modal */}
