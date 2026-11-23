@@ -13,15 +13,40 @@ import { useOwnerContact } from '@/lib/useOwnerContact';
  * Real backend listings for the home sections (GET /buyer/listings, public).
  * Every listing it returns is VERIFIED + AVAILABLE (backend _visible()).
  * Empty on failure, so the sections hide instead of showing samples.
+ *
+ * RecentlyAddedSection and VerifiedPropertiesSection both render on the home
+ * page and need the same unfiltered page. A module-level cache shares a single
+ * /buyer/listings fetch between them instead of issuing two duplicate requests.
  */
+let cachedHomeListings: Property[] | null = null;
+let homeListingsPromise: Promise<Property[]> | null = null;
+
 function useHomeListings(): Property[] {
-  const [items, setItems] = useState<Property[]>([]);
+  const [items, setItems] = useState<Property[]>(cachedHomeListings ?? []);
   useEffect(() => {
-    const controller = new AbortController();
-    searchListings({}, 1, 100, controller.signal)
-      .then((page) => setItems(page.items.map(cardToProperty)))
-      .catch(() => undefined);
-    return () => controller.abort();
+    if (cachedHomeListings) {
+      setItems(cachedHomeListings);
+      return undefined;
+    }
+    if (homeListingsPromise) {
+      homeListingsPromise.then(setItems);
+      return undefined;
+    }
+    let cancelled = false;
+    const promise = searchListings({}, 1, 100).then((page) => {
+      const mapped = page.items.map(cardToProperty);
+      cachedHomeListings = mapped;
+      homeListingsPromise = null;
+      if (!cancelled) setItems(mapped);
+      return mapped;
+    });
+    homeListingsPromise = promise;
+    promise.catch(() => {
+      if (!cancelled) homeListingsPromise = null;
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return items;
 }
