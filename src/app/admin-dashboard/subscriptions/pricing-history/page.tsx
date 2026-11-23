@@ -42,7 +42,7 @@ export default function PricingHistoryPage() {
           <div className="flex flex-wrap gap-3 border-b border-[#f1f4f9] p-4">
             <select aria-label="Role" className={selectCls} value={role} onChange={(e) => { setRole(e.target.value as typeof role); setPlan("all"); }}>
               <option value="all">All roles</option>
-              {(["buyer", "owner", "agent"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+              {(["buyer", "owner", "dealer"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
             </select>
             <select aria-label="Plan" className={selectCls} value={plan} onChange={(e) => setPlan(e.target.value)}>
               <option value="all">All plans</option>

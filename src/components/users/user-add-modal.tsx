@@ -6,7 +6,7 @@ import { User, UserRole, OwnerType } from "@/types/user";
 
 interface UserAddModalProps {
   isOpen: boolean;
-  /** Pre-selects the role (e.g. when adding from the Agents page). */
+  /** Pre-selects the role (e.g. when adding from the Dealers page). */
   defaultRole?: UserRole;
   onClose: () => void;
   onAdd: (
@@ -152,11 +152,11 @@ export function UserAddModal({ isOpen, onClose, onAdd, defaultRole = "buyer" }: 
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
               >
                 <option value="buyer">Buyer (Looking for Property)</option>
                 <option value="owner">Owner / Seller (Listing Property)</option>
-                <option value="agent">Agent / Broker (Managing Listings)</option>
+                <option value="dealer">Dealer / Broker (Managing Listings)</option>
               </select>
             </div>
 
@@ -166,10 +166,10 @@ export function UserAddModal({ isOpen, onClose, onAdd, defaultRole = "buyer" }: 
                 <select
                   value={ownerType}
                   onChange={(e) => setOwnerType(e.target.value as OwnerType)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
                 >
                   <option value="Individual Owner">Individual Homeowner</option>
-                  <option value="Agent / Broker">Agent</option>
+                  <option value="Dealer / Broker">Dealer</option>
                   <option value="Builder / Developer">Builder / Developer</option>
                 </select>
               </div>

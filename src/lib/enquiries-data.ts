@@ -37,7 +37,7 @@ export const initialEnquiries: Enquiry[] = [
       name: "Rajesh Kannan",
       email: "rajesh.kannan@yahoo.co.in",
       phone: "+91 98400 11223",
-      city: "Coimbatore",
+      city: "Chennai",
       isKycVerified: true,
     },
     property: {
@@ -67,7 +67,7 @@ export const initialEnquiries: Enquiry[] = [
       name: "Siddharth Menon",
       email: "siddharth.m@techcorp.in",
       phone: "+91 97910 88990",
-      city: "Bengaluru",
+      city: "Chennai",
       isKycVerified: false,
     },
     property: {
@@ -127,7 +127,7 @@ export const initialEnquiries: Enquiry[] = [
       name: "Vikramaditya Iyer",
       email: "vikram.iyer@fintech.co",
       phone: "+91 99620 44556",
-      city: "Mumbai",
+      city: "Chennai",
       isKycVerified: true,
     },
     property: {

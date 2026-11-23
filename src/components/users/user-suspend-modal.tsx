@@ -104,7 +104,7 @@ export function UserSuspendModal({
               <select
                 value={reasonCategory}
                 onChange={(e) => setReasonCategory(e.target.value)}
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
               >
                 {suspensionReasons.map((r) => (
                   <option key={r} value={r}>

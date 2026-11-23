@@ -12,9 +12,9 @@ const socials = [
 export default function Footer() {
   return (
     <footer className="bg-[#0b1622] text-slate-400 pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-10 md:pb-12 border-t border-slate-800">
-      <div className="container-site grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-sm pb-12 sm:pb-16 md:pb-18">
+      <div className="container-site grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 sm:gap-10 text-sm pb-12 sm:pb-16 md:pb-18">
         {/* Brand Column */}
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <Link
             href="/"
             className="inline-flex items-center gap-2.5 text-white font-bold tracking-tight text-2xl group"
@@ -70,10 +70,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* For owners & agents */}
+        {/* For owners & dealers */}
         <div>
           <strong className="text-white text-sm font-semibold block mb-4">
-            Owners &amp; Agents
+            Owners &amp; Dealers
           </strong>
           <div className="flex flex-col gap-2.5 text-xs">
             <Link href="/sell" className="hover:text-white transition">
@@ -82,11 +82,11 @@ export default function Footer() {
             <Link href="/owner" className="hover:text-white transition">
               Owner portal
             </Link>
-            <Link href="/agent" className="hover:text-white transition">
-              Agent hub
+            <Link href="/dealer" className="hover:text-white transition">
+              Dealer hub
             </Link>
-            <Link href="/agent/dashboard" className="hover:text-white transition">
-              Agent deal console
+            <Link href="/dealer/dashboard" className="hover:text-white transition">
+              Dealer deal console
             </Link>
           </div>
         </div>
@@ -100,14 +100,23 @@ export default function Footer() {
             <Link href="/help" className="hover:text-white transition">
               Help Center
             </Link>
-            <Link href="/contact" className="hover:text-white transition">
+            <Link href="/about-us" className="hover:text-white transition">
+              About Us
+            </Link>
+            <Link href="/pricing" className="hover:text-white transition">
+              Pricing
+            </Link>
+            <Link href="/contact-us" className="hover:text-white transition">
               Contact Us
             </Link>
             <Link href="/privacy-policy" className="hover:text-white transition">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-white transition">
+            <Link href="/terms-and-conditions" className="hover:text-white transition">
               Terms and Conditions
+            </Link>
+            <Link href="/refund-policy" className="hover:text-white transition">
+              Refund &amp; Cancellation Policy
             </Link>
           </div>
         </div>

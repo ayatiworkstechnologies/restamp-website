@@ -1,13 +1,17 @@
 "use client";
 
 import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import PostPropertyWizard from '@/components/owner/PostPropertyWizard';
+import { getProfile } from '@/lib/profile';
 
 export default function PostPropertyScreen() {
   const searchParams = useSearchParams();
   const rawPurpose = searchParams.get('purpose');
   const rawCategory = searchParams.get('category');
   const rawType = searchParams.get('type') ?? undefined;
+  const [isDealer, setIsDealer] = useState(false);
+  useEffect(() => setIsDealer(getProfile()?.role === 'dealer'), []);
 
   const initialPurpose =
     rawPurpose === 'Rent'
@@ -45,7 +49,7 @@ export default function PostPropertyScreen() {
             initialPurpose={initialPurpose}
             initialCategory={initialCategory}
             initialPropertyType={rawType}
-            doneHref="/owner/dashboard/properties"
+            doneHref={isDealer ? '/dealer/dashboard/properties?space=space' : '/owner/dashboard/properties'}
             doneLabel="View my properties"
           />
         </div>

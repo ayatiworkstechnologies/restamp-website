@@ -90,20 +90,59 @@ export function normalizePhone(phone: string) {
 
 function ensureSeeded() {
   if (typeof window === "undefined") return;
-  if (localStorage.getItem(KEYS.seeded)) return;
+
+  // 1. One-time legacy migration: migrate any "agent" roles to "dealer" in localStorage
   try {
-    const now = new Date().toISOString();
-    const plans = SEED_PLANS.map((p) => ({ ...p, createdAt: now, updatedAt: now, updatedBy: "System seed" }));
-    const { subs, payments } = buildSeedSubscriptions(plans);
-    write(KEYS.plans, plans);
-    write(KEYS.subs, subs);
-    write(KEYS.payments, payments);
-    write(KEYS.history, []);
-    write(KEYS.audit, []);
-    localStorage.setItem(KEYS.seeded, now);
-  } catch (e) {
-    console.error("Failed to seed subscription store", e);
+    const rawPlans = localStorage.getItem(KEYS.plans);
+    if (rawPlans && rawPlans.includes('"agent"')) {
+      const fixed = rawPlans.replace(/"role"\s*:\s*"agent"/g, '"role":"dealer"');
+      localStorage.setItem(KEYS.plans, fixed);
+    }
+    const rawSubs = localStorage.getItem(KEYS.subs);
+    if (rawSubs && rawSubs.includes('"agent"')) {
+      const fixed = rawSubs.replace(/"role"\s*:\s*"agent"/g, '"role":"dealer"');
+      localStorage.setItem(KEYS.subs, fixed);
+    }
+    const rawPays = localStorage.getItem(KEYS.payments);
+    if (rawPays && rawPays.includes('"agent"')) {
+      const fixed = rawPays.replace(/"role"\s*:\s*"agent"/g, '"role":"dealer"');
+      localStorage.setItem(KEYS.payments, fixed);
+    }
+  } catch {}
+
+  const seeded = localStorage.getItem(KEYS.seeded);
+  if (!seeded) {
+    try {
+      const now = new Date().toISOString();
+      const plans = SEED_PLANS.map((p) => ({ ...p, createdAt: now, updatedAt: now, updatedBy: "System seed" }));
+      const { subs, payments } = buildSeedSubscriptions(plans);
+      write(KEYS.plans, plans);
+      write(KEYS.subs, subs);
+      write(KEYS.payments, payments);
+      write(KEYS.history, []);
+      write(KEYS.audit, []);
+      localStorage.setItem(KEYS.seeded, now);
+      return;
+    } catch (e) {
+      console.error("Failed to seed subscription store", e);
+    }
   }
+
+  // 2. Ensure dealer plans exist in the store even if already seeded before dealer rename
+  try {
+    const existing = read<SubscriptionPlan[]>(KEYS.plans, []);
+    const hasDealerPlans = existing.some((p) => p.role === "dealer");
+    if (!hasDealerPlans) {
+      const now = new Date().toISOString();
+      const dealerSeeds = SEED_PLANS.filter((p) => p.role === "dealer").map((p) => ({
+        ...p,
+        createdAt: now,
+        updatedAt: now,
+        updatedBy: "System seed",
+      }));
+      write(KEYS.plans, [...existing, ...dealerSeeds]);
+    }
+  } catch {}
 }
 
 function addAudit(actor: Actor, action: string, target: string, details: string) {
@@ -613,5 +652,9 @@ export function useSubscriptionData(): SubscriptionSnapshot {
 export function usePublicPlans(role: SubscriberRole): SubscriptionPlan[] | null {
   const { ready, plans } = useSubscriptionData();
   if (!ready) return null;
-  return plans.filter((p) => p.role === role && p.status === "active" && p.visible);
+  const filtered = plans.filter((p) => p.role === role && p.status === "active" && p.visible);
+  if (filtered.length === 0 && role === "dealer") {
+    return SEED_PLANS.filter((p) => p.role === "dealer" && p.status === "active" && p.visible) as unknown as SubscriptionPlan[];
+  }
+  return filtered;
 }

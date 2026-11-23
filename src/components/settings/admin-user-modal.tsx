@@ -159,7 +159,7 @@ export function AdminUserModal({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as AdminUserStatus)}
-                className="w-full rounded-xl border border-[#e8ecf4] p-2.5 text-xs text-[#101828] focus:border-[#162d66] focus:outline-none"
+                className="ui-select w-full rounded-xl border border-[#e8ecf4] p-2.5 text-xs text-[#101828] focus:border-[#162d66] focus:outline-none"
               >
                 <option value="Active">Active</option>
                 <option value="Invited">Invited (Pending login)</option>

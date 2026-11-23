@@ -149,7 +149,9 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/buy?q=${encodeURIComponent(searchQuery)}`);
+    const params = new URLSearchParams({ purpose: searchCategory });
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    router.push(`/buy?${params.toString()}`);
   };
 
   const handleAskQuestion = async (q: string) => {
@@ -301,6 +303,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
                       <option value="Buy">Buy</option>
                       <option value="Rent">Rent</option>
                       <option value="Resale">Resale</option>
+                      <option value="Lease">Lease</option>
                     </select>
                     <ChevronDown
                       size={13}
@@ -392,7 +395,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
             </div>
 
             {/* Right Stack of 3 Smaller Images */}
-            <div className="w-full md:w-[33%] lg:w-[32%] flex flex-row md:flex-col gap-3 sm:gap-3.5 h-24 sm:h-28 md:h-full min-h-0 flex-1">
+            <div className="w-full md:w-[33%] lg:w-[32%] flex flex-row md:flex-col gap-3 sm:gap-3.5 h-24 sm:h-28 md:h-full min-h-0 shrink-0 md:shrink md:flex-1">
               {/* Three side tiles always keep the layout; a slot with no photo shows the neutral placeholder. */}
               {[1, 2, 3].map((slot) => {
                 const img = galleryImages[slot];
@@ -458,7 +461,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
               <div className="flex items-center gap-3">
                 <button
                   onClick={openContactModal}
-                  className="px-5 py-2.5 border border-[#087ed9] text-[#087ed9] hover:bg-sky-50 font-semibold text-xs sm:text-sm rounded-lg transition text-center cursor-pointer shadow-2xs"
+                  className="px-5 py-2.5 border border-[#087ed9] text-[#087ed9] hover:bg-sky-50 font-semibold text-xs sm:text-sm rounded-[100px] transition text-center cursor-pointer shadow-2xs"
                 >
                   Contact Dealer
                 </button>
@@ -467,7 +470,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
                     if (contact.phone) setHideNumber(!hideNumber);
                     else void contact.reveal();
                   }}
-                  className="px-6 h-[53px] bg-[#087ed9] hover:bg-sky-600 text-white font-semibold text-xs sm:text-sm rounded-lg transition text-center shadow-xs cursor-pointer flex items-center gap-1.5"
+                  className="px-6 h-11 bg-[#087ed9] hover:bg-sky-600 text-white font-semibold text-xs sm:text-sm rounded-[100px] transition text-center shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
                   {shownNumber && <Phone size={14} />}
                   <span>
@@ -705,7 +708,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
                 />
                 <button
                   type="submit"
-                  className="bg-[#087ed9] hover:bg-sky-600 text-white font-semibold text-xs sm:text-sm px-6 h-[53px] rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                  className="bg-[#087ed9] hover:bg-sky-600 text-white font-semibold text-xs sm:text-sm px-6 h-11 rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <Search size={15} />
                   <span>Search</span>
@@ -926,7 +929,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
                     <button
                       type="submit"
                       disabled={sending}
-                      className="inline-flex items-center justify-center px-5 h-[53px] text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm cursor-pointer"
+                      className="inline-flex items-center justify-center px-5 h-11 text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm cursor-pointer disabled:opacity-60"
                     >
                       Send Enquiry
                     </button>
@@ -973,7 +976,7 @@ export default function PropertyDetailsView({ property, similar = [] }: Property
             <div className="pt-3 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setSpecsModalOpen(false)}
-                className="inline-flex items-center justify-center px-5 h-[53px] bg-[#087ed9] text-white text-xs font-semibold rounded-lg hover:bg-sky-600 transition cursor-pointer"
+                className="inline-flex items-center justify-center px-5 h-11 bg-[#087ed9] text-white text-xs font-semibold rounded-lg hover:bg-sky-600 transition cursor-pointer"
               >
                 Done
               </button>

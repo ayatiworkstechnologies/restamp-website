@@ -28,7 +28,7 @@ import FullFiltersModal, {
   initialFilterValues,
   countActiveFilters,
   filterPropertiesWithValues,
-  chennaiLocalities,
+  useChennaiLocalityOptions,
 } from '@/components/property/FullFiltersModal';
 import type { Property } from '@/data/properties';
 
@@ -119,6 +119,7 @@ export default function BuyerSearchPage() {
 
   const selectedPurpose = filterValues.purpose;
   const selectedLocality = filterValues.locality || 'All Chennai';
+  const localityOptions = useChennaiLocalityOptions(filterValues.locality);
   const selectedType = filterValues.propertyType;
   const selectedBhk = filterValues.bhk.length === 1 ? filterValues.bhk[0] : (filterValues.bhk.length > 1 ? 'multi' : 'any');
   const selectedBudget = filterValues.budget;
@@ -697,9 +698,10 @@ export default function BuyerSearchPage() {
         {/* Filter Toolbar Bar */}
         <section className="bg-white border-b border-slate-200 sticky top-[72px] z-40 shadow-xs">
           <div className="container-site py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Mobile: one swipeable row so the sticky bar stays short. sm+: wraps as before. */}
+            <div className="no-scrollbar -mx-6 flex items-center gap-2 overflow-x-auto px-6 sm:mx-0 sm:flex-wrap sm:justify-between sm:gap-3 sm:overflow-visible sm:px-0 [&>*]:shrink-0">
               {/* Left Filters */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div className="flex items-center gap-2 sm:flex-wrap sm:gap-2.5 [&>*]:shrink-0">
                 {/* Full Filters Button with Counter */}
                 <button
                   type="button"
@@ -749,7 +751,7 @@ export default function BuyerSearchPage() {
                     aria-label="Filter by Chennai locality"
                     className="appearance-none bg-white border border-slate-200 rounded-lg pl-3 pr-7 py-2 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-hidden cursor-pointer"
                   >
-                    {chennaiLocalities.map((loc) => (
+                    {localityOptions.map((loc) => (
                       <option key={loc} value={loc}>
                         {loc}
                       </option>
@@ -952,7 +954,7 @@ export default function BuyerSearchPage() {
         {/* Results Section */}
         <section className="container-site py-8">
           {/* Header Count & Inventory Disclaimer */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
               {filteredProperties.length} {selectedPurpose} properties in {filterValues.locality === 'All Chennai' ? 'Chennai' : filterValues.locality}
             </h2>
@@ -979,7 +981,7 @@ export default function BuyerSearchPage() {
               </p>
               <button
                 onClick={handleReset}
-                className="mt-5 inline-flex items-center gap-1.5 bg-[#087ed9] hover:bg-sky-600 text-white text-xs font-semibold px-4 h-[53px] rounded-lg transition cursor-pointer"
+                className="mt-5 inline-flex items-center gap-1.5 bg-[#087ed9] hover:bg-sky-600 text-white text-xs font-semibold px-4 h-11 rounded-lg transition cursor-pointer"
               >
                 <RotateCcw size={14} />
                 <span>Reset all filters</span>
@@ -1084,7 +1086,7 @@ export default function BuyerSearchPage() {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center px-5 h-[53px] text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm cursor-pointer"
+                      className="inline-flex items-center justify-center px-5 h-11 text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm cursor-pointer"
                     >
                       Send Enquiry
                     </button>

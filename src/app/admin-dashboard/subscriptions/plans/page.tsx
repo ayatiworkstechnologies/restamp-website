@@ -25,8 +25,8 @@ import {
 import { deletePlan, planIsReferenced, setPlanStatus, useSubscriptionData, type PlanDraft } from "@/lib/admin-billing";
 import { BILLING_LABEL, ROLE_FEATURES, ROLE_LABEL, type PlanStatus, type SubscriberRole, type SubscriptionPlan } from "@/types/subscription";
 
-const ROLES: SubscriberRole[] = ["buyer", "owner", "agent"];
-const PUBLIC_PATH: Record<SubscriberRole, string> = { buyer: "/plans", owner: "/owner/plans", agent: "/agent/packages" };
+const ROLES: SubscriberRole[] = ["buyer", "owner", "dealer"];
+const PUBLIC_PATH: Record<SubscriberRole, string> = { buyer: "/plans", owner: "/owner/plans", dealer: "/dealer/packages" };
 const rolePlansPublic = (plans: SubscriptionPlan[], role: SubscriberRole) =>
   plans.filter((p) => p.role === role && p.status === "active" && p.visible);
 

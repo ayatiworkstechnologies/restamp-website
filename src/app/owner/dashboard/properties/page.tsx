@@ -78,7 +78,7 @@ export default function OwnerPropertiesPage() {
     return listings.filter(
       (l) =>
         (tab === 'All' || l.tab === tab) &&
-        (!q || [l.bhk, l.propertyType, l.society, l.locality, l.city, l.houseNo].join(' ').toLowerCase().includes(q)),
+        (!q || [l.propertyName, l.bhk, l.propertyType, l.society, l.locality, l.city, l.houseNo].filter(Boolean).join(' ').toLowerCase().includes(q)),
     );
   }, [listings, tab, query]);
   const count = (t: Tab) => (t === 'All' ? listings.length : listings.filter((l) => l.tab === t).length);
@@ -90,7 +90,7 @@ export default function OwnerPropertiesPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Properties</h1>
           <p className="mt-1 text-sm text-slate-500">All the properties you have listed on Restamp.</p>
         </div>
-        <Link href="/owner/dashboard/add-property" className="inline-flex items-center gap-2 rounded-xl bg-[#087ed9] px-4 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition">
+        <Link href="/owner/dashboard/add-property" className="inline-flex items-center gap-2 rounded-xl bg-[#087ed9] px-4 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition">
           <PlusCircle size={16} /> Add property
         </Link>
       </div>
@@ -110,7 +110,7 @@ export default function OwnerPropertiesPage() {
             </button>
           ))}
         </div>
-        <label className="flex h-[53px] items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-4 lg:w-80">
+        <label className="flex h-11 items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-4 lg:w-80">
           <Search size={17} className="text-slate-400" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by title, locality or address..." className="w-full bg-transparent text-sm outline-none" />
         </label>
@@ -151,7 +151,7 @@ export default function OwnerPropertiesPage() {
                   {(l.purpose === 'Rent' || l.purpose === 'Lease') && <span className="text-xs font-normal text-slate-500"> /month</span>}
                 </p>
                 <h3 className="mt-0.5 truncate text-sm font-semibold text-slate-800">
-                  {[l.bhk, l.propertyType].filter(Boolean).join(' ')} {l.society && `in ${l.society}`}
+                  {l.propertyName || `${[l.bhk, l.propertyType].filter(Boolean).join(' ')}${l.society ? ` in ${l.society}` : ''}`}
                 </h3>
                 <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
                   <MapPin size={12} /> {[l.locality, l.city].filter(Boolean).join(', ')}

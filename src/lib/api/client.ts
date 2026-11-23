@@ -21,7 +21,18 @@ function resolveApiBaseUrl(): string {
   return DEFAULT_PROD_API_URL;
 }
 
-export const API_BASE_URL = resolveApiBaseUrl();
+/** Real backend URL (used by the dev proxy in next.config.ts). */
+export const BACKEND_URL = resolveApiBaseUrl();
+
+/**
+ * In development the browser calls the backend through the Next dev server
+ * (/backend-api → BACKEND_URL, see next.config.ts). The backend's CORS list only
+ * allows http://localhost:3000, so without this, opening the site on the
+ * network address (e.g. http://192.168.x.x:3000 on a phone) silently fails
+ * every API call. Production builds call the backend directly.
+ */
+export const API_BASE_URL =
+  process.env.NODE_ENV === 'development' && typeof window !== 'undefined' ? '/backend-api' : BACKEND_URL;
 export const REQUEST_TIMEOUT_MS = 25000;
 
 export type ApiErrorKind =

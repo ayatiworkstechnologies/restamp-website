@@ -3,10 +3,10 @@
  * Ported from the mobile app module (src/reva) for the Next.js website.
  */
 
-export type RevaRole = "Buyer" | "Owner" | "Agent";
+export type RevaRole = "Buyer" | "Owner" | "Dealer";
 export type RevaLang = "en" | "ta";
 export type DataKind = "listings" | "saved" | "visits" | "contactPrompt";
-export type RevaRoute = "Search" | "OwnerAdd" | "OwnerDashboard" | "OwnerPlans" | "Activity" | "AgentPlans" | "AgentDashboard" | "Saved";
+export type RevaRoute = "Search" | "OwnerAdd" | "OwnerDashboard" | "OwnerPlans" | "Activity" | "DealerPlans" | "DealerDashboard" | "Saved";
 export interface RevaAction {
   label: string;
   route: RevaRoute;
@@ -20,8 +20,8 @@ export const ROUTE_PATHS: Record<RevaRoute, string> = {
   OwnerPlans: "/owner/plans",
   Activity: "/activity",
   Saved: "/saved",
-  AgentPlans: "/agent/packages",
-  AgentDashboard: "/agent/dashboard",
+  DealerPlans: "/dealer/packages",
+  DealerDashboard: "/dealer/dashboard",
 };
 
 export const LANGUAGES: { code: RevaLang; label: string }[] = [
@@ -54,12 +54,12 @@ export const COPY = {
     autoSpeakOn: "Auto-voice on",
     autoSpeakOff: "Auto-voice off",
     speakingError: "Speech playback isn't available in this browser for the selected language.",
-    roles: { Buyer: "Buyer", Owner: "Owner", Agent: "Agent" } as Record<RevaRole, string>,
+    roles: { Buyer: "Buyer", Owner: "Owner", Dealer: "Dealer" } as Record<RevaRole, string>,
     newChat: "New chat",
   },
   ta: {
     welcome: (role: RevaRole) =>
-      `வணக்கம்! 👋 நான் Reva AI, உங்கள் Restamp சொத்து உதவியாளர். ${role === "Owner" ? "உரிமையாளராக" : role === "Agent" ? "முகவராக" : "வாங்குபவராக"} உங்களுக்கு என்ன உதவி வேண்டும்?`,
+      `வணக்கம்! 👋 நான் Reva AI, உங்கள் Restamp சொத்து உதவியாளர். ${role === "Owner" ? "உரிமையாளராக" : role === "Dealer" ? "டீலராக" : "வாங்குபவராக"} உங்களுக்கு என்ன உதவி வேண்டும்?`,
     open: "Reva AI-யிடம் கேளுங்கள்",
     close: "உரையாடலை மூடு",
     online: "இணைப்பில் · குரல் & எழுத்து",
@@ -81,7 +81,7 @@ export const COPY = {
     autoSpeakOn: "குரல் பதில்: இயக்கு",
     autoSpeakOff: "குரல் பதில்: நிறுத்து",
     speakingError: "இந்த உலாவியில் தமிழ் பேச்சு ஒலி கிடைக்கவில்லை.",
-    roles: { Buyer: "வாங்குபவர்", Owner: "உரிமையாளர்", Agent: "முகவர்" } as Record<RevaRole, string>,
+    roles: { Buyer: "வாங்குபவர்", Owner: "உரிமையாளர்", Dealer: "டீலர்" } as Record<RevaRole, string>,
     newChat: "புதிய உரையாடல்",
   },
 };
@@ -107,10 +107,10 @@ export const QUICK_ACTIONS: Record<RevaLang, Record<RevaRole, QuickAction[]>> = 
       { label: "📊 Leads & visits", question: "Where can I track my buyer leads and site visits?" },
       { label: "🛡️ Verification", question: "How does property verification work?" },
     ],
-    Agent: [
-      { label: "🏘️ Locality leads", question: "How do Chennai locality packages work for agents?" },
-      { label: "📈 Agent dashboard", question: "What features are included in the Agent Dashboard?" },
-      { label: "💼 Partner pricing", question: "What are the Agent Starter, Pro and Elite plans?" },
+    Dealer: [
+      { label: "🏘️ Locality leads", question: "How do Chennai locality packages work for dealers?" },
+      { label: "📈 Dealer dashboard", question: "What features are included in the Dealer Dashboard?" },
+      { label: "💼 Partner pricing", question: "What are the Dealer Starter, Pro and Elite plans?" },
       { label: "❓ General help", question: "What can Reva AI assist me with?" },
     ],
   },
@@ -128,10 +128,10 @@ export const QUICK_ACTIONS: Record<RevaLang, Record<RevaRole, QuickAction[]>> = 
       { label: "📊 வாடிக்கையாளர் தொடர்புகள்", question: "வாங்குபவர் தொடர்புகளை எங்கே பார்ப்பது?" },
       { label: "🛡️ சரிபார்ப்பு", question: "சொத்து சரிபார்ப்பு எவ்வாறு செயல்படுகிறது?" },
     ],
-    Agent: [
+    Dealer: [
       { label: "🏘️ பகுதி வாய்ப்புகள்", question: "சென்னை பகுதி தொகுப்புகள் எவ்வாறு செயல்படுகின்றன?" },
-      { label: "📈 முகவர் டாஷ்போர்டு", question: "முகவர் டாஷ்போர்டில் என்னென்ன வசதிகள் உள்ளன?" },
-      { label: "💼 கூட்டாளர் திட்டங்கள்", question: "முகவர் திட்டங்களின் விலை விவரங்கள் என்ன?" },
+      { label: "📈 டீலர் டாஷ்போர்டு", question: "டீலர் டாஷ்போர்டில் என்னென்ன வசதிகள் உள்ளன?" },
+      { label: "💼 கூட்டாளர் திட்டங்கள்", question: "டீலர் திட்டங்களின் விலை விவரங்கள் என்ன?" },
       { label: "❓ பொதுவான உதவி", question: "Reva AI எனக்கு எதில் உதவ முடியும்?" },
     ],
   },
@@ -155,9 +155,9 @@ const KB_EN: KbItem[] = [
     action: { label: "Post Your Property", route: "OwnerAdd" },
   },
   {
-    keywords: ["agent", "broker", "partner", "localities", "elite", "agent plan", "starter, pro"],
-    reply: "Restamp Agent Partner plans give local brokers direct buyer leads mapped to the Chennai localities they choose (5, 10 or 15 areas), plus a dedicated Agent Dashboard.",
-    action: { label: "Agent Plans", route: "AgentPlans" },
+    keywords: ["dealer", "broker", "partner", "localities", "elite", "dealer plan", "starter, pro"],
+    reply: "Restamp Dealer Partner plans give local brokers direct buyer leads mapped to the Chennai localities they choose (5, 10 or 15 areas), plus a dedicated Dealer Dashboard.",
+    action: { label: "Dealer Plans", route: "DealerPlans" },
   },
   {
     keywords: ["plan", "pricing", "subscription", "starter", "plus", "gold", "premium", "cost", "charge", "fee"],
@@ -203,9 +203,9 @@ const KB_TA: KbItem[] = [
     action: { label: "சொத்து பதிவு செய்ய", route: "OwnerAdd" },
   },
   {
-    keywords: ["முகவர்", "பகுதி"],
-    reply: "Restamp முகவர் திட்டங்கள் நீங்கள் தேர்ந்தெடுக்கும் சென்னை பகுதிகளுக்கான (5, 10 அல்லது 15) நேரடி வாடிக்கையாளர் தொடர்புகளையும் முகவர் டாஷ்போர்டையும் வழங்குகின்றன.",
-    action: { label: "முகவர் திட்டங்கள்", route: "AgentPlans" },
+    keywords: ["டீலர்", "பகுதி"],
+    reply: "Restamp டீலர் திட்டங்கள் நீங்கள் தேர்ந்தெடுக்கும் சென்னை பகுதிகளுக்கான (5, 10 அல்லது 15) நேரடி வாடிக்கையாளர் தொடர்புகளையும் டீலர் டாஷ்போர்டையும் வழங்குகின்றன.",
+    action: { label: "டீலர் திட்டங்கள்", route: "DealerPlans" },
   },
   {
     keywords: ["திட்ட", "விலை", "ஸ்டார்ட்டர்", "பிளஸ்", "கோல்ட்", "பிரீமியம்", "கட்டணம்"],
@@ -257,14 +257,14 @@ export function getLocalReply(question: string, role: RevaRole, lang: RevaLang):
   if (lang === "ta") {
     if (role === "Owner")
       return { text: "உரிமையாளர் சொத்து பதிவு, சந்தா திட்டங்கள் மற்றும் வாங்குபவர் தொடர்புகளை நிர்வகிக்க நான் உதவ முடியும். உங்களுக்கு என்ன உதவி வேண்டும்?", action: { label: "உரிமையாளர் பகுதி", route: "OwnerDashboard" }, demo: true };
-    if (role === "Agent")
-      return { text: "சென்னை பகுதி முகவர் திட்டங்கள் மற்றும் வாடிக்கையாளர் தொடர்புகளை நிர்வகிக்க நான் உதவ முடியும். எவ்வாறு உதவலாம்?", action: { label: "முகவர் திட்டங்கள்", route: "AgentPlans" }, demo: true };
+    if (role === "Dealer")
+      return { text: "சென்னை பகுதி டீலர் திட்டங்கள் மற்றும் வாடிக்கையாளர் தொடர்புகளை நிர்வகிக்க நான் உதவ முடியும். எவ்வாறு உதவலாம்?", action: { label: "டீலர் திட்டங்கள்", route: "DealerPlans" }, demo: true };
     return { text: "நான் Reva AI, உங்கள் Restamp சொத்து உதவியாளர். சென்னையில் வீடுகள் தேடுதல், 0% தரகு மற்றும் சொத்துப் பார்வைக்கு உதவ முடியும். என்னிடம் கேளுங்கள்!", action: { label: "சொத்துகளைக் காண்க", route: "Search" }, demo: true };
   }
   if (role === "Owner")
     return { text: "I can help you list properties, choose an owner plan, review buyer leads, or track scheduled site visits. What would you like to do?", action: { label: "Owner Dashboard", route: "OwnerDashboard" }, demo: true };
-  if (role === "Agent")
-    return { text: "I can assist you with agent locality packages, buyer leads and the agent dashboard. How can I help your real estate business today?", action: { label: "Agent Plans", route: "AgentPlans" }, demo: true };
+  if (role === "Dealer")
+    return { text: "I can assist you with dealer locality packages, buyer leads and the dealer dashboard. How can I help your real estate business today?", action: { label: "Dealer Plans", route: "DealerPlans" }, demo: true };
   return { text: "I'm Reva AI, your Restamp property assistant. I can help you search properties in Chennai, understand 0% brokerage, schedule site visits, or post a property. Ask me anything!", action: { label: "Explore Chennai Homes", route: "Search" }, demo: true };
 }
 

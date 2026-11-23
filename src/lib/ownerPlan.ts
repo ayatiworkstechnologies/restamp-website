@@ -62,22 +62,38 @@ function fromBackend(p: PublicPlan): OwnerPlan {
 
 let ownerPlanCache: OwnerPlan[] = [];
 
-/** Admin-managed owner plans from the backend (GET /subscriptions/plans?role=OWNER). Empty while loading. */
+/**
+ * Owner plans. Prefers the backend (GET /subscriptions/plans?role=OWNER); if that
+ * endpoint fails or returns nothing (it is not deployed on every backend yet),
+ * falls back to the plans managed in Admin → Subscription Plans so the plan
+ * sections never get stuck on loading placeholders. Empty while loading.
+ */
 export function useOwnerPlans(): Record<'Residential' | 'Commercial', OwnerPlan[]> {
-  const [plans, setPlans] = useState<OwnerPlan[] | null>(null);
+  const [backendPlans, setBackendPlans] = useState<OwnerPlan[] | null | 'failed'>(null);
+  const localPlans = usePublicPlans('owner');
   useEffect(() => {
     let cancelled = false;
     listPublicPlans('OWNER')
       .then((items) => {
+        if (cancelled) return;
+        if (items.length === 0) return setBackendPlans('failed');
         ownerPlanCache = items.map(fromBackend);
-        if (!cancelled) setPlans(ownerPlanCache);
+        setBackendPlans(ownerPlanCache);
       })
-      .catch(() => !cancelled && setPlans([]));
+      .catch(() => !cancelled && setBackendPlans('failed'));
     return () => {
       cancelled = true;
     };
   }, []);
-  return useMemo(() => (plans ? { Residential: plans, Commercial: plans } : EMPTY_CATALOG), [plans]);
+  return useMemo(() => {
+    let list: OwnerPlan[] | null = null;
+    if (Array.isArray(backendPlans)) list = backendPlans;
+    else if (backendPlans === 'failed' && localPlans) {
+      list = localPlans.map(toOwnerPlan);
+      ownerPlanCache = list;
+    }
+    return list ? { Residential: list, Commercial: list } : EMPTY_CATALOG;
+  }, [backendPlans, localPlans]);
 }
 
 /**

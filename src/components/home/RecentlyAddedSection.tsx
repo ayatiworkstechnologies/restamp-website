@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { BadgeCheck, Bath, BedDouble, Heart, MapPin, Phone, Ruler } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, ChevronRight, Bath, BedDouble, Heart, MapPin, Phone, Ruler } from 'lucide-react';
 import type { Property } from '@/data/properties';
 import { toggleWishlist, useWishlist } from '@/lib/wishlist';
 import { searchListings } from '@/lib/api/buyer';
@@ -83,13 +83,33 @@ function RecentCard({ p, liked, verified }: { p: Property; liked: boolean; verif
         <button
           type="button"
           onClick={() => (contact.phone ? setHide((h) => !h) : void contact.reveal())}
-          className="inline-flex w-full h-[53px] cursor-pointer items-center justify-center gap-2 rounded-[16px] bg-slate-100 px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
+          className="inline-flex w-full h-11 cursor-pointer items-center justify-center gap-2 rounded-[100px] bg-slate-100 px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
         >
           <Phone size={16} />
           {shown || 'View Number'}
         </button>
       </div>
     </article>
+  );
+}
+
+/** Back / next buttons that scroll the card track by one visible page. */
+function CarouselArrows({ trackRef }: { trackRef: React.RefObject<HTMLDivElement | null> }) {
+  const go = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
+  };
+  const btn =
+    'inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#087ed9] hover:text-[#087ed9]';
+  return (
+    <div className="flex shrink-0 gap-2">
+      <button type="button" aria-label="Previous" onClick={() => go(-1)} className={btn}>
+        <ChevronLeft size={18} />
+      </button>
+      <button type="button" aria-label="Next" onClick={() => go(1)} className={btn}>
+        <ChevronRight size={18} />
+      </button>
+    </div>
   );
 }
 
@@ -104,6 +124,7 @@ type SectionProps = {
 
 export function PropertyCardSection({ eyebrow, title, description, items, href = '/buy', verified }: SectionProps) {
   const wish = useWishlist();
+  const track = useRef<HTMLDivElement>(null);
   return (
     <section className="container-site pb-16">
       <div className="mb-7 flex items-end justify-between gap-4">
@@ -112,11 +133,10 @@ export function PropertyCardSection({ eyebrow, title, description, items, href =
           <h2 className="section-title mt-2">{title}</h2>
           <p className="text-sm text-slate-600 mt-3 leading-relaxed">{description}</p>
         </div>
-        <Link href={href} className="shrink-0 text-sm font-semibold text-[#087ed9] hover:underline">
-          View all →
-        </Link>
+        <CarouselArrows trackRef={track} />
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Slider: swipe on mobile, back/next arrows on all sizes. */}
+      <div ref={track} className="no-scrollbar -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto scroll-smooth px-6 pb-2 sm:mx-0 sm:gap-6 sm:scroll-px-0 sm:px-0 [&>*]:w-[82%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[calc((100%-1.5rem)/2)] lg:[&>*]:w-[calc((100%-4.5rem)/4)]">
         {items.map((p) => (
           <RecentCard key={p.id} p={p} liked={wish.includes(p.id)} verified={verified} />
         ))}
@@ -128,7 +148,7 @@ export function PropertyCardSection({ eyebrow, title, description, items, href =
 export default function RecentlyAddedSection() {
   const listings = useHomeListings();
   // The backend has no "newest" sort; listing ids increase as listings are created.
-  const items = [...listings].sort((a, b) => b.id - a.id).slice(0, 4);
+  const items = [...listings].sort((a, b) => b.id - a.id).slice(0, 12);
   if (items.length === 0) return null;
   return (
     <PropertyCardSection
@@ -212,8 +232,9 @@ function VerifiedCard({ p, liked }: { p: Property; liked: boolean }) {
 
 export function VerifiedPropertiesSection() {
   const wish = useWishlist();
+  const track = useRef<HTMLDivElement>(null);
   // Backend buyer listings are all admin-verified, so any of them may appear here.
-  const items = useHomeListings().slice(0, 4);
+  const items = useHomeListings().slice(0, 12);
   if (items.length === 0) return null;
   return (
     <section className="container-site pb-16">
@@ -225,11 +246,10 @@ export function VerifiedPropertiesSection() {
             Listings that have passed Restamp's listing verification step.
           </p>
         </div>
-        <Link href="/buy" className="shrink-0 text-sm font-semibold text-[#087ed9] hover:underline">
-          View all →
-        </Link>
+        <CarouselArrows trackRef={track} />
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Slider: swipe on mobile, back/next arrows on all sizes. */}
+      <div ref={track} className="no-scrollbar -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto scroll-smooth px-6 pb-2 sm:mx-0 sm:gap-6 sm:scroll-px-0 sm:px-0 [&>*]:w-[82%] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[calc((100%-1.5rem)/2)] lg:[&>*]:w-[calc((100%-4.5rem)/4)]">
         {items.map((p) => (
           <VerifiedCard key={p.id} p={p} liked={wish.includes(p.id)} />
         ))}

@@ -188,7 +188,7 @@ export default function OwnerPlansPage() {
                         type="button"
                         disabled={isCurrent}
                         onClick={() => choose(p)}
-                        className={`mt-6 h-[53px] min-w-[200px] rounded-[16px] text-sm font-semibold transition cursor-pointer disabled:cursor-default ${
+                        className={`mt-6 h-11 min-w-[200px] rounded-[16px] text-sm font-semibold transition cursor-pointer disabled:cursor-default ${
                           isCurrent
                             ? 'bg-green-50 text-green-700'
                             : p.popular
@@ -414,7 +414,7 @@ export default function OwnerPlansPage() {
                           type="button"
                           onClick={pay}
                           disabled={paying}
-                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#087ed9] h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition disabled:opacity-70 cursor-pointer"
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#087ed9] h-11 text-sm font-semibold text-white hover:bg-sky-600 transition disabled:opacity-70 cursor-pointer"
                         >
                           <Lock size={14} />
                           {paying ? 'Activating…' : 'Continue'}
@@ -474,7 +474,7 @@ export default function OwnerPlansPage() {
                 <Link href="/owner/dashboard" className="rounded-lg border border-[#087ed9] px-5 py-2.5 text-sm font-semibold text-[#087ed9] hover:bg-sky-50 transition">
                   Go to dashboard
                 </Link>
-                <Link href="/owner/dashboard/add-property" className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition">
+                <Link href="/owner/dashboard/add-property" className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition">
                   Post property
                 </Link>
               </div>

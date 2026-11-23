@@ -2,7 +2,7 @@ import { clearSession, getSession } from '@/lib/api/session';
 
 export type Profile = {
   mobile: string;
-  role: 'buyer' | 'owner' | 'agent';
+  role: 'buyer' | 'owner' | 'dealer';
   name: string;
   email: string;
   city: string;
@@ -63,7 +63,7 @@ export function clearProfile() {
 // Logging in again with the same number keeps the saved details
 export function loginWithMobile(mobile: string, role: string): Profile {
   const existing = getProfile();
-  const validRole = role === 'owner' || role === 'agent' ? role : 'buyer';
+  const validRole = role === 'owner' || role === 'dealer' ? role : 'buyer';
   const profile: Profile =
     existing && existing.mobile === mobile
       ? { ...existing, role: role ? validRole : existing.role }

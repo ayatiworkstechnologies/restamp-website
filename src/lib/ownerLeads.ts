@@ -6,7 +6,7 @@ import {
   listOwnerVisits,
   proposeOwnerVisit,
   rescheduleOwnerVisit,
-  updateOwnerLead,
+  updateOwnerLead as updateOwnerLeadApi,
   updateOwnerVisit,
   type OwnerLeadOut,
   type OwnerVisitOut,
@@ -29,8 +29,8 @@ import { toast } from '@/lib/notify';
  *   message and nothing changes.
  */
 
-export type LeadStatus = 'New' | 'Contacted' | 'Visit' | 'Negotiating' | 'Closed';
-export const LEAD_STATUSES: LeadStatus[] = ['New', 'Contacted', 'Visit', 'Negotiating', 'Closed'];
+export type LeadStatus = 'New' | 'Contacted' | 'Visit' | 'Closed';
+export const LEAD_STATUSES: LeadStatus[] = ['New', 'Contacted', 'Visit', 'Closed'];
 
 export type OwnerLead = {
   id: string;
@@ -44,8 +44,12 @@ export type OwnerLead = {
   status: LeadStatus;
   createdAt: string;
   /** Backend ids needed to propose a visit. */
-  listingId: number;
-  buyerUserId: number;
+  listingId?: number;
+  buyerUserId?: number;
+  /** Private notes kept on this lead. */
+  notes?: string;
+  /** When the status last changed. */
+  statusUpdatedAt?: string;
 };
 
 export type VisitStatus = 'REQUESTED' | 'PROPOSED' | 'CONFIRMED' | 'COMPLETED' | 'DECLINED' | 'CANCELLED';
@@ -68,7 +72,7 @@ const LEAD_STATUS_FROM_BACKEND: Record<string, LeadStatus> = { NEW: 'New', CONTA
 function toLead(l: OwnerLeadOut): OwnerLead {
   return {
     id: String(l.id),
-    customerName: l.buyer_display_name || (l.source_role === 'BROKER' ? 'Agent' : 'Buyer'),
+    customerName: l.buyer_display_name || (l.source_role === 'BROKER' ? 'Dealer' : 'Buyer'),
     phone: '',
     propertyTitle: l.listing?.title || 'Property',
     locality: [l.listing?.locality, l.listing?.city].filter(Boolean).join(', '),
@@ -100,7 +104,7 @@ function refresh() {
 }
 
 export async function updateLeadStatus(id: string, status: LeadStatus): Promise<boolean> {
-  if (status === 'Visit' || status === 'Negotiating') {
+  if (status === 'Visit' || (status as string) === 'Negotiating') {
     toast.error(`"${status}" is not a lead status the server supports. Use Propose Visit to arrange a visit.`);
     refresh();
     return false;
@@ -111,7 +115,7 @@ export async function updateLeadStatus(id: string, status: LeadStatus): Promise<
     return false;
   }
   try {
-    await updateOwnerLead(Number(id), status === 'New' ? 'NEW' : 'CONTACTED');
+    await updateOwnerLeadApi(Number(id), status === 'New' ? 'NEW' : 'CONTACTED');
     refresh();
     return true;
   } catch (e) {
@@ -121,8 +125,16 @@ export async function updateLeadStatus(id: string, status: LeadStatus): Promise<
   }
 }
 
+export function updateOwnerLead(id: string, patch: Partial<OwnerLead>) {
+  if (patch.status) void updateLeadStatus(id, patch.status);
+}
+
 export async function proposeVisit(lead: OwnerLead, scheduledAt: string, note?: string): Promise<boolean> {
   try {
+    if (!lead.listingId || !lead.buyerUserId) {
+      toast.error('Missing listing or buyer information to propose a visit.');
+      return false;
+    }
     // An open visit for this buyer + listing is rescheduled (PATCH); otherwise a new one is proposed (POST).
     const open = (await listOwnerVisits()).items.find(
       (v) =>

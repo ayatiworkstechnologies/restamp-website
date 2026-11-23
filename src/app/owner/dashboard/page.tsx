@@ -70,7 +70,7 @@ export default function OwnerDashboardPage() {
             {firstName && `, ${firstName}`} 👋
           </h1>
         </div>
-        <Link href="/owner/dashboard/add-property" className="inline-flex h-[53px] items-center gap-2 rounded-[16px] bg-[#087ed9] px-5 text-sm font-semibold text-white transition hover:bg-sky-600">
+        <Link href="/owner/dashboard/add-property" className="inline-flex h-11 items-center gap-2 rounded-[16px] bg-[#087ed9] px-5 text-sm font-semibold text-white transition hover:bg-sky-600">
           <PlusCircle size={18} /> Add Property
         </Link>
       </div>
@@ -100,7 +100,7 @@ export default function OwnerDashboardPage() {
                   {primary.status}
                 </span>
                 <h2 className="mt-3 text-xl font-bold text-slate-900">
-                  {[primary.bhk, primary.propertyType].filter(Boolean).join(' ')} for {primary.purpose}
+                  {primary.propertyName || `${[primary.bhk, primary.propertyType].filter(Boolean).join(' ')} for ${primary.purpose}`}
                 </h2>
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
                   <MapPin size={14} /> {[primary.locality, primary.city].filter(Boolean).join(', ') || '—'}
@@ -122,7 +122,7 @@ export default function OwnerDashboardPage() {
                 <h2 className="mt-2 text-xl font-bold text-slate-900">Add Your First Property</h2>
                 <p className="mt-1 text-sm text-slate-500">Start by adding your first property to receive verified buyer enquiries.</p>
               </div>
-              <Link href="/owner/dashboard/add-property" className="inline-flex h-[53px] items-center gap-2 rounded-[16px] bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600">
+              <Link href="/owner/dashboard/add-property" className="inline-flex h-11 items-center gap-2 rounded-[16px] bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600">
                 Start <ArrowRight size={16} />
               </Link>
             </div>
@@ -144,7 +144,7 @@ export default function OwnerDashboardPage() {
               </div>
             </div>
           </div>
-          <Link href="/owner/plans" className="mt-6 inline-flex h-[53px] items-center justify-center rounded-[16px] bg-white text-sm font-semibold text-slate-900 transition hover:bg-sky-50">
+          <Link href="/owner/plans" className="mt-6 inline-flex h-11 items-center justify-center rounded-[16px] bg-white text-sm font-semibold text-slate-900 transition hover:bg-sky-50">
             Manage Subscription
           </Link>
         </section>
@@ -199,7 +199,7 @@ export default function OwnerDashboardPage() {
                   </p>
                 </div>
                 {l.phone ? (
-                  <a href={`tel:${l.phone.replace(/\s/g, '')}`} className="inline-flex h-[53px] items-center gap-2 rounded-[16px] bg-slate-100 px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
+                  <a href={`tel:${l.phone.replace(/\s/g, '')}`} className="inline-flex h-11 items-center gap-2 rounded-[16px] bg-slate-100 px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
                     <Phone size={16} /> Call Lead
                   </a>
                 ) : (

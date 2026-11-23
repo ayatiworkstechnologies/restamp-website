@@ -1,12 +1,15 @@
-export type UserRole = "buyer" | "owner" | "agent";
+export type UserRole = "buyer" | "owner" | "dealer";
 
-/** Owners and agents both list properties. */
+/** Owners and dealers both list properties. */
 export const isLister = (u: { role: UserRole }) => u.role !== "buyer";
 
-/** Migrates legacy records where agents were stored as owners with ownerType "Agent / Broker". */
+/** Migrates legacy records where dealers were stored as owners with ownerType "Dealer / Broker". */
 export function normalizeUserRole<T extends { role: UserRole; ownerType?: OwnerType }>(u: T): T {
   let out = u;
-  if (out.role === "owner" && out.ownerType === "Agent / Broker") out = { ...out, role: "agent" };
+  // Legacy "agent" role and "Agent / Broker" type were renamed to dealer.
+  if ((out.role as string) === "agent") out = { ...out, role: "dealer" };
+  if ((out.ownerType as string) === "Agent / Broker") out = { ...out, ownerType: "Dealer / Broker" };
+  if (out.role === "owner" && out.ownerType === "Dealer / Broker") out = { ...out, role: "dealer" };
   // KYC removed: accounts previously parked in "Pending KYC" are active.
   if ((out as { status?: string }).status === "Pending KYC") out = { ...out, status: "Active" };
   return out;
@@ -16,11 +19,11 @@ export type UserStatus = "Active" | "Suspended" | "Inactive";
 
 export type KycStatus = "Verified" | "Pending" | "Rejected" | "Not Submitted";
 
-export type OwnerType = "Individual Owner" | "Agent / Broker" | "Builder / Developer";
+export type OwnerType = "Individual Owner" | "Dealer / Broker" | "Builder / Developer";
 
 export interface KycDocument {
   id: string;
-  type: "Aadhaar Card" | "PAN Card" | "RERA Agent Certificate" | "Company Incorporation";
+  type: "Aadhaar Card" | "PAN Card" | "RERA Dealer Certificate" | "Company Incorporation";
   documentNumber: string;
   fileUrl: string;
   fileSize: string;

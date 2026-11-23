@@ -473,7 +473,7 @@ export const properties: Property[] = [
       'Individual resale villa inside a 24/7 guarded private beach enclave on ECR. Private dip pool, Italian modular woodwork, and clear parent documentation.',
     descriptionLong:
       'Pristine coastal luxury with private lawn, solar heating, high perimeter compound wall, and walking distance to the beach in Injambakkam, ECR.',
-    postedBy: 'Verified Agent',
+    postedBy: 'Verified Dealer',
     postedTime: '1wk ago',
     builderName: 'Crest Luxury Villas',
     phoneNumber: '+91 98408 99012',
@@ -654,7 +654,7 @@ export const properties: Property[] = [
       'Well-lit 2 BHK high-rise apartment in a gated township with modular kitchen, geysers, piped gas, and high-speed fiber internet.',
     descriptionLong:
       'Gated community with club access, swimming pool, gym, supermarket, and 24-hr pharmacy inside the complex. 5 minutes from Velachery MRTS railway station.',
-    postedBy: 'Verified Agent',
+    postedBy: 'Verified Dealer',
     postedTime: '2d ago',
     builderName: 'Twin Towers Chennai',
     phoneNumber: '+91 98412 33445',
@@ -786,7 +786,7 @@ export const properties: Property[] = [
       'Plug-and-play modern IT office suite with conference room, manager cabins, 30 ergonomic workstations, cafeteria pantry, and biometric security.',
     descriptionLong:
       'Prime IT corridor frontage with prominent signage board opportunity. High-speed fiber optic connection, central UPS, and dedicated basement parking.',
-    postedBy: 'Verified Agent',
+    postedBy: 'Verified Dealer',
     postedTime: '4d ago',
     builderName: 'Cyber Space Towers',
     phoneNumber: '+91 98412 55667',

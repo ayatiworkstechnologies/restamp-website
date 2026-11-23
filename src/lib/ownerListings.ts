@@ -44,6 +44,7 @@ export type OwnerListing = {
   landmark: string;
 
   // Property details
+  propertyName?: string;
   bedrooms: string;
   bathrooms: string;
   balconies: string;
@@ -106,6 +107,7 @@ export function emptyListing(): OwnerListing {
     society: '',
     houseNo: '',
     landmark: '',
+    propertyName: '',
     bedrooms: '',
     bathrooms: '',
     balconies: '',
@@ -193,7 +195,7 @@ export function deleteListing(id: string) {
 /** Keeps the admin-visible usage counter on the owner's subscription current. */
 function syncUsage() {
   const me = getProfile();
-  if (me?.mobile) updateUsage('owner', me.mobile, { listingsUsed: getOwnerListings().length });
+  if (me?.mobile && me.role !== 'buyer') updateUsage(me.role, me.mobile, { listingsUsed: getOwnerListings().length });
 }
 
 // ---------------------------------------------------------------------------

@@ -304,7 +304,7 @@ export default function DealerEnquirySection({ property }: DealerEnquirySectionP
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-[#087ed9] hover:bg-[#076ec0] text-white font-bold text-xs sm:text-sm px-6 h-[53px] rounded-lg transition duration-200 shadow-xs cursor-pointer active:scale-98 disabled:opacity-60 inline-flex items-center gap-2"
+                    className="bg-[#087ed9] hover:bg-[#076ec0] text-white font-bold text-xs sm:text-sm px-6 h-11 rounded-[100px] transition duration-200 shadow-xs cursor-pointer active:scale-98 disabled:opacity-60 inline-flex items-center gap-2"
                   >
                     {isSubmitting ? (
                       <span>Sending...</span>

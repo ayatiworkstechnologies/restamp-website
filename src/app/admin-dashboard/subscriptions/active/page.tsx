@@ -89,11 +89,11 @@ export default function ActiveSubscriptionsPage() {
         <div className="flex flex-wrap items-center gap-3 border-b border-[#f1f4f9] p-4">
           <div className="relative min-w-[200px] flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9da9bc]" />
-            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search subscriber, phone or ID" className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] py-2 pl-9 pr-3 text-xs outline-none focus:border-[#087ed9]" />
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search subscriber, phone or ID" className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] h-9 py-2 pl-9 pr-3 text-xs outline-none focus:border-[#087ed9]" />
           </div>
           <select aria-label="Role" className={selectCls} value={role} onChange={(e) => { setRole(e.target.value as typeof role); setPlan("all"); }}>
             <option value="all">All roles</option>
-            {(["buyer", "owner", "agent"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+            {(["buyer", "owner", "dealer"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
           </select>
           <select aria-label="Plan" className={selectCls} value={plan} onChange={(e) => setPlan(e.target.value)}>
             <option value="all">All plans</option>

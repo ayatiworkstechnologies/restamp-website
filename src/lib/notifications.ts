@@ -57,8 +57,8 @@ export interface NotificationRules {
 }
 
 export const RULE_INFO: Record<RuleKey, { label: string; desc: string; who: string }> = {
-  paymentReceived: { label: "Payment received / invoice ready", desc: "After a checkout, with a link to the invoice.", who: "Buyers, owners, agents" },
-  subscriptionExpiring: { label: "Subscription expiring", desc: "Reminder before the plan ends.", who: "Buyers, owners, agents" },
+  paymentReceived: { label: "Payment received / invoice ready", desc: "After a checkout, with a link to the invoice.", who: "Buyers, owners, dealers" },
+  subscriptionExpiring: { label: "Subscription expiring", desc: "Reminder before the plan ends.", who: "Buyers, owners, dealers" },
   listingLive: { label: "Listing went live", desc: "When a submitted listing finishes automatic verification.", who: "Owners" },
   planPriceChanged: { label: "Plan price changed", desc: "When an admin changes the price of a plan for the user's role (last 30 days).", who: "Users of that role" },
 };
@@ -199,7 +199,7 @@ export function getInbox(user: { role: SubscriberRole; mobile: string }): InboxI
           title: "Your plan is expiring soon",
           message: `${s.snapshot.name} ends in ${days} day${days === 1 ? "" : "s"}.`,
           kind: "alert",
-          link: user.role === "owner" ? "/owner/plans" : user.role === "agent" ? "/agent/packages" : "/plans",
+          link: user.role === "owner" ? "/owner/plans" : user.role === "dealer" ? "/dealer/packages" : "/plans",
           at: new Date(new Date(s.expiresAt).getTime() - rules.expiringDays * 864e5).toISOString(),
         });
       }
@@ -229,7 +229,7 @@ export function getInbox(user: { role: SubscriberRole; mobile: string }): InboxI
         title: `${h.planName} price updated`,
         message: `Now ₹${h.newPrice.toLocaleString("en-IN")} (was ₹${h.oldPrice.toLocaleString("en-IN")}) for new purchases. Your current plan is unchanged.`,
         kind: "announcement",
-        link: user.role === "owner" ? "/owner/plans" : user.role === "agent" ? "/agent/packages" : "/plans",
+        link: user.role === "owner" ? "/owner/plans" : user.role === "dealer" ? "/dealer/packages" : "/plans",
         at: h.changedAt,
       });
     }

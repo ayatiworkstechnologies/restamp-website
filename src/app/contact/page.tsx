@@ -16,7 +16,7 @@ export default function ContactPage() {
         <div className="container-site py-10 sm:py-14">
           <ContactUs
             role="visitor"
-            topics={['Buying a property', 'Renting a property', 'Listing my property', 'Becoming an agent', 'Other']}
+            topics={['Buying a property', 'Renting a property', 'Listing my property', 'Becoming a dealer', 'Other']}
           />
         </div>
       </main>

@@ -73,7 +73,7 @@ export function RolesPermissionsView() {
       id: "users",
       name: "User Management",
       icon: Users,
-      desc: "Controls access to manage buyers, property owners, agents and accounts.",
+      desc: "Controls access to manage buyers, property owners, dealers and accounts.",
       permissions: [
         { key: "view", label: "View User Profiles", desc: "Access user registry, phone numbers, and activity" },
         { key: "suspend", label: "Suspend Accounts", desc: "Block fraudulent buyers or non-compliant owners" },

@@ -17,7 +17,7 @@ export interface PropertyOwner {
   email: string;
   avatar?: string;
   isKycVerified: boolean;
-  accountType: "Individual Owner" | "Agent / Broker" | "Builder / Developer";
+  accountType: "Individual Owner" | "Dealer / Broker" | "Builder / Developer";
   joinedDate: string;
   totalListings: number;
 }

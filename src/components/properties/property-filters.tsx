@@ -148,7 +148,7 @@ export function PropertyFiltersBar({
           <select
             value={filters.type}
             onChange={(e) => onFilterChange({ type: e.target.value as any })}
-            className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+            className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
           >
             {propertyTypes.map((t) => (
               <option key={t} value={t}>
@@ -164,7 +164,7 @@ export function PropertyFiltersBar({
           <select
             value={filters.bhk}
             onChange={(e) => onFilterChange({ bhk: e.target.value as any })}
-            className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+            className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
           >
             <option value="All">All BHK</option>
             <option value="1">1 BHK</option>
@@ -180,7 +180,7 @@ export function PropertyFiltersBar({
           <select
             value={filters.sortBy}
             onChange={(e) => onFilterChange({ sortBy: e.target.value as any })}
-            className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+            className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
           >
             <option value="newest">Newest First</option>
             <option value="price_asc">Price: Low to High</option>

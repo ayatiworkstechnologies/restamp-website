@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, X, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, CheckCircle2 } from 'lucide-react';
 import PropertyCard from '@/components/property/PropertyCard';
 import type { Property } from '@/data/properties';
 import { searchListings } from '@/lib/api/buyer';
@@ -64,29 +64,22 @@ export default function FeaturedHomesSection() {
   return (
     <section className="container-site pb-20">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-7">
-        <div>
-          <p className="eyebrow text-slate-500">HANDPICKED FOR YOU</p>
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold text-slate-900 tracking-tight mt-1.5">
-            Recommended Projects
-          </h2>
+      <div className="mb-7 flex items-end justify-between gap-4">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Handpicked for you</p>
+          <h2 className="section-title mt-2">Recommended Projects</h2>
+          <p className="text-sm text-slate-600 mt-3 leading-relaxed">
+            Top new projects from trusted developers, chosen for location, amenities and value.
+          </p>
         </div>
 
         {/* Carousel Navigation Arrows */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <button
-            onClick={() => scroll('left')}
-            aria-label="Previous properties"
-            className="p-2 text-[#087ed9] hover:bg-sky-100/70 hover:scale-110 border border-transparent hover:border-sky-200/80 rounded-full transition duration-200 active:scale-[0.97] cursor-pointer shadow-2xs"
-          >
-            <ArrowLeft size={22} strokeWidth={2.2} />
+        <div className="flex shrink-0 gap-2">
+          <button type="button" onClick={() => scroll('left')} aria-label="Previous projects" className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#087ed9] hover:text-[#087ed9]">
+            <ChevronLeft size={18} />
           </button>
-          <button
-            onClick={() => scroll('right')}
-            aria-label="Next properties"
-            className="p-2 text-[#087ed9] hover:bg-sky-100/70 hover:scale-110 border border-transparent hover:border-sky-200/80 rounded-full transition duration-200 active:scale-[0.97] cursor-pointer shadow-2xs"
-          >
-            <ArrowRight size={22} strokeWidth={2.2} />
+          <button type="button" onClick={() => scroll('right')} aria-label="Next projects" className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#087ed9] hover:text-[#087ed9]">
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
@@ -94,12 +87,12 @@ export default function FeaturedHomesSection() {
       {/* Carousel Track */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="-mx-6 flex gap-4 overflow-x-auto px-6 scroll-px-6 pb-4 pt-1 sm:mx-0 sm:gap-6 sm:px-0 sm:scroll-px-0 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
         {properties.map((property) => (
           <div
             key={property.id}
-            className="w-[88vw] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 snap-start"
+            className="w-[82%] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 snap-start"
           >
             <PropertyCard property={property} onContact={handleContact} />
           </div>
@@ -205,7 +198,7 @@ export default function FeaturedHomesSection() {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center px-5 h-[53px] text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm"
+                      className="inline-flex items-center justify-center px-5 h-11 text-xs font-semibold text-white bg-[#087ed9] hover:bg-sky-600 rounded-lg transition shadow-sm"
                     >
                       Send Enquiry
                     </button>

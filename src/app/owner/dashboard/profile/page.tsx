@@ -25,7 +25,7 @@ import {
 const roleOptions: { value: Profile['role']; label: string }[] = [
   { value: 'owner', label: 'Owner' },
   { value: 'buyer', label: 'Buyer' },
-  { value: 'agent', label: 'Agent' },
+  { value: 'dealer', label: 'Dealer' },
 ];
 
 export default function OwnerProfilePage() {
@@ -237,7 +237,7 @@ export default function OwnerProfilePage() {
                 )}
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-xl bg-[#087ed9] px-6 h-[53px] text-xs font-semibold text-white hover:bg-[#0070c9] shadow-sm transition cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#087ed9] px-6 h-11 text-xs font-semibold text-white hover:bg-[#0070c9] shadow-sm transition cursor-pointer"
                 >
                   Save changes
                 </button>

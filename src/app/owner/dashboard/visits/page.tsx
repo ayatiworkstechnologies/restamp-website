@@ -82,7 +82,7 @@ export default function OwnerVisitsPage() {
               {v.note && <p className="mt-2 text-sm text-slate-600">{v.note}</p>}
               <div className="mt-auto flex flex-wrap gap-3 pt-5">
                 {v.phone && (
-                  <a href={`tel:${v.phone.replace(/\s/g, '')}`} aria-label={`Call ${v.customerName}`} className="inline-flex h-[53px] w-[53px] items-center justify-center rounded-[16px] bg-slate-100 text-slate-900 transition hover:bg-slate-200">
+                  <a href={`tel:${v.phone.replace(/\s/g, '')}`} aria-label={`Call ${v.customerName}`} className="inline-flex h-11 w-11 items-center justify-center rounded-[16px] bg-slate-100 text-slate-900 transition hover:bg-slate-200">
                     <Phone size={17} />
                   </a>
                 )}
@@ -94,7 +94,7 @@ export default function OwnerVisitsPage() {
                       const destructive = a.next === 'CANCELLED' || a.next === 'DECLINED';
                       if (await confirmDialog({ title: a.label === 'Complete' ? 'Complete visit' : `${a.label}${a.label.endsWith('Visit') ? '' : ' visit'}`, body: a.confirm, confirmLabel: a.label, tone: destructive ? 'danger' : 'default' })) updateVisitStatus(v.id, a.next);
                     }}
-                    className={`inline-flex h-[53px] flex-1 cursor-pointer items-center justify-center rounded-[16px] px-4 text-sm font-semibold transition ${
+                    className={`inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-[16px] px-4 text-sm font-semibold transition ${
                       a.primary ? 'bg-[#087ed9] text-white hover:bg-sky-600' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
                     }`}
                   >

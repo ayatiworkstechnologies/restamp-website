@@ -12,6 +12,15 @@ const tabs = ['Buy', 'Resale', 'Rent', 'Lease'];
 export default function SearchPanel() {
   const [activeTab, setActiveTab] = useState('Buy');
   const [query, setQuery] = useState('');
+  // Short placeholder on phones so it isn't cut off mid-word.
+  const [isPhone, setIsPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const sync = () => setIsPhone(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
   const [propertyType, setPropertyType] = useState('Home');
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
@@ -104,7 +113,7 @@ export default function SearchPanel() {
                 setQuery(e.target.value);
                 setIsFocused(true);
               }}
-              placeholder="Search Chennai locality or project (e.g. Alwarpet, OMR, ECR)..."
+              placeholder={isPhone ? 'Search locality or project' : 'Search Chennai locality or project (e.g. Alwarpet, OMR, ECR)...'}
               className="w-full outline-none text-sm text-slate-800 placeholder:text-slate-400 bg-transparent py-1.5"
             />
             {query && (
@@ -123,12 +132,16 @@ export default function SearchPanel() {
           <div className="hidden sm:block h-7 w-[1px] bg-slate-200 mx-4 shrink-0" />
 
           {/* Dropdown Selector */}
-          <div className="relative shrink-0 flex items-center px-2 sm:px-0 sm:pr-4">
+          <div className="relative flex items-center border-t border-slate-100 px-2 pt-3 sm:shrink-0 sm:border-0 sm:px-0 sm:pt-0 sm:pr-4">
+            {/* Mobile: icon in the same column as the location pin so labels line up */}
+            <span className="text-slate-400 shrink-0 mr-3 flex w-[19px] items-center justify-center sm:hidden">
+              <Home size={18} strokeWidth={1.8} />
+            </span>
             <select
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
               aria-label="Property type"
-              className="appearance-none bg-transparent outline-none text-sm text-slate-700 font-medium pr-7 cursor-pointer py-1.5"
+              className="w-full sm:w-auto appearance-none bg-transparent outline-none text-sm text-slate-700 font-medium pr-7 cursor-pointer py-1.5"
             >
               <option value="Home">Home</option>
               <option value="Apartments">Apartments</option>

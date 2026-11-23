@@ -103,7 +103,7 @@ export function PropertyEditModal({
               <select
                 value={formData.type || "Apartment"}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as PropertyType })}
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
               >
                 {propertyTypes.map((t) => (
                   <option key={t} value={t}>
@@ -132,7 +132,7 @@ export function PropertyEditModal({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as PropertyStatus })
                 }
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
               >
                 {statuses.map((s) => (
                   <option key={s} value={s}>
@@ -184,7 +184,7 @@ export function PropertyEditModal({
                 onChange={(e) =>
                   setFormData({ ...formData, furnishing: e.target.value as FurnishingStatus })
                 }
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb] focus:bg-white"
               >
                 {furnishings.map((f) => (
                   <option key={f} value={f}>

@@ -70,7 +70,7 @@ export default function PaymentsPage() {
       <Notice tone="warn">
         <strong>No payment gateway is connected.</strong> Checkouts are currently simulated, so payments are recorded as <em>unverified</em>, and seed rows are sample
         data. Nothing on this page can mark a payment as paid. Only a signed gateway webhook can (see PAYMENTS.md). Every payment has an invoice you can print or
-        download as PDF; it shows the payment&apos;s real status. Add the seller GSTIN in <code>src/lib/invoice.ts</code> before using them as GST tax invoices.
+        download as PDF; it shows the payment&apos;s real status. Set the seller GSTIN and edit the layout in <a href="/admin-dashboard/subscriptions/invoice-settings" className="font-bold underline">Invoice Settings</a> before using them as GST tax invoices.
       </Notice>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -90,11 +90,11 @@ export default function PaymentsPage() {
         <div className="flex flex-wrap items-center gap-3 border-b border-[#f1f4f9] p-4">
           <div className="relative min-w-[200px] flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9da9bc]" />
-            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search invoice no, transaction ID, subscriber or plan" className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] py-2 pl-9 pr-3 text-xs outline-none focus:border-[#087ed9]" />
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search invoice no, transaction ID, subscriber or plan" className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] h-9 py-2 pl-9 pr-3 text-xs outline-none focus:border-[#087ed9]" />
           </div>
           <select aria-label="Role" className={selectCls} value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
             <option value="all">All roles</option>
-            {(["buyer", "owner", "agent"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+            {(["buyer", "owner", "dealer"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
           </select>
           <select aria-label="Verification" className={selectCls} value={ver} onChange={(e) => setVer(e.target.value as typeof ver)}>
             <option value="all">Any verification</option>

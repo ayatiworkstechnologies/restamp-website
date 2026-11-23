@@ -11,7 +11,7 @@ interface UserFiltersProps {
     all: number;
     buyers: number;
     owners: number;
-    agents: number;
+    dealers: number;
   };
 }
 
@@ -24,7 +24,7 @@ export function UserFiltersBar({
     { label: "All Users", value: "all", count: roleCounts.all, icon: <Users size={14} /> },
     { label: "Buyers", value: "buyer", count: roleCounts.buyers, icon: <UserCheck size={14} /> },
     { label: "Owners & Sellers", value: "owner", count: roleCounts.owners, icon: <Building size={14} /> },
-    { label: "Agents", value: "agent", count: roleCounts.agents, icon: <Briefcase size={14} /> },
+    { label: "Dealers", value: "dealer", count: roleCounts.dealers, icon: <Briefcase size={14} /> },
   ];
 
   return (
@@ -91,7 +91,7 @@ export function UserFiltersBar({
           <select
             value={filters.status}
             onChange={(e) => onFilterChange({ status: e.target.value as any })}
-            className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+            className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="Active">Active</option>
@@ -107,11 +107,11 @@ export function UserFiltersBar({
             <select
               value={filters.ownerType || "all"}
               onChange={(e) => onFilterChange({ ownerType: e.target.value as any })}
-              className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+              className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
             >
               <option value="all">All Owner Types</option>
               <option value="Individual Owner">Individual Owner</option>
-              <option value="Agent / Broker">Agent</option>
+              <option value="Dealer / Broker">Dealer</option>
               <option value="Builder / Developer">Builder / Developer</option>
             </select>
           </div>
@@ -123,7 +123,7 @@ export function UserFiltersBar({
           <select
             value={filters.sortBy}
             onChange={(e) => onFilterChange({ sortBy: e.target.value as any })}
-            className="rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
+            className="ui-select rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#324564] outline-none transition-all hover:bg-white focus:border-[#2854cb] cursor-pointer"
           >
             <option value="recent">Recently Registered</option>
             <option value="name_asc">Name: A to Z</option>

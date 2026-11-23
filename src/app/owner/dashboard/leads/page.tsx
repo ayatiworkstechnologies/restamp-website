@@ -9,7 +9,6 @@ const statusTone: Record<LeadStatus, string> = {
   New: 'bg-sky-50 text-[#087ed9]',
   Contacted: 'bg-violet-50 text-violet-700',
   Visit: 'bg-amber-50 text-amber-700',
-  Negotiating: 'bg-orange-50 text-orange-700',
   Closed: 'bg-emerald-50 text-emerald-700',
 };
 
@@ -71,7 +70,7 @@ export default function OwnerLeadsPage() {
             </button>
           ))}
         </div>
-        <label className="flex h-[53px] items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-4 lg:w-80">
+        <label className="flex h-11 items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-4 lg:w-80">
           <Search size={17} className="text-slate-400" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, phone, message…" className="w-full bg-transparent text-sm outline-none" />
         </label>
@@ -125,13 +124,13 @@ export default function OwnerLeadsPage() {
                 )}
                 <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
                   {l.phone ? (
-                    <a href={`tel:${l.phone.replace(/\s/g, '')}`} className="inline-flex h-[53px] items-center justify-center gap-2 rounded-[16px] bg-slate-100 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
+                    <a href={`tel:${l.phone.replace(/\s/g, '')}`} className="inline-flex h-11 items-center justify-center gap-2 rounded-[16px] bg-slate-100 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
                       <Phone size={16} /> Call
                     </a>
                   ) : (
-                    <span className="inline-flex h-[53px] items-center justify-center rounded-[16px] bg-slate-50 text-xs text-slate-400">Phone unavailable</span>
+                    <span className="inline-flex h-11 items-center justify-center rounded-[16px] bg-slate-50 text-xs text-slate-400">Phone unavailable</span>
                   )}
-                  <button type="button" onClick={() => openPropose(l)} className="inline-flex h-[53px] cursor-pointer items-center justify-center gap-2 rounded-[16px] bg-[#087ed9] text-sm font-semibold text-white transition hover:bg-sky-600">
+                  <button type="button" onClick={() => openPropose(l)} className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[16px] bg-[#087ed9] text-sm font-semibold text-white transition hover:bg-sky-600">
                     <CalendarClock size={16} /> {visit ? 'Update Visit' : 'Propose a Visit'}
                   </button>
                 </div>
@@ -154,12 +153,12 @@ export default function OwnerLeadsPage() {
               </button>
             </div>
             <label className="mt-5 block text-xs font-semibold text-slate-600">Date & time</label>
-            <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className="mt-1.5 h-[53px] w-full rounded-[16px] border border-slate-200 px-4 text-sm outline-none focus:border-[#087ed9]" />
+            <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className="mt-1.5 h-11 w-full rounded-[16px] border border-slate-200 px-4 text-sm outline-none focus:border-[#087ed9]" />
             <label className="mt-4 block text-xs font-semibold text-slate-600">Note (optional)</label>
             <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} className="mt-1.5 w-full rounded-[16px] border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#087ed9]" />
             {error && <p className="mt-2 text-xs font-semibold text-red-500">{error}</p>}
             <p className="mt-3 text-xs text-slate-400">The buyer can confirm or decline the proposed time.</p>
-            <button type="button" onClick={submitPropose} className="mt-5 inline-flex h-[53px] w-full cursor-pointer items-center justify-center rounded-[16px] bg-[#087ed9] text-sm font-semibold text-white hover:bg-sky-600">
+            <button type="button" onClick={submitPropose} className="mt-5 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-[16px] bg-[#087ed9] text-sm font-semibold text-white hover:bg-sky-600">
               Send proposal
             </button>
           </div>

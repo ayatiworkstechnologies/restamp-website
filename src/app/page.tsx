@@ -6,7 +6,6 @@ import {
   MapPin,
   ShieldCheck,
   HeartHandshake,
-  Sparkles,
   Compass,
   KeyRound,
   Building2,
@@ -20,7 +19,7 @@ import HomeAnimations from '@/components/home/HomeAnimations';
 import RecentlyAddedSection, { VerifiedPropertiesSection } from '@/components/home/RecentlyAddedSection';
 
 const HERO_ALT =
-  'Your property journey starts here. Easy-ah vithudunga. Buy and resale, rent and lease, explore new projects, post property for free, search by location, owner and agent portal.';
+  'Your property journey starts here. Easy-ah vithudunga. Buy and resale, rent and lease, explore new projects, post property for free, search by location, owner and dealer portal.';
 /** Above 1440px: 2048x600 artwork. */
 const { props: { srcSet: heroWideSrcSet } } = getImageProps({ src: '/images/restamp-web-banner-12.png', alt: '', width: 2048, height: 600, sizes: '100vw', quality: 85 });
 /** 1440px and below: 1440x600 artwork. */
@@ -72,7 +71,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main className="bg-slate-50">
+      <main className="bg-[#E6F1FA]">
         {/* Hero Section: art-directed banner.
             Up to 1440px wide: 1440x600 artwork (600px tall from 768px up; phones scale to fit).
             Above 1440px: 2048x600 artwork at a fixed 600px height. */}
@@ -130,37 +129,26 @@ export default function HomePage() {
           </div>
 
           {/* Blueprint Banner Card matching Your-home-journey.png */}
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[440px] sm:min-h-[400px] md:min-h-[380px] lg:min-h-[420px] group">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[520px] sm:min-h-[400px] md:min-h-[380px] lg:min-h-[420px] group">
             {/* High-resolution 2x background graphic with building cutout and blueprint grid */}
             <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none group-hover:scale-[1.01] transition-transform duration-500 ease-out"
-              style={{
-                backgroundImage: `url('/images/your-home-journey@2x.png')`,
-              }}
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-cover bg-bottom sm:bg-right pointer-events-none group-hover:scale-[1.01] transition-transform duration-500 ease-out bg-[url('/images/your-home-journey-mob.png')] sm:bg-[url('/images/your-home-journey@2x.png')]"
             />
 
             {/* Top Right Floating Pill: Post property FREE */}
             <Link
               href="/sell"
               aria-label="Post property for free"
-              className="absolute top-4 sm:top-6 lg:top-7 right-4 sm:right-7 lg:right-9 z-20 inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-md hover:shadow-xl hover:scale-105 active:scale-[0.97] transition duration-200"
+              className="absolute top-4 sm:top-6 lg:top-7 left-6 sm:left-auto sm:right-7 lg:right-9 z-20 inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-[100px] shadow-md hover:shadow-xl hover:scale-105 active:scale-[0.97] transition duration-200"
             >
               <span>Post property</span>
-              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded tracking-wide animate-pulse">
+              <span className="bg-[#00a862] text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full tracking-wide animate-pulse">
                 FREE
               </span>
             </Link>
 
             {/* Left Content Area */}
             <div className="relative z-10 flex flex-col justify-center h-full pt-16 pb-8 sm:py-8 md:py-10 lg:py-12 px-6 sm:px-8 md:px-10 lg:px-12 w-full max-w-full md:max-w-[55%] lg:max-w-[550px]">
-              {/* Eyebrow badge with floating animation */}
-              <div className="inline-block self-start mb-3 sm:mb-5">
-                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md bg-[#005fb8]/60 border border-white/20 text-white text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-xs">
-                  <Sparkles size={11} className="text-sky-200" />
-                  BUY A HOME
-                </span>
-              </div>
-
               {/* Title */}
               <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.16]">
                 Not just a property.
@@ -178,7 +166,7 @@ export default function HomePage() {
               <div className="mt-5 sm:mt-8">
                 <Link
                   href="/buy"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-xs sm:text-sm md:text-[15px] font-bold px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 transition duration-200 group/btn"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-[#0074ce] hover:text-[#005fa8] text-xs sm:text-sm md:text-[15px] font-bold px-5 sm:px-7 py-3 sm:py-3.5 rounded-[100px] shadow-lg hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 transition duration-200 group/btn"
                 >
                   <span>Explore homes to buy</span>
                   <ArrowRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform duration-200" />
@@ -348,14 +336,11 @@ export default function HomePage() {
 
         {/* Mobile App Download Section */}
         <section id="download-app" className="container-site pb-20">
-          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] group">
+          <div className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden bg-[#0074ce] shadow-xl text-white min-h-[520px] sm:min-h-[400px] lg:min-h-[420px] group">
             {/* High-definition smartphone mockup graphic pinned cleanly as background */}
             <div
-              className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover pointer-events-none group-hover:scale-[1.01] transition-transform duration-500 ease-out"
-              style={{
-                backgroundImage: `url('/images/mobile-app@2x.webp')`,
-                imageRendering: '-webkit-optimize-contrast',
-              }}
+              className="absolute inset-0 w-full h-full bg-no-repeat bg-[length:100%_auto] bg-bottom sm:bg-cover sm:bg-right pointer-events-none group-hover:scale-[1.01] transition-transform duration-500 ease-out bg-[url('/images/mobile-app@2x-mob.png')] sm:bg-[url('/images/mobile-app@2x.webp')]"
+              style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
 
             {/* Floating Ratings Pill Badge */}
@@ -365,10 +350,10 @@ export default function HomePage() {
             </div>
 
             {/* Readability gradient mask for smaller screens */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-[#0074ce]/40 sm:via-[#0074ce]/80 md:via-[#0074ce]/60 md:to-transparent lg:via-[#0074ce]/20 lg:to-transparent pointer-events-none" />
+            <div className="absolute inset-0 hidden sm:block bg-gradient-to-r from-[#0074ce] via-[#0074ce]/95 to-[#0074ce]/40 sm:via-[#0074ce]/80 md:via-[#0074ce]/60 md:to-transparent lg:via-[#0074ce]/20 lg:to-transparent pointer-events-none" />
 
             {/* Left Content Area */}
-            <div className="relative z-10 flex flex-col justify-center min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-8 md:p-10 lg:p-12 w-full max-w-full md:max-w-[52%] lg:max-w-[540px]">
+            <div className="relative z-10 flex flex-col justify-start sm:justify-center min-h-0 sm:min-h-[400px] lg:min-h-[420px] p-6 sm:p-8 md:p-10 lg:p-12 w-full max-w-full md:max-w-[52%] lg:max-w-[540px]">
               {/* Eyebrow / Subtitle */}
               <p className="text-white/90 text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
                 Take control of your home journey with ease — anywhere, anytime.
@@ -476,14 +461,14 @@ export default function HomePage() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/buy"
-                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#087ed9] px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-[#087ed9]/25 transition hover:bg-[#0670c2]"
+                  className="group inline-flex items-center justify-center gap-2 rounded-[100px] bg-[#087ed9] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[#087ed9]/25 transition hover:bg-[#0670c2]"
                 >
                   Let’s find your home
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   href="/rent"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:border-[#087ed9] hover:text-[#087ed9]"
+                  className="inline-flex items-center justify-center rounded-[100px] border border-slate-200 px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:border-[#087ed9] hover:text-[#087ed9]"
                 >
                   Explore rentals
                 </Link>

@@ -1,0 +1,250 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { NotificationBell } from '@/components/common/notification-bell';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { clearProfile, getProfile, type Profile } from '@/lib/profile';
+import {
+  getDealerSubscription,
+  hasActiveDealerSubscription,
+  seedExistingPartnerSubscription,
+  type DealerSubscription,
+} from '@/lib/dealerPlan';
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  CreditCard,
+  UserRound,
+  LogOut,
+  Menu,
+  X,
+  Crown,
+  ShieldCheck,
+  TrendingUp,
+  MapPin,
+  Sparkles,
+  Headset,
+  Home,
+  PlusCircle,
+  CalendarCheck,
+  type LucideIcon,
+} from 'lucide-react';
+
+type NavItem = { label: string; href: string; icon: LucideIcon };
+
+// Mirrors the Restamp app dealer navbar: Home · My Hub · My Ads · Add New · Leads · Profile.
+// My Hub, My Ads and Leads each carry the Sales Hub / My Property tabs in-page.
+const dealerNav: NavItem[] = [
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'My Hub', href: '/dealer/dashboard', icon: LayoutDashboard },
+  { label: 'My Ads', href: '/dealer/dashboard/properties', icon: Building2 },
+  { label: 'Add New', href: '/dealer/dashboard/add-property', icon: PlusCircle },
+  { label: 'Leads', href: '/dealer/dashboard/leads', icon: Users },
+  { label: 'Site Visits', href: '/dealer/dashboard/visits', icon: CalendarCheck },
+  { label: 'Profile', href: '/dealer/dashboard/profile', icon: UserRound },
+  { label: 'Plan & Payments', href: '/dealer/dashboard/payments', icon: CreditCard },
+  { label: 'Contact Us', href: '/dealer/dashboard/contact', icon: Headset },
+];
+
+export default function DealerDashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [sub, setSub] = useState<DealerSubscription | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const p = getProfile();
+    // Protect route: require dealer authentication
+    if (!p) {
+      router.replace('/login?role=dealer&next=/dealer/dashboard');
+      return;
+    }
+    setProfile(p);
+
+    // If existing paid dealer (e.g. Arun Kumar), ensure seed if empty
+    let activeSub = getDealerSubscription();
+    if (!activeSub && p.mobile === '9840123456') {
+      activeSub = seedExistingPartnerSubscription(p.mobile);
+    }
+
+    // Protect route: require active subscription
+    if (!activeSub || !activeSub.selectedLocations || activeSub.selectedLocations.length === 0) {
+      router.replace('/dealer/packages');
+      return;
+    }
+
+    setSub(activeSub);
+
+    const refresh = () => {
+      setProfile(getProfile());
+      setSub(getDealerSubscription());
+    };
+    window.addEventListener('profile-change', refresh);
+    window.addEventListener('dealer-subscription-change', refresh);
+    return () => {
+      window.removeEventListener('profile-change', refresh);
+      window.removeEventListener('dealer-subscription-change', refresh);
+    };
+  }, [router]);
+
+  const logout = () => {
+    clearProfile();
+    router.push('/login?role=dealer');
+  };
+
+  // Calculate days remaining
+  const daysRemaining = sub?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(sub.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  const sidebar = (
+    <aside className="flex h-full w-64 flex-col overflow-y-auto border-r border-slate-100 bg-white">
+      {/* Brand Header */}
+      <Link href="/" className="flex items-center gap-2 px-6 py-5">
+        <Image src="/restamp-logo.svg" alt="Restamp" width={149} height={40} className="h-10 w-auto" />
+      </Link>
+      <div className="px-6 pb-3 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 text-[10px] font-bold uppercase tracking-wider text-[#087ed9]">
+          <ShieldCheck size={13} /> Dealer Console
+        </span>
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" title="Syndicate Online" />
+      </div>
+
+      {/* Nav List */}
+      <nav className="flex-1 space-y-1 px-3">
+        {dealerNav.map(({ label, href, icon: Icon }) => {
+          const active = href === '/' ? false : href === '/dealer/dashboard' ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                active ? 'bg-sky-50 text-[#087ed9]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Subscription Card */}
+      {sub && (
+        <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 text-slate-900 m-3 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-extrabold text-sky-600">
+              <Crown size={14} /> {sub.badge || sub.planName}
+            </div>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600">
+              Active Paid
+            </span>
+          </div>
+
+          <p className="mt-2 text-xs font-bold text-slate-700">
+            {sub.selectedLocations?.length || 0} / {sub.locationLimit} Micro-Markets Covered
+          </p>
+
+          <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+            <span>Valid till:</span>
+            <span className="text-slate-600 font-medium">
+              {sub.expiresAt
+                ? new Date(sub.expiresAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : 'Active Lifetime'}
+            </span>
+          </p>
+
+          {daysRemaining !== null && (
+            <p className="text-[10px] text-sky-600 font-bold mt-0.5">
+              {daysRemaining} days remaining in cycle
+            </p>
+          )}
+
+          <div className="mt-3.5 pt-3 border-t border-slate-200 flex items-center gap-2">
+            <Link
+              href="/dealer/packages"
+              className="flex-1 rounded-xl bg-[#087ed9] hover:bg-sky-500 py-1.5 text-center text-[11px] font-bold text-white transition shadow-xs"
+            >
+              Upgrade Locations
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Logout / Switch */}
+      <button
+        type="button"
+        onClick={logout}
+        className="mx-3 mb-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+      >
+        <LogOut size={18} /> Exit Console
+      </button>
+    </aside>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Desktop sidebar */}
+      <div className="sticky top-0 hidden h-screen lg:block lg:w-64 lg:shrink-0">{sidebar}</div>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-64">{sidebar}</div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-8">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open navigation menu"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 lg:hidden"
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Quick RERA verification indicator */}
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span>RERA Registered Dealer:</span>
+            <span className="font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md text-[11px] font-bold">
+              {sub?.reraNumber || 'TN/DEALER/0491/2023'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {profile && <NotificationBell profile={profile} />}
+            <Link
+              href="/dealer/packages"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-[#087ed9] border border-sky-200 px-3.5 py-1.5 text-xs font-bold hover:bg-[#087ed9] hover:text-white transition shadow-2xs"
+            >
+              <Crown size={13} /> {sub?.badge || 'Change Package'}
+            </Link>
+
+            <Link
+              href="/dealer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+            >
+              Public Dealer Hub
+            </Link>
+          </div>
+        </header>
+
+        <main className="w-full flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+      </div>
+    </div>
+  );
+}

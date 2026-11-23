@@ -4,8 +4,9 @@
  * admins own all prices through Admin → Subscription Plans; no page reads
  * prices from this file.
  *
- * Owner and Agent entries reproduce the plans that were previously hard-coded
- * in ownerPlan.ts / agentPlan.ts, so existing ids and prices are preserved.
+ * Dealer packages combine the former Owner (property post) and Agent
+ * (micro-market) benefits; ids and prices are unchanged. Owner and Dealer entries reproduce the plans that were previously hard-coded
+ * in ownerPlan.ts / dealerPlan.ts, so existing ids and prices are preserved.
  * Paid Buyer plans are new and start as DRAFTS with placeholder prices; they
  * are not sold until an admin reviews and publishes them.
  */
@@ -44,21 +45,21 @@ export const SEED_PLANS: SeedPlan[] = [
   {
     ...base,
     id: "loc-5",
-    role: "agent",
+    role: "dealer",
     name: "5 Micro-Markets",
     badge: "Starter Hub",
-    description: "Ideal for neighborhood specialists & boutique agents",
+    description: "For property owners and neighbourhood dealers getting started",
     price: 2999,
     billingCycle: "quarterly",
     validityDays: 90,
     status: "active",
     limits: { locationLimit: 5, listingLimit: 10 },
     features: [
+      "Post up to 10 properties (own or client listings)",
       "Coverage across 5 chosen high-intent micro-markets",
-      "Post up to 10 active exclusive mandates",
-      "Direct buyer WhatsApp & push lead notifications",
-      "Verified RERA Agent badge on all listings",
-      "Standard search ranking in your 5 zones",
+      "Unlimited buyer leads with WhatsApp & push alerts",
+      "City-wide reach for every listing",
+      "Verified RERA Dealer badge on all listings",
       "Retain 100% of your buyer & seller brokerage",
     ],
     sortOrder: 0,
@@ -66,10 +67,10 @@ export const SEED_PLANS: SeedPlan[] = [
   {
     ...base,
     id: "loc-10",
-    role: "agent",
+    role: "dealer",
     name: "10 Micro-Markets",
-    badge: "Growth Agent",
-    description: "Best for active full-time agents & mid-size teams",
+    badge: "Growth Dealer",
+    description: "Best for owners with several properties and full-time dealers",
     price: 4999,
     billingCycle: "quarterly",
     validityDays: 90,
@@ -77,33 +78,33 @@ export const SEED_PLANS: SeedPlan[] = [
     recommended: true,
     limits: { locationLimit: 10, listingLimit: 25 },
     features: [
+      "Post up to 25 properties (own or client listings)",
       "Coverage across 10 prime micro-markets",
-      "Post up to 25 active prime mandates",
-      "Instant buyer phone unmasking & WhatsApp CRM sync",
+      "Unlimited buyer leads with instant phone unmasking",
+      "Relationship Manager assistance",
       "Top 10% search placement in your 10 zones",
       "Access to Restamp Co-Broking Syndicate (50:50 splits)",
-      "Quarterly deal closing analytics & price movement insights",
     ],
     sortOrder: 1,
   },
   {
     ...base,
     id: "loc-15",
-    role: "agent",
+    role: "dealer",
     name: "15 Micro-Markets",
     badge: "Enterprise Syndicate",
-    description: "Full metro-wide dominance for top-producing agencies",
+    description: "For property businesses, builders and top-producing agencies",
     price: 7999,
     billingCycle: "quarterly",
     validityDays: 90,
     status: "active",
     limits: { locationLimit: 15, listingLimit: 50 },
     features: [
-      "City-wide dominance across 15 prime micro-markets",
-      "Post up to 50 active high-value mandates",
+      "Post up to 50 properties (own or client listings)",
+      "City-wide coverage across 15 prime micro-markets",
+      "Unlimited buyer leads & dedicated Key Account Manager",
+      "Social media promotion for your listings",
       "Exclusive developer pre-launch mandate rights",
-      "Dedicated Key Account Manager & fast RERA compliance desk",
-      "Pre-approved mortgage assistance desk for your buyers",
       "Priority showcase in weekly Restamp HNI Buyer Digest",
     ],
     sortOrder: 2,

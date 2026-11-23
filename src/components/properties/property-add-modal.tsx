@@ -195,7 +195,7 @@ export function PropertyAddModal({ isOpen, onClose, onAdd }: PropertyAddModalPro
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as PropertyType)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
                 >
                   <option value="Apartment">Apartment</option>
                   <option value="Villa">Villa</option>
@@ -235,7 +235,7 @@ export function PropertyAddModal({ isOpen, onClose, onAdd }: PropertyAddModalPro
                 <select
                   value={furnishing}
                   onChange={(e) => setFurnishing(e.target.value as FurnishingStatus)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
                 >
                   <option value="Unfurnished">Unfurnished</option>
                   <option value="Semi-Furnished">Semi-Furnished</option>
@@ -313,7 +313,7 @@ export function PropertyAddModal({ isOpen, onClose, onAdd }: PropertyAddModalPro
                 <select
                   value={facing}
                   onChange={(e) => setFacing(e.target.value)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
                 >
                   <option value="East">East</option>
                   <option value="North">North</option>
@@ -338,7 +338,7 @@ export function PropertyAddModal({ isOpen, onClose, onAdd }: PropertyAddModalPro
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as PropertyStatus)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
                 >
                   <option value="Pending">Pending (Needs Review)</option>
                   <option value="Active">Active (Publish Live)</option>
@@ -438,10 +438,10 @@ export function PropertyAddModal({ isOpen, onClose, onAdd }: PropertyAddModalPro
                 <select
                   value={ownerType}
                   onChange={(e) => setOwnerType(e.target.value)}
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
                 >
                   <option value="Individual Owner">Individual Owner</option>
-                  <option value="Agent / Broker">Agent</option>
+                  <option value="Dealer / Broker">Dealer</option>
                   <option value="Builder / Developer">Builder / Developer</option>
                 </select>
               </div>

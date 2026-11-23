@@ -69,7 +69,7 @@ export function PlanStatusBadge({ status }: { status: PlanStatus }) {
 const ROLE_STYLES: Record<SubscriberRole, string> = {
   buyer: "bg-[#eff6ff] text-[#2563eb]",
   owner: "bg-[#f5f3ff] text-[#7c3aed]",
-  agent: "bg-[#ecfeff] text-[#0e7490]",
+  dealer: "bg-[#ecfeff] text-[#0e7490]",
 };
 export function RoleBadge({ role }: { role: SubscriberRole }) {
   return <span className={`${pill} ${ROLE_STYLES[role]}`}>{ROLE_LABEL[role]}</span>;
@@ -152,7 +152,7 @@ export function Pagination({ page, pages, total, setPage }: { page: number; page
 export const inputCls =
   "w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-medium text-[#22324d] outline-none transition placeholder:text-[#a1adc0] focus:border-[#087ed9] focus:bg-white";
 export const selectCls =
-  "rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#22324d] outline-none focus:border-[#087ed9]";
+  "ui-select ui-field rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] px-3 py-2 text-xs font-semibold text-[#22324d] outline-none focus:border-[#087ed9]";
 export const btnPrimary =
   "inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#087ed9] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-[#087ed9]/25 transition hover:bg-[#066db9] disabled:cursor-not-allowed disabled:opacity-50";
 export const btnSecondary =

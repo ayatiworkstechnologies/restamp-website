@@ -81,6 +81,30 @@ const rentMegaData = {
   ],
 };
 
+/* 2b. Resale Mega Menu Data */
+const resaleMegaData = {
+  bedrooms: [
+    { label: '1 BHK Resale Flats', sub: 'Affordable ready-to-move homes', href: '/buy?purpose=Resale&bhk=1' },
+    { label: '2 BHK Resale Apartments', sub: 'Most popular resale format', href: '/buy?purpose=Resale&bhk=2' },
+    { label: '3 BHK Resale Homes', sub: 'Spacious homes in settled areas', href: '/buy?purpose=Resale&bhk=3' },
+    { label: '4+ BHK Resale Villas', sub: 'Premium pre-owned residences', href: '/buy?purpose=Resale&bhk=4' },
+  ],
+  categories: [
+    { label: 'Resale Apartments', sub: 'Established communities', href: '/buy?purpose=Resale&type=Apartment' },
+    { label: 'Independent Houses', sub: 'Own land, parking & terrace', href: '/buy?purpose=Resale&type=House' },
+    { label: 'Resale Villas', sub: 'Private gated villas', href: '/buy?purpose=Resale&type=Villa' },
+    { label: 'Plots & Land', sub: 'Approved resale plots', href: '/buy?purpose=Resale&type=Plot' },
+    { label: 'Commercial Resale', sub: 'Shops & offices', href: '/buy?purpose=Resale&type=Commercial' },
+  ],
+  hotspots: [
+    { name: 'OMR Tech Corridor', tag: 'Navalur, Sholinganallur, Thoraipakkam', href: '/buy?purpose=Resale&locality=OMR' },
+    { name: 'Velachery & Guindy', tag: 'Metro hub & easy airport access', href: '/buy?purpose=Resale&locality=Velachery' },
+    { name: 'Anna Nagar & Kilpauk', tag: 'Prime educational & residential hub', href: '/buy?purpose=Resale&locality=Anna Nagar' },
+    { name: 'Adyar & Thiruvanmiyur', tag: 'Walk to beach & South Chennai', href: '/buy?purpose=Resale&locality=Adyar' },
+    { name: 'Tambaram & Chromepet', tag: 'Value homes with rail connectivity', href: '/buy?purpose=Resale&locality=Tambaram' },
+  ],
+};
+
 /* 3. Large New Projects Mega Menu Data */
 const projectsMegaData = {
   stages: [
@@ -123,22 +147,22 @@ const ownerMegaData = {
   ],
 };
 
-/* 5. Large For Agents Mega Menu Data */
-const agentMegaData = {
+/* 5. Large For Dealers Mega Menu Data */
+const dealerMegaData = {
   portal: [
-    { label: 'Agent Portal', sub: 'Dedicated agent screen & onboarding', href: '/agent', badge: 'NEW' },
-    { label: 'Agent Deal Console', sub: 'Real-time leads & owner properties', href: '/agent/dashboard', badge: 'CRM' },
+    { label: 'Dealer Portal', sub: 'Dedicated dealer screen & onboarding', href: '/dealer', badge: 'NEW' },
+    { label: 'Dealer Deal Console', sub: 'Real-time leads & owner properties', href: '/dealer/dashboard', badge: 'CRM' },
   ],
   services: [
-    { label: 'RERA Verification Desk', sub: 'Verify your agent certificate', href: '/agent' },
-    { label: 'Buyer Inquiry Pipeline', sub: 'Pre-approved mortgage buyer alerts', href: '/agent/dashboard#leads' },
-    { label: 'Owner Properties', sub: 'Verified owner-posted listings', href: '/agent/dashboard/properties' },
-    { label: 'Agent Login / Register', sub: 'Dedicated agent authentication', href: '/login?role=agent' },
+    { label: 'RERA Verification Desk', sub: 'Verify your dealer certificate', href: '/dealer' },
+    { label: 'Buyer Inquiry Pipeline', sub: 'Pre-approved mortgage buyer alerts', href: '/dealer/dashboard#leads' },
+    { label: 'Owner Properties', sub: 'Verified owner-posted listings', href: '/dealer/dashboard/properties' },
+    { label: 'Dealer Login / Register', sub: 'Dedicated dealer authentication', href: '/login?role=dealer' },
   ],
   plans: [
-    { label: '5 Locations Hub (₹2,999)', sub: 'Coverage in 5 chosen micro-markets', href: '/agent/packages' },
-    { label: '10 Locations Agent (₹4,999)', sub: 'Top 10% search placement & agent collaboration', href: '/agent/packages' },
-    { label: '15 Locations Syndicate (₹7,999)', sub: 'Metro-wide dominance & key account manager', href: '/agent/packages' },
+    { label: '5 Locations Hub (₹2,999)', sub: 'Coverage in 5 chosen micro-markets', href: '/dealer/packages' },
+    { label: '10 Locations Dealer (₹4,999)', sub: 'Top 10% search placement & dealer collaboration', href: '/dealer/packages' },
+    { label: '15 Locations Syndicate (₹7,999)', sub: 'Metro-wide dominance & key account manager', href: '/dealer/packages' },
   ],
 };
 
@@ -236,7 +260,7 @@ export default function Header() {
 
   const roleMenus = [
     {
-      label: 'For Buyers',
+      label: 'Buyer',
       links: [
         { label: 'Buy Property', href: '/buy' },
         { label: 'Saved Homes', href: '/saved' },
@@ -245,7 +269,7 @@ export default function Header() {
       ],
     },
     {
-      label: 'For Owners',
+      label: 'Owner',
       links: [
         { label: 'Owner Portal / Post Free', href: '/owner' },
         { label: 'Post Property to Sell', href: '/sell?purpose=Sell' },
@@ -255,12 +279,12 @@ export default function Header() {
       ],
     },
     {
-      label: 'For Agents',
+      label: 'Dealer',
       links: [
-        { label: 'Agent Portal', href: '/agent' },
-        { label: 'Agent Console Dashboard', href: '/agent/dashboard' },
-        { label: 'Agent Plans', href: '/agent#plans' },
-        { label: 'Agent Login', href: '/login?role=agent' },
+        { label: 'Dealer Portal', href: '/dealer' },
+        { label: 'Dealer Console Dashboard', href: '/dealer/dashboard' },
+        { label: 'Dealer Plans', href: '/dealer/plans' },
+        { label: 'Dealer Login', href: '/login?role=dealer' },
       ],
     },
     {
@@ -279,7 +303,7 @@ export default function Header() {
       ref={headerRef}
       className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-2xs"
     >
-      <div className="container-site flex h-18 items-center justify-between gap-3 lg:gap-5 relative">
+      <div className="relative flex h-18 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:gap-5 lg:px-10 2xl:px-14">
         {/* Brand Logo */}
         <Link
           href="/"
@@ -340,26 +364,26 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* 3. NEW PROJECTS TAB */}
+          {/* 2b. RESALE TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => handleDropdownEnter('Projects')}
+            onMouseEnter={() => handleDropdownEnter('Resale')}
             onMouseLeave={handleDropdownLeave}
           >
             <Link
-              href="/projects"
+              href="/resale"
               onClick={() => setActiveDropdown(null)}
               className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
-                pathname.startsWith('/projects') || activeDropdown === 'Projects'
+                false || activeDropdown === 'Resale'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
               }`}
             >
-              <span>New projects</span>
+              <span>Resale</span>
               <ChevronDown
                 size={14}
                 className={`transition-transform duration-200 ${
-                  activeDropdown === 'Projects' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
+                  activeDropdown === 'Resale' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
                 }`}
               />
             </Link>
@@ -380,7 +404,7 @@ export default function Header() {
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
               }`}
             >
-              <span>For Owners</span>
+              <span>Owner</span>
               <ChevronDown
                 size={14}
                 className={`transition-transform duration-200 ${
@@ -390,29 +414,26 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* 5. FOR AGENTS TAB */}
+          {/* 5. FOR DEALERS TAB */}
           <div
             className="relative py-4"
-            onMouseEnter={() => handleDropdownEnter('Agent')}
+            onMouseEnter={() => handleDropdownEnter('Dealer')}
             onMouseLeave={handleDropdownLeave}
           >
             <Link
-              href="/agent"
+              href="/dealer"
               onClick={() => setActiveDropdown(null)}
               className={`flex items-center gap-1.5 py-2 px-3 rounded-xl transition cursor-pointer ${
-                pathname.startsWith('/agent') || activeDropdown === 'Agent'
+                pathname.startsWith('/dealer') || activeDropdown === 'Dealer'
                   ? 'text-[#087ed9] font-bold bg-sky-50'
                   : 'text-slate-700 hover:text-[#087ed9] hover:bg-slate-50'
               }`}
             >
-              <span>For Agents</span>
-              <span className="rounded bg-sky-100 text-[#087ed9] px-1.5 py-0.2 text-[9px] font-extrabold uppercase">
-                Hub
-              </span>
+              <span>Dealer</span>
               <ChevronDown
                 size={14}
                 className={`transition-transform duration-200 ${
-                  activeDropdown === 'Agent' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
+                  activeDropdown === 'Dealer' ? 'rotate-180 text-[#087ed9]' : 'text-slate-400'
                 }`}
               />
             </Link>
@@ -547,7 +568,7 @@ export default function Header() {
            ========================================================================= */}
         {activeDropdown && (
           <div
-            className="absolute top-full left-0 right-0 pt-2 z-50 animate-fadeIn"
+            className="absolute top-full left-0 right-0 mx-auto max-w-[1180px] px-6 pt-2 z-50 animate-fadeIn"
             onMouseEnter={() => {
               if (hoverTimeoutRef.current) {
                 clearTimeout(hoverTimeoutRef.current);
@@ -668,7 +689,7 @@ export default function Header() {
                       <Link
                         href="/buy?owner=true"
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-[53px] text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
                       >
                         Explore Owner Homes <ArrowRight size={13} />
                       </Link>
@@ -777,7 +798,7 @@ export default function Header() {
                       <Link
                         href="/rent"
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-[53px] text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
                       >
                         Browse Rentals <ArrowRight size={13} />
                       </Link>
@@ -787,6 +808,115 @@ export default function Header() {
                         className="block text-center text-[11px] font-medium text-slate-500 hover:text-[#087ed9] transition"
                       >
                         Owner? List for Rent Free →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ----------------- 2b. RESALE LARGE DROPDOWN ----------------- */}
+              {activeDropdown === 'Resale' && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                  {/* Col 1: Bedrooms (3 cols) */}
+                  <div className="md:col-span-3">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-4">
+                      By Configuration
+                    </p>
+                    <div className="space-y-3">
+                      {resaleMegaData.bedrooms.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                            {item.label}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.sub}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 2: Categories (3 cols) */}
+                  <div className="md:col-span-3">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-4">
+                      Property Category
+                    </p>
+                    <div className="space-y-3">
+                      {resaleMegaData.categories.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                            {item.label}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.sub}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 3: Resale Localities (3 cols) */}
+                  <div className="md:col-span-3 rounded-2xl bg-slate-50/70 p-5 border border-slate-100">
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3.5">
+                      Top Resale Localities
+                    </p>
+                    <div className="space-y-3">
+                      {resaleMegaData.hotspots.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="group block"
+                        >
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-[#087ed9] transition">
+                            {item.name}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                            {item.tag}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Col 4: Featured Promo Card (3 cols) */}
+                  <div className="md:col-span-3 rounded-2xl bg-gradient-to-br from-sky-50 via-white to-blue-50/70 border border-sky-100 p-6 flex flex-col justify-between shadow-xs">
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#087ed9] px-2.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white uppercase">
+                        Verified Sellers
+                      </span>
+                      <h4 className="text-base font-extrabold text-slate-900 mt-3 leading-tight">
+                        Ready-to-Move Resale Homes
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                        Buy pre-owned homes directly from verified owners, with clear prices and no hidden brokerage.
+                      </p>
+                    </div>
+
+                    <div className="pt-5 space-y-2.5">
+                      <Link
+                        href="/resale"
+                        onClick={() => setActiveDropdown(null)}
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
+                      >
+                        Browse Resale Homes <ArrowRight size={13} />
+                      </Link>
+                      <Link
+                        href="/sell?purpose=Sell"
+                        onClick={() => setActiveDropdown(null)}
+                        className="block text-center text-[11px] font-medium text-slate-500 hover:text-[#087ed9] transition"
+                      >
+                        Owner? Sell your home free →
                       </Link>
                     </div>
                   </div>
@@ -886,7 +1016,7 @@ export default function Header() {
                       <Link
                         href="/projects"
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-[53px] text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
                       >
                         Explore All Projects <ArrowRight size={13} />
                       </Link>
@@ -995,7 +1125,7 @@ export default function Header() {
                       <Link
                         href="/sell"
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-[53px] text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-[#0070c9] shadow-sm transition"
                       >
                         Post Free Property <ArrowRight size={13} />
                       </Link>
@@ -1011,16 +1141,16 @@ export default function Header() {
                 </div>
               )}
 
-              {/* ----------------- 5. AGENT LARGE DROPDOWN ----------------- */}
-              {activeDropdown === 'Agent' && (
+              {/* ----------------- 5. DEALER LARGE DROPDOWN ----------------- */}
+              {activeDropdown === 'Dealer' && (
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                   {/* Col 1: Portal & Tools (3 cols) */}
                   <div className="md:col-span-3">
                     <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-4">
-                      Agent Hub &amp; Tools
+                      Dealer Hub &amp; Tools
                     </p>
                     <div className="space-y-3">
-                      {agentMegaData.portal.map((item) => (
+                      {dealerMegaData.portal.map((item) => (
                         <Link
                           key={item.label}
                           href={item.href}
@@ -1051,7 +1181,7 @@ export default function Header() {
                       Workspaces &amp; Inquiries
                     </p>
                     <div className="space-y-3">
-                      {agentMegaData.services.map((item) => (
+                      {dealerMegaData.services.map((item) => (
                         <Link
                           key={item.label}
                           href={item.href}
@@ -1072,10 +1202,10 @@ export default function Header() {
                   {/* Col 3: Plans & Tiers (3 cols) */}
                   <div className="md:col-span-3 rounded-2xl bg-slate-50/70 p-5 border border-slate-100">
                     <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3.5">
-                      Agent Plans (0% Cut)
+                      Dealer Plans (0% Cut)
                     </p>
                     <div className="space-y-3">
-                      {agentMegaData.plans.map((item) => (
+                      {dealerMegaData.plans.map((item) => (
                         <Link
                           key={item.label}
                           href={item.href}
@@ -1097,7 +1227,7 @@ export default function Header() {
                   <div className="bg-gradient-to-br from-sky-50 to-white border border-sky-100 text-slate-900 md:col-span-3 rounded-2xl p-6 flex flex-col justify-between shadow-xs">
                     <div>
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold tracking-wide text-emerald-600 uppercase">
-                        140+ Verified Agents
+                        140+ Verified Dealers
                       </span>
                       <h4 className="text-base font-extrabold text-slate-900 mt-3 leading-tight">
                         Scale Brokerage Revenue
@@ -1109,18 +1239,18 @@ export default function Header() {
 
                     <div className="pt-5 space-y-2.5">
                       <Link
-                        href="/agent/dashboard"
+                        href="/dealer/dashboard"
                         onClick={() => setActiveDropdown(null)}
-                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-[53px] text-xs font-bold text-white hover:bg-sky-500 shadow-sm transition"
+                        className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-[#087ed9] h-11 text-xs font-bold text-white hover:bg-sky-500 shadow-sm transition"
                       >
-                        Open Agent Console <ArrowRight size={13} />
+                        Open Dealer Console <ArrowRight size={13} />
                       </Link>
                       <Link
-                        href="/agent"
+                        href="/dealer"
                         onClick={() => setActiveDropdown(null)}
                         className="block text-center text-[11px] font-medium text-slate-500 hover:text-[#087ed9] transition"
                       >
-                        Explore Agent Network →
+                        Explore Dealer Network →
                       </Link>
                     </div>
                   </div>
@@ -1174,7 +1304,7 @@ export default function Header() {
               <Link
                 href="/sell"
                 onClick={closeMenu}
-                className="flex items-center justify-between rounded-xl bg-[#087ed9] px-4 h-[53px] text-xs font-bold text-white shadow-sm hover:bg-[#0070c9] transition"
+                className="flex items-center justify-between rounded-xl bg-[#087ed9] px-4 h-11 text-xs font-bold text-white shadow-sm hover:bg-[#0070c9] transition"
               >
                 <span className="flex items-center gap-2">
                   <Home size={16} />
@@ -1228,6 +1358,14 @@ export default function Header() {
                   );
                 })}
               </div>
+              <Link
+                href="/about-us"
+                onClick={closeMenu}
+                className="mt-1 flex items-center justify-between rounded-xl border border-slate-100 px-3.5 py-2.5 text-xs font-bold text-slate-800 hover:bg-slate-50 hover:text-[#087ed9] transition"
+              >
+                <span>About Us</span>
+                <ChevronRight size={16} className="text-slate-400" />
+              </Link>
               <Link
                 href="/contact"
                 onClick={closeMenu}

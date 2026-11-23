@@ -73,7 +73,7 @@ export function SecurityAuditView() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
+            className="ui-select rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
           >
             <option value="all">All Categories</option>
             <option value="Auth">Authentication</option>
@@ -86,7 +86,7 @@ export function SecurityAuditView() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
+            className="ui-select rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
           >
             <option value="all">All Outcomes</option>
             <option value="Success">Success</option>

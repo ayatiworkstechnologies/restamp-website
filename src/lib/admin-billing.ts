@@ -31,8 +31,8 @@ export const BILLING_EVENT = 'admin-billing-change';
 const refresh = () => typeof window !== 'undefined' && window.dispatchEvent(new Event(BILLING_EVENT));
 
 type BackendRole = 'BUYER' | 'OWNER' | 'BROKER';
-const ROLE: Record<string, SubscriberRole> = { BUYER: 'buyer', OWNER: 'owner', BROKER: 'agent' };
-const BACKEND_ROLE: Record<SubscriberRole, BackendRole> = { buyer: 'BUYER', owner: 'OWNER', agent: 'BROKER' };
+const ROLE: Record<string, SubscriberRole> = { BUYER: 'buyer', OWNER: 'owner', BROKER: 'dealer' };
+const BACKEND_ROLE: Record<SubscriberRole, BackendRole> = { buyer: 'BUYER', owner: 'OWNER', dealer: 'BROKER' };
 const rupees = (paise: number) => Math.round(paise / 100);
 const iso = (v: string | null | undefined) => (v ? (v.endsWith('Z') || v.includes('+') ? v : `${v}Z`) : '');
 
@@ -72,7 +72,7 @@ function toPlan(p: BackendPlan): SubscriptionPlan {
   const role = ROLE[p.role];
   const limits: SubscriptionPlan['limits'] =
     role === 'owner' ? { listingLimit: lim(p.listing_limit) }
-    : role === 'agent' ? { locationLimit: lim(p.location_limit), ...(p.listing_limit !== null ? { listingLimit: p.listing_limit } : {}) }
+    : role === 'dealer' ? { locationLimit: lim(p.location_limit), ...(p.listing_limit !== null ? { listingLimit: p.listing_limit } : {}) }
     : { savedPropertyLimit: lim(p.lead_limit) }; // buyer: owner-contact (lead) limit
   return {
     id: p.code,
@@ -258,7 +258,7 @@ function limitFields(draft: PlanDraft) {
   const L = draft.limits || {};
   const v = (n: number | undefined) => (n === undefined ? null : n);
   if (draft.role === 'owner') return { listing_limit: v(L.listingLimit) };
-  if (draft.role === 'agent') return { location_limit: v(L.locationLimit), listing_limit: v(L.listingLimit) };
+  if (draft.role === 'dealer') return { location_limit: v(L.locationLimit), listing_limit: v(L.listingLimit) };
   return { lead_limit: v(L.savedPropertyLimit) };
 }
 

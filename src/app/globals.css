@@ -245,3 +245,47 @@ textarea:focus {
 @media (prefers-reduced-motion: reduce) {
   .reva-spin, .reva-breathe, .reva-pulse, .reva-dot, .reva-msg-in, .reva-panel-in { animation: none; }
 }
+
+/* ---------- Admin dropdowns: one height, one chevron, same spacing everywhere ---------- */
+select.ui-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 34px;
+  line-height: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a97ab' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+select.ui-select:disabled { cursor: not-allowed; opacity: .6; }
+select.ui-select::-ms-expand { display: none; }
+input.ui-field { height: 36px; }
+
+/* Horizontal swipe rows (mobile filter bars): scroll without a visible scrollbar. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---------- Site-wide minimal motion ---------- */
+@keyframes page-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+main { animation: page-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Scroll reveal (set by ScrollReveal.tsx) */
+main section[data-reveal] { transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+main section[data-reveal=''] { opacity: 0; transform: translateY(16px); }
+
+/* Press feedback on buttons and button-like links */
+button:not(:disabled):active, a[class*='rounded-'][class*='bg-']:active { transform: scale(0.97); }
+button, a { transition-property: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: 150ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  main { animation: none; }
+  main section[data-reveal=''] { opacity: 1; transform: none; }
+  button:not(:disabled):active, a:active { transform: none; }
+}

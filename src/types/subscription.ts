@@ -1,13 +1,13 @@
 /**
  * Subscription domain model shared by the Admin console and the public
- * Buyer / Owner / Agent checkout screens.
+ * Buyer / Owner / Dealer checkout screens.
  *
  * NOTE: RESTAMP currently has no backend. These records are persisted in the
  * browser (see src/lib/subscription-store.ts). The shapes are designed so they
  * can map 1:1 onto database tables when a backend is introduced.
  */
 
-export type SubscriberRole = "buyer" | "owner" | "agent";
+export type SubscriberRole = "buyer" | "owner" | "dealer";
 
 export type BillingCycle = "one_time" | "monthly" | "quarterly" | "yearly";
 
@@ -19,9 +19,9 @@ export type PlanStatus = "draft" | "active" | "inactive" | "archived";
  * are editable for that role.
  */
 export interface PlanLimits {
-  /** Owner: properties that can be posted. Agent: active mandates. -1 = unlimited. */
+  /** Owner: properties that can be posted. Dealer: active mandates. -1 = unlimited. */
   listingLimit?: number;
-  /** Agent: micro-markets (locations) covered. */
+  /** Dealer: micro-markets (locations) covered. */
   locationLimit?: number;
   /** Buyer: maximum saved/shortlisted properties. -1 = unlimited. */
   savedPropertyLimit?: number;
@@ -32,7 +32,7 @@ export interface SubscriptionPlan {
   role: SubscriberRole;
   name: string;
   description: string;
-  /** Badge shown on public cards, e.g. "Growth Agent". */
+  /** Badge shown on public cards, e.g. "Growth Dealer". */
   badge?: string;
   /** Base price in the smallest display unit (whole rupees). GST is added at checkout. */
   price: number;
@@ -143,7 +143,7 @@ export interface AuditEntry {
 export const ROLE_LABEL: Record<SubscriberRole, string> = {
   buyer: "Buyer",
   owner: "Owner",
-  agent: "Agent",
+  dealer: "Dealer",
 };
 
 export const BILLING_LABEL: Record<BillingCycle, string> = {
@@ -171,8 +171,8 @@ export const ROLE_FEATURES: Record<
   owner: [
     { key: "listingLimit", label: "Maximum property listings", enforced: true, note: "Add Property is blocked once reached" },
   ],
-  agent: [
+  dealer: [
     { key: "locationLimit", label: "Micro-markets covered", enforced: true, note: "Location picker caps selection at checkout" },
-    { key: "listingLimit", label: "Managed listings (mandates)", enforced: false, note: "Displayed to agents; not yet enforced" },
+    { key: "listingLimit", label: "Managed listings (mandates)", enforced: false, note: "Displayed to dealers; not yet enforced" },
   ],
 };

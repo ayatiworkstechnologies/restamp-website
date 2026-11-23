@@ -105,11 +105,11 @@ export function UserEditModal({ user, isOpen, onClose, onSave }: UserEditModalPr
               <select
                 value={formData.role || "buyer"}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
               >
                 <option value="buyer">Buyer</option>
                 <option value="owner">Owner / Seller</option>
-                <option value="agent">Agent / Broker</option>
+                <option value="dealer">Dealer / Broker</option>
               </select>
             </div>
 
@@ -121,10 +121,10 @@ export function UserEditModal({ user, isOpen, onClose, onSave }: UserEditModalPr
                   onChange={(e) =>
                     setFormData({ ...formData, ownerType: e.target.value as OwnerType })
                   }
-                  className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
+                  className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none focus:border-[#2854cb]"
                 >
                   <option value="Individual Owner">Individual Owner</option>
-                  <option value="Agent / Broker">Agent</option>
+                  <option value="Dealer / Broker">Dealer</option>
                   <option value="Builder / Developer">Builder / Developer</option>
                 </select>
               </div>
@@ -175,7 +175,7 @@ export function UserEditModal({ user, isOpen, onClose, onSave }: UserEditModalPr
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as UserStatus })
                 }
-                className="w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
+                className="ui-select w-full rounded-xl border border-[#dce3ee] bg-[#fafbfd] px-3 py-2 text-xs font-semibold text-[#20314b] outline-none"
               >
                 <option value="Active">Active</option>
                 <option value="Suspended">Suspended</option>

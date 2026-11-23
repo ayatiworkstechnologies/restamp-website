@@ -8,7 +8,7 @@ import { useSubscriptionData, EXPIRING_WINDOW_DAYS } from "@/lib/admin-billing";
 import { ROLE_LABEL, type SubscriberRole } from "@/types/subscription";
 import { inr } from "@/components/subscriptions/ui";
 
-const ROLE_COLORS: Record<SubscriberRole, string> = { buyer: "#3566e9", owner: "#885CE8", agent: "#0e9fb7" };
+const ROLE_COLORS: Record<SubscriberRole, string> = { buyer: "#3566e9", owner: "#885CE8", dealer: "#0e9fb7" };
 
 /** Subscription KPIs + role and plan distribution, all computed from the stores. */
 export function SubscriptionOverview() {
@@ -23,7 +23,7 @@ export function SubscriptionOverview() {
   const cards = [
     { label: "Total Buyers", value: stats.buyers, icon: UserRound, iconBg: "#EAF1FF", iconColor: "#3869E6", href: "/admin-dashboard/users/buyers" },
     { label: "Total Owners", value: stats.owners, icon: Home, iconBg: "#F0EAFF", iconColor: "#885CE8", href: "/admin-dashboard/users/owners" },
-    { label: "Total Agents", value: stats.agents, icon: Briefcase, iconBg: "#E3F7FA", iconColor: "#0e9fb7", href: "/admin-dashboard/users/agents" },
+    { label: "Total Dealers", value: stats.dealers, icon: Briefcase, iconBg: "#E3F7FA", iconColor: "#0e9fb7", href: "/admin-dashboard/users/dealers" },
     { label: "Active Subscribers", value: ready ? live.length : "—", icon: UserCheck, iconBg: "#E7F8EF", iconColor: "#25A873", href: "/admin-dashboard/subscriptions/active" },
     { label: "Expiring Subscriptions", value: ready ? expiring : "—", detail: `next ${EXPIRING_WINDOW_DAYS} days`, icon: CalendarClock, iconBg: "#FFF4E3", iconColor: "#ECA037", href: "/admin-dashboard/subscriptions/active" },
     {
@@ -37,8 +37,8 @@ export function SubscriptionOverview() {
     },
   ];
 
-  const roles: SubscriberRole[] = ["buyer", "owner", "agent"];
-  const roleTotals = { buyer: stats.buyers, owner: stats.owners, agent: stats.agents };
+  const roles: SubscriberRole[] = ["buyer", "owner", "dealer"];
+  const roleTotals = { buyer: stats.buyers, owner: stats.owners, dealer: stats.dealers };
   const userTotal = roles.reduce((a, r) => a + roleTotals[r], 0);
 
   const byPlan = plans

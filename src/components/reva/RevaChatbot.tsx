@@ -49,7 +49,7 @@ interface Msg {
   contact?: { property: Property; name: string; role: string; phone: string };
 }
 
-const ROLES: RevaRole[] = ["Buyer", "Owner", "Agent"];
+const ROLES: RevaRole[] = ["Buyer", "Owner", "Dealer"];
 
 const welcome = (lang: RevaLang, role: RevaRole): Msg => ({
   id: `welcome-${lang}-${role}-${Date.now()}`,
@@ -60,7 +60,7 @@ const welcome = (lang: RevaLang, role: RevaRole): Msg => ({
 
 function roleFromProfile(): RevaRole {
   const r = getProfile()?.role;
-  return r === "owner" ? "Owner" : r === "agent" ? "Agent" : "Buyer";
+  return r === "owner" ? "Owner" : r === "dealer" ? "Dealer" : "Buyer";
 }
 
 // Real listings matching the visitor's words (backend text search; empty on failure).

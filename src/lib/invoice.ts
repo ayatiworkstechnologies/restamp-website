@@ -2,6 +2,7 @@
 
 import type { PaymentRecord, UserSubscription } from "@/types/subscription";
 import { BILLING_LABEL, ROLE_LABEL } from "@/types/subscription";
+import { hexToRgb, loadInvoiceTemplate, type InvoiceTemplate } from "@/lib/invoice-template";
 
 /**
  * Seller details printed on invoices. GSTIN/address are not configured yet:
@@ -40,13 +41,22 @@ export interface InvoiceData {
   lines: { label: string; amount: number }[];
   cgst: number;
   sgst: number;
+  cgstRate: number;
+  sgstRate: number;
+  taxable: number;
   total: number;
 }
 
-export function buildInvoice(p: PaymentRecord, sub?: UserSubscription): InvoiceData {
+export function buildInvoice(p: PaymentRecord, sub?: UserSubscription, template?: InvoiceTemplate): InvoiceData {
+  const t = template ?? loadInvoiceTemplate();
+  const cgstRate = Number(t.cgstRate) || 0;
+  const sgstRate = Number(t.sgstRate) || 0;
+  const taxable = p.baseAmount - p.discount;
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const cgst = r2((taxable * cgstRate) / 100);
+  const sgst = r2((taxable * sgstRate) / 100);
   const lines = [{ label: `${p.planName} (${ROLE_LABEL[p.role]} plan)`, amount: p.baseAmount }];
   if (p.discount) lines.push({ label: "Discount", amount: -p.discount });
-  const cgst = Math.round(p.gst / 2);
   return {
     number: invoiceNumber(p),
     date: new Date(p.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
@@ -54,8 +64,11 @@ export function buildInvoice(p: PaymentRecord, sub?: UserSubscription): InvoiceD
     subscription: sub,
     lines,
     cgst,
-    sgst: p.gst - cgst,
-    total: p.total,
+    sgst,
+    cgstRate,
+    sgstRate,
+    taxable,
+    total: r2(taxable + cgst + sgst),
   };
 }
 
@@ -64,7 +77,6 @@ type RGB = [number, number, number];
 const INK: RGB = [17, 17, 17];
 const MUTED: RGB = [90, 90, 90];
 const HAIRLINE: RGB = [225, 225, 225];
-const BRAND: RGB = [27, 69, 155];
 
 /** Shared wording so the print page and the PDF say exactly the same thing. */
 export function invoiceHeadline(inv: InvoiceData, money: (n: number) => string) {
@@ -121,7 +133,9 @@ async function loadLogoPng(): Promise<{ data: string; ratio: number } | null> {
  * Generates and downloads a real A4 PDF file. The layout mirrors the printed
  * invoice page (src/app/invoice/[id]/page.tsx) so both look the same.
  */
-export async function downloadInvoicePdf(inv: InvoiceData) {
+export async function downloadInvoicePdf(inv: InvoiceData, template?: InvoiceTemplate) {
+  const t = template ?? loadInvoiceTemplate();
+  const ACCENT = hexToRgb(t.accentColor);
   const [{ jsPDF }, logo] = await Promise.all([import("jspdf"), loadLogoPng()]);
   const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
   const W = doc.internal.pageSize.getWidth();
@@ -139,14 +153,14 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
 
   // Title + logo
   let y = 62;
-  font("bold", 24);
-  doc.text("Invoice", M, y);
-  if (logo) {
+  font("bold", 24, ACCENT);
+  doc.text(t.title || "Invoice", M, y);
+  if (logo && t.showLogo) {
     const lw = 130;
     doc.addImage(logo.data, "PNG", R - lw, 40, lw, lw * logo.ratio, undefined, "FAST");
   } else {
-    font("bold", 18, BRAND);
-    doc.text(SELLER.name, R, y, { align: "right" });
+    font("bold", 18, ACCENT);
+    doc.text(t.brandName || SELLER.name, R, y, { align: "right" });
   }
 
   // Meta table
@@ -154,8 +168,8 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
   const meta: [string, string][] = [
     ["Invoice number", inv.number],
     ["Date of issue", inv.date],
-    ["Transaction ID", p.transactionRef || "-"],
-    ["GSTIN", SELLER.gstin || "Not configured"],
+    ...(t.showTransactionId ? ([["Transaction ID", p.transactionRef || "-"]] as [string, string][]) : []),
+    ["GSTIN", t.gstin || "Not configured"],
   ];
   for (const [k, v] of meta) {
     font("bold", 10.5);
@@ -169,14 +183,15 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
   y += 22;
   const col2 = M + (R - M) * 0.4;
   font("bold", 10.5);
-  doc.text(SELLER.legalName, M, y);
+  doc.text(t.legalName, M, y);
   doc.text("Bill to", col2, y);
   font("normal", 10.5);
   const lh = { lineHeightFactor: 1.55 };
-  doc.text([SELLER.address, SELLER.email], M, y + 20, lh);
+  const from = [...t.address.split("\n"), t.email, t.phone].filter(Boolean);
+  doc.text(from, M, y + 20, lh);
   const billTo = [p.subscriberName, p.subscriberPhone || "", `${ROLE_LABEL[p.role]} account`].filter(Boolean);
   doc.text(billTo, col2, y + 20, lh);
-  y += 20 + billTo.length * 16 + 26;
+  y += 20 + Math.max(billTo.length, from.length) * 16 + 26;
 
   // Headline amount
   font("bold", 17);
@@ -195,7 +210,7 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
   doc.text("Tax", cTax, y, { align: "right" });
   doc.text("Amount", R, y, { align: "right" });
   y += 8;
-  hr(M, R, y, INK, 1);
+  hr(M, R, y, ACCENT, 1);
   y += 18;
   const period = invoicePeriod(s);
   inv.lines.forEach((l, i) => {
@@ -204,7 +219,7 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
     if (i === 0) {
       doc.text("1", cQty, y, { align: "right" });
       doc.text(money(l.amount), cUnit, y, { align: "right" });
-      doc.text("18%", cTax, y, { align: "right" });
+      doc.text(`${inv.cgstRate + inv.sgstRate}%`, cTax, y, { align: "right" });
     }
     doc.text(l.amount < 0 ? `- ${money(-l.amount)}` : money(l.amount), R, y, { align: "right" });
     if (i === 0 && period) {
@@ -217,13 +232,13 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
   // Totals
   y += 12;
   const tx = M + (R - M) / 2;
-  const taxable = p.baseAmount - p.discount;
+  const taxable = inv.taxable;
   const rows: [string, string, boolean][] = [
     ["Subtotal", money(p.baseAmount), false],
     ...(p.discount ? ([["Discount", `- ${money(p.discount)}`, false]] as [string, string, boolean][]) : []),
     ["Total excluding tax", money(taxable), false],
-    [`CGST (9% on ${money(taxable)})`, money(inv.cgst), false],
-    [`SGST (9% on ${money(taxable)})`, money(inv.sgst), false],
+    [`CGST (${inv.cgstRate}% on ${money(taxable)})`, money(inv.cgst), false],
+    [`SGST (${inv.sgstRate}% on ${money(taxable)})`, money(inv.sgst), false],
     ["Total", money(inv.total), false],
     [p.verification === "verified" ? "Amount paid" : "Amount due", money(inv.total), true],
   ];
@@ -239,13 +254,24 @@ export async function downloadInvoicePdf(inv: InvoiceData) {
   // Payment + notes
   y += 40;
   font("normal", 10.5);
-  doc.text([`Payment method: ${p.method || "-"}`, `Provider: ${p.provider || "-"}`, SELLER.gstin ? "Tax Invoice" : "Not a valid GST tax invoice (seller GSTIN not configured)"], M, y, lh);
+  const payLines = [
+    ...(t.showPaymentDetails ? [`Payment method: ${p.method || "-"}`, `Provider: ${p.provider || "-"}`] : []),
+    t.gstin ? "Tax Invoice" : "Not a valid GST tax invoice (seller GSTIN not configured)",
+  ];
+  doc.text(payLines, M, y, lh);
+  y += payLines.length * 16 + 14;
+  if (t.notes.trim()) {
+    font("bold", 10.5);
+    doc.text("Notes", M, y);
+    font("normal", 10, MUTED);
+    doc.text(doc.splitTextToSize(t.notes.trim(), R - M), M, y + 16, { lineHeightFactor: 1.45 });
+  }
 
   // Footer
   const fy = H - 46;
   hr(M, R, fy - 18);
   font("normal", 8.5);
-  doc.text(`${inv.number} · ${invoiceHeadline(inv, money)}`, M, fy);
+  doc.text(t.footerText.trim() || `${inv.number} · ${invoiceHeadline(inv, money)}`, M, fy);
   doc.text("Page 1 of 1", R, fy, { align: "right" });
 
   doc.save(`${inv.number}.pdf`);

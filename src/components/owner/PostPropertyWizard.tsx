@@ -552,7 +552,7 @@ export default function PostPropertyWizard({
           >
             Add another property
           </button>
-          <Link href={doneHref} className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition">
+          <Link href={doneHref} className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition">
             {doneLabel}
           </Link>
         </div>
@@ -568,7 +568,7 @@ export default function PostPropertyWizard({
       : 'Transparent new property pricing attracts serious buyers and investors faster.';
 
   return (
-    <div id={containerId || 'post-property-wizard'} className="grid gap-6 lg:grid-cols-[260px_1fr]">
+    <div id={containerId || 'post-property-wizard'} className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       {/* Step list */}
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <ol className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)] lg:flex-col lg:gap-1">
@@ -781,7 +781,16 @@ export default function PostPropertyWizard({
             {/* Step 3: Property details */}
             {step === 2 && (
               <>
-                <p className="text-sm text-slate-500">Specify room configurations, areas, floor level, and readiness.</p>
+                <p className="text-sm text-slate-500">Specify property name, room configurations, areas, floor level, and readiness.</p>
+                <Section title="Property Name" subtitle="Provide a name or title for your property to showcase to buyers.">
+                  <Field label="Property Name" optional hint="e.g. Prestige Bella Vista, Casagrand Zenith, Luxury Villa with Garden">
+                    <TextInput
+                      placeholder="e.g. Prestige Bella Vista"
+                      value={listing.propertyName || ''}
+                      onChange={(v) => set('propertyName', v)}
+                    />
+                  </Field>
+                </Section>
                 {!isPlot(listing) && listing.category === 'Residential' && (
                   <Section title="Room Details">
                     <Field label="Bedrooms">
@@ -1158,7 +1167,7 @@ export default function PostPropertyWizard({
               <button
                 type="button"
                 onClick={next}
-                className="flex items-center gap-1 rounded-lg bg-[#087ed9] px-6 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition cursor-pointer"
+                className="flex items-center gap-1 rounded-lg bg-[#087ed9] px-6 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition cursor-pointer"
               >
                 {step === steps.length - 2 ? 'Review' : 'Next'} <ChevronRight size={16} />
               </button>
@@ -1167,7 +1176,7 @@ export default function PostPropertyWizard({
                 type="button"
                 onClick={onPublish}
                 disabled={publishing}
-                className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-6 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition cursor-pointer"
+                className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-6 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition cursor-pointer disabled:opacity-60"
               >
                 Publish Property
               </button>
@@ -1225,8 +1234,8 @@ function Review({ listing: l, onEdit }: { listing: OwnerListing; onEdit: (step: 
         </div>
         <div className="p-5">
           <h3 className="text-lg font-bold text-slate-900">
-            {[l.bhk, l.propertyType].filter(Boolean).join(' ')}
-            {l.society && ` in ${l.society}`}
+            {l.propertyName || [l.bhk, l.propertyType].filter(Boolean).join(' ')}
+            {l.society && !l.propertyName && ` in ${l.society}`}
           </h3>
           <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
             <MapPin size={14} /> {[l.locality, l.city].filter(Boolean).join(', ')}
@@ -1275,6 +1284,7 @@ function Review({ listing: l, onEdit }: { listing: OwnerListing; onEdit: (step: 
           'Property Details',
           2,
           rows([
+            ['Property Name', l.propertyName],
             ['Bedrooms', l.bedrooms],
             ['Bathrooms', l.bathrooms],
             ['Balconies', l.balconies],

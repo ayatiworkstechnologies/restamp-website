@@ -338,7 +338,7 @@ export function PlatformConfigView() {
                   parseInt(e.target.value) || 30
                 )
               }
-              className="rounded-xl border border-[#e8ecf4] bg-white px-3 py-1.5 text-xs text-[#101828] focus:border-[#162d66] focus:outline-none"
+              className="ui-select rounded-xl border border-[#e8ecf4] bg-white px-3 py-1.5 text-xs text-[#101828] focus:border-[#162d66] focus:outline-none"
             >
               <option value={15}>15 minutes</option>
               <option value={30}>30 minutes</option>

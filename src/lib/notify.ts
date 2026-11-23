@@ -10,7 +10,7 @@ import { toast as sonner, type ExternalToast } from "sonner";
  *                such as "Undo" or "View".
  *
  * Both render through <AppToaster />, mounted once in the root layout, so they work on
- * the public website, the owner/agent dashboards and the admin dashboard.
+ * the public website, the owner/dealer dashboards and the admin dashboard.
  */
 type Opts = Pick<ExternalToast, "description" | "duration" | "id">;
 

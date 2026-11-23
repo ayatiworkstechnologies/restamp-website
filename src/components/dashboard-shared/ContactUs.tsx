@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Clock, Mail, MessageCircle, Phone, Send } from 'lucide-react';
+import { CheckCircle2, Clock, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react';
+import { LEGAL } from '@/lib/legal-entity';
 import { getProfile } from '@/lib/profile';
 
 // Support contact details for Restamp platform
@@ -16,7 +17,7 @@ const card = 'rounded-2xl border border-slate-100 bg-white shadow-[0_3px_18px_#1
 const input =
   'w-full rounded-xl border border-slate-200 bg-white px-4 h-[48px] text-sm text-slate-900 outline-none transition focus:border-[#087ed9]';
 
-export default function ContactUs({ role, topics }: { role: 'agent' | 'owner' | 'visitor'; topics: string[] }) {
+export default function ContactUs({ role, topics }: { role: 'dealer' | 'owner' | 'visitor'; topics: string[] }) {
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [topic, setTopic] = useState(topics[0]);
@@ -53,6 +54,7 @@ export default function ContactUs({ role, topics }: { role: 'agent' | 'owner' | 
     { icon: Phone, label: 'Call us', value: SUPPORT.phone, href: `tel:${SUPPORT.phone.replace(/\s/g, '')}` },
     { icon: Mail, label: 'Email', value: SUPPORT.email, href: `mailto:${SUPPORT.email}` },
     { icon: MessageCircle, label: 'WhatsApp', value: 'Chat with support', href: SUPPORT.whatsapp },
+    { icon: MapPin, label: 'Address', value: `${LEGAL.legalName}, ${LEGAL.address}`, href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(LEGAL.address)}` },
   ];
 
   return (
@@ -113,7 +115,7 @@ export default function ContactUs({ role, topics }: { role: 'agent' | 'owner' | 
               {error && <p className="text-sm text-red-600">{error}</p>}
               <button
                 type="submit"
-                className="inline-flex h-[53px] items-center gap-2 rounded-xl bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600 active:scale-[0.97]"
+                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600 active:scale-[0.97]"
               >
                 <Send size={16} /> Send message
               </button>

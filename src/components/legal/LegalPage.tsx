@@ -46,7 +46,7 @@ export default function LegalPage({
             {sections.map((s, i) => (
               <section key={s.id} id={s.id} className="mt-8 scroll-mt-24">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {i + 1}. {s.title}
+                  {/^\d/.test(s.title) ? s.title : `${i + 1}. ${s.title}`}
                 </h2>
                 <div className="mt-2 space-y-3 [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5">{s.body}</div>
               </section>

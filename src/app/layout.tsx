@@ -5,6 +5,8 @@ import { WishlistLimitNotice } from '@/components/common/wishlist-limit-notice';
 import { AppToaster } from '@/components/common/app-toaster';
 import { ConfirmDialogHost } from '@/components/common/confirm-dialog';
 import { RevaChatbot } from '@/components/reva/RevaChatbot';
+import { BackToTop } from '@/components/common/BackToTop';
+import { ScrollReveal } from '@/components/common/ScrollReveal';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -37,6 +39,8 @@ export default function RootLayout({
         <WishlistLimitNotice />
         <AppToaster />
         <ConfirmDialogHost />
+        <BackToTop />
+        <ScrollReveal />
         <RevaChatbot />
       </body>
     </html>

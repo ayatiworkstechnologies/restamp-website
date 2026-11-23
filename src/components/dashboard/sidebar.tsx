@@ -19,10 +19,12 @@ import {
   LogOut,
   MessageSquareText,
   Settings2,
+  MapPin,
   ShieldCheck,
   UserRound,
   UsersRound,
   ExternalLink,
+  FileText,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -64,7 +66,7 @@ const navGroups: {
       { label: "All Users", href: "/admin-dashboard/users", icon: UsersRound, match: "exact" },
       { label: "Buyers", href: "/admin-dashboard/users/buyers", icon: UserRound, isNew: true },
       { label: "Owners", href: "/admin-dashboard/users/owners", icon: Home, isNew: true },
-      { label: "Agents", href: "/admin-dashboard/users/agents", icon: Briefcase, isNew: true },
+      { label: "Dealers", href: "/admin-dashboard/users/dealers", icon: Briefcase, isNew: true },
     ],
   },
   {
@@ -73,12 +75,14 @@ const navGroups: {
       { label: "Subscription Plans", href: "/admin-dashboard/subscriptions/plans", icon: Layers, isNew: true },
       { label: "Active Subscriptions", href: "/admin-dashboard/subscriptions/active", icon: CalendarCheck, badge: "expiringSubs", isNew: true },
       { label: "Payments & Invoices", href: "/admin-dashboard/subscriptions/payments", icon: CreditCard, isNew: true },
+      { label: "Invoice Settings", href: "/admin-dashboard/subscriptions/invoice-settings", icon: FileText, isNew: true },
       { label: "Pricing History", href: "/admin-dashboard/subscriptions/pricing-history", icon: History, isNew: true },
     ],
   },
   {
     group: "MANAGEMENT",
     links: [
+      { label: "Locations", href: "/admin-dashboard/locations", icon: MapPin, isNew: true },
       { label: "Notifications", href: "/admin-dashboard/notifications", icon: Bell, isNew: true },
       { label: "Settings", href: "/admin-dashboard/settings", icon: Settings2 },
     ],

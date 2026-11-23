@@ -307,9 +307,7 @@ export default function DualToneIcon({
         </svg>
       );
 
-    case 'fan': {
-      const bladeColor = primaryColor === '#087ed9' ? '#475569' : primaryColor;
-      const hubColor = secondaryColor === '#bae6fd' ? '#f59e0b' : secondaryColor;
+    case 'fan':
       return (
         <svg
           width={size}
@@ -320,46 +318,24 @@ export default function DualToneIcon({
           className={className}
           {...props}
         >
-          {/* Blade 1 (Top / 12 o'clock) */}
-          <rect
-            x="10.25"
-            y="2.5"
-            width="3.5"
-            height="8"
-            rx="1.75"
-            fill={bladeColor}
-            transform="rotate(0 12 12)"
-          />
-          {/* Blade 2 (Bottom-Right / 4 o'clock) */}
-          <rect
-            x="10.25"
-            y="2.5"
-            width="3.5"
-            height="8"
-            rx="1.75"
-            fill={bladeColor}
-            transform="rotate(120 12 12)"
-          />
-          {/* Blade 3 (Bottom-Left / 8 o'clock) */}
-          <rect
-            x="10.25"
-            y="2.5"
-            width="3.5"
-            height="8"
-            rx="1.75"
-            fill={bladeColor}
-            transform="rotate(240 12 12)"
-          />
-          {/* Center Amber Hub */}
-          <circle cx="12" cy="12" r="2.75" fill={hubColor} />
-          <circle cx="12" cy="12" r="1.25" fill="#fde047" />
+          {/* Three outlined blades with soft fill, matching the other dual-tone icons */}
+          {[0, 120, 240].map((deg) => (
+            <path
+              key={deg}
+              d="M12 9.6C10.6 8.2 10.4 4.9 12 3.6C13.6 4.9 13.4 8.2 12 9.6Z"
+              fill={secondaryColor}
+              fillOpacity="0.5"
+              stroke={primaryColor}
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              transform={`rotate(${deg} 12 12)`}
+            />
+          ))}
+          <circle cx="12" cy="12" r="2.4" fill={secondaryColor} fillOpacity="0.5" stroke={primaryColor} strokeWidth="1.75" />
         </svg>
       );
-    }
 
-    case 'lightbulb': {
-      const bulbColor = secondaryColor === '#bae6fd' ? '#eab308' : secondaryColor;
-      const baseColor = primaryColor === '#087ed9' ? '#64748b' : primaryColor;
+    case 'lightbulb':
       return (
         <svg
           width={size}
@@ -370,59 +346,21 @@ export default function DualToneIcon({
           className={className}
           {...props}
         >
-          {/* Radiating Light Rays */}
+          {/* Bulb with soft fill */}
           <path
-            d="M12 1.5V3.5"
-            stroke={bulbColor}
+            d="M12 3.5C8.96 3.5 6.5 5.96 6.5 9C6.5 10.95 7.52 12.66 9.05 13.64C9.64 14.02 10 14.66 10 15.36V16H14V15.36C14 14.66 14.36 14.02 14.95 13.64C16.48 12.66 17.5 10.95 17.5 9C17.5 5.96 15.04 3.5 12 3.5Z"
+            fill={secondaryColor}
+            fillOpacity="0.5"
+            stroke={primaryColor}
             strokeWidth="1.75"
-            strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <path
-            d="M5.5 4.5L7 6"
-            stroke={bulbColor}
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-          <path
-            d="M18.5 4.5L17 6"
-            stroke={bulbColor}
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-          <path
-            d="M3 10H5"
-            stroke={bulbColor}
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-          <path
-            d="M19 10H21"
-            stroke={bulbColor}
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-
-          {/* Yellow Bulb Body */}
-          <path
-            d="M12 5.5C9.24 5.5 7 7.74 7 10.5C7 12.3 8 13.9 9.35 14.8C9.75 15.1 10 15.6 10 16.1V16.75H14V16.1C14 15.6 14.25 15.1 14.65 14.8C16 13.9 17 12.3 17 10.5C17 7.74 14.76 5.5 12 5.5Z"
-            fill={bulbColor}
-          />
-          {/* Base screw thread */}
-          <path
-            d="M9.75 18H14.25"
-            stroke={baseColor}
-            strokeWidth="1.75"
-            strokeLinecap="round"
-          />
-          <path
-            d="M10.5 20.5H13.5"
-            stroke={baseColor}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
+          {/* Filament */}
+          <path d="M10.5 10.5L12 12L13.5 10.5M12 12V16" stroke={primaryColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Base */}
+          <path d="M9.75 18.25H14.25M10.75 20.75H13.25" stroke={primaryColor} strokeWidth="1.75" strokeLinecap="round" />
         </svg>
       );
-    }
 
     case 'bed':
       return (
@@ -521,40 +459,14 @@ export default function DualToneIcon({
           className={className}
           {...props}
         >
-          {/* Warm Sun/Sky accent */}
-          <circle
-            cx="17"
-            cy="7"
-            r="3"
-            fill="#f59e0b"
-            fillOpacity="0.4"
-            stroke="#f59e0b"
-            strokeWidth="1.5"
-          />
-          {/* Glass Door / Window frame */}
-          <path
-            d="M4 14V4C4 3.45 4.45 3 5 3H12C12.55 3 13 3.45 13 4V14"
-            stroke={primaryColor}
-            strokeWidth="1.75"
-          />
-          {/* Balcony Railing */}
-          <rect
-            x="2"
-            y="14"
-            width="20"
-            height="7"
-            rx="1.5"
-            fill={secondaryColor}
-            fillOpacity="0.45"
-            stroke={primaryColor}
-            strokeWidth="1.75"
-          />
-          {/* Vertical Balustrades */}
-          <path
-            d="M6 14V21M10 14V21M14 14V21M18 14V21"
-            stroke={primaryColor}
-            strokeWidth="1.5"
-          />
+          {/* Glass door behind the railing */}
+          <rect x="7" y="3" width="10" height="11" rx="1.5" fill={secondaryColor} fillOpacity="0.5" stroke={primaryColor} strokeWidth="1.75" />
+          <path d="M12 3V14" stroke={primaryColor} strokeWidth="1.5" />
+          {/* Railing */}
+          <path d="M3 14H21" stroke={primaryColor} strokeWidth="1.75" strokeLinecap="round" />
+          <path d="M3 20.5H21" stroke={primaryColor} strokeWidth="1.75" strokeLinecap="round" />
+          {/* Balustrades */}
+          <path d="M5 14V20.5M9 14V20.5M13 14V20.5M17 14V20.5M21 14V20.5M3 14V20.5" stroke={primaryColor} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       );
 

@@ -24,6 +24,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { Property } from '@/data/properties';
+import { matchesLocation, useActiveLocations } from '@/lib/locations';
 
 export interface FilterValues {
   purpose: 'Buy' | 'Resale' | 'Rent' | 'Lease';
@@ -81,6 +82,17 @@ export const chennaiLocalities = [
   'Teynampet',
   'Ambattur',
 ];
+
+/**
+ * Locality options for search filters: "All Chennai" followed by the live
+ * locations admin manages (Admin → Locations). Falls back to the static list
+ * before the store loads; keeps a value that came from the URL selectable.
+ */
+export function useChennaiLocalityOptions(current?: string): string[] {
+  const live = useActiveLocations().map((l) => l.name);
+  const list = live.length ? ['All Chennai', ...live] : chennaiLocalities;
+  return current && current !== 'All localities' && !list.includes(current) ? [...list, current] : list;
+}
 
 const propertyTypes = [
   { label: 'All property types', icon: Building2 },
@@ -155,11 +167,7 @@ export function filterPropertiesWithValues(list: Property[], f: FilterValues): P
 
     // Chennai Locality Filter
     if (f.locality && f.locality !== 'All Chennai' && f.locality !== 'All localities') {
-      const locTarget = f.locality.toLowerCase().trim();
-      const matchLocality = prop.locality?.toLowerCase().includes(locTarget);
-      const matchArea = prop.area?.toLowerCase().includes(locTarget);
-      const matchAddress = prop.address?.toLowerCase().includes(locTarget);
-      if (!matchLocality && !matchArea && !matchAddress) {
+      if (!matchesLocation(f.locality, prop.locality, prop.area, prop.address)) {
         return false;
       }
     }
@@ -295,6 +303,7 @@ export default function FullFiltersModal({
 }: FullFiltersModalProps) {
   // Local state inside modal for fast interactive editing
   const [draft, setDraft] = useState<FilterValues>(filters);
+  const localityOptions = useChennaiLocalityOptions(draft.locality);
 
   // Sync draft when opened or external filters change
   useEffect(() => {
@@ -475,7 +484,7 @@ export default function FullFiltersModal({
               <span className="text-[11px] text-[#087ed9] font-bold">Chennai Only</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {chennaiLocalities.map((loc) => {
+              {localityOptions.map((loc) => {
                 const isSelected = (draft.locality || 'All Chennai') === loc;
                 return (
                   <button
@@ -726,7 +735,7 @@ export default function FullFiltersModal({
           <button
             type="button"
             onClick={handleApplyClick}
-            className="bg-[#087ed9] hover:bg-[#076ec0] text-white font-bold text-xs sm:text-sm px-6 h-[53px] rounded-xl transition shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
+            className="bg-[#087ed9] hover:bg-[#076ec0] text-white font-bold text-xs sm:text-sm px-6 h-11 rounded-xl transition shadow-xs cursor-pointer active:scale-98 flex items-center gap-2"
           >
             <span>Apply Filters</span>
             <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs font-extrabold">

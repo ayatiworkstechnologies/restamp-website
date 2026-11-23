@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { Ban, Building2, CalendarPlus, Eye, Mail, Pencil, Phone, RotateCcw, Search, Trash2, UserPlus, X } from "lucide-react";
+import { Ban, Building2, CalendarPlus, Download, Eye, Mail, MapPin, Pencil, Phone, RotateCcw, Search, Trash2, UserPlus, X } from "lucide-react";
+import { toast } from "@/lib/notify";
 import { UserAddModal } from "@/components/users/user-add-modal";
 import { UserEditModal } from "@/components/users/user-edit-modal";
 import { useUserStore } from "@/context/user-context";
@@ -47,6 +48,48 @@ import {
   usePaged,
 } from "@/components/subscriptions/ui";
 
+type JoinedPreset = "any" | "7d" | "30d" | "90d" | "180d" | "thisYear" | "lastYear" | "custom";
+const JOINED_PRESETS: { key: JoinedPreset; label: string }[] = [
+  { key: "any", label: "Joined: any time" },
+  { key: "7d", label: "Last 7 days" },
+  { key: "30d", label: "Last 30 days" },
+  { key: "90d", label: "Last 3 months" },
+  { key: "180d", label: "Last 6 months" },
+  { key: "thisYear", label: "This year" },
+  { key: "lastYear", label: "Last year" },
+  { key: "custom", label: "Custom range…" },
+];
+
+/** [from, to] as YYYY-MM-DD in local time; empty strings mean no limit. */
+function presetRange(key: JoinedPreset): [string, string] {
+  const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const now = new Date();
+  const daysAgo = (n: number) => ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n + 1));
+  switch (key) {
+    case "7d": return [daysAgo(7), ""];
+    case "30d": return [daysAgo(30), ""];
+    case "90d": return [daysAgo(90), ""];
+    case "180d": return [daysAgo(180), ""];
+    case "thisYear": return [`${now.getFullYear()}-01-01`, ""];
+    case "lastYear": return [`${now.getFullYear() - 1}-01-01`, `${now.getFullYear() - 1}-12-31`];
+    default: return ["", ""];
+  }
+}
+
+/** Parses seed dates like "14 Jan 2025" or ISO strings; null when unreadable. */
+function joinedTime(value: string): number | null {
+  const t = Date.parse(value);
+  return Number.isNaN(t) ? null : t;
+}
+
+/** Quotes a CSV cell and neutralises spreadsheet formula injection. */
+function csvCell(value: unknown): string {
+  let v = value == null ? "" : String(value);
+  // Phone numbers like "+91 98…" are left alone; formulas such as =, @, +A1 are defused.
+  if (/^(?:[=@\t\r]|[+-](?![\d\s]))/.test(v)) v = `'${v}`;
+  return `"${v.replace(/"/g, '""')}"`;
+}
+
 const btnView = "inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50 border-[#cfe0fb] bg-[#eef4ff] text-[#1B459B] hover:bg-[#dfeaff]";
 const btnEdit = "inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50 border-[#ddd6fe] bg-[#f5f3ff] text-[#6d28d9] hover:bg-[#ede9fe]";
 const btnSuspend = "inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50 border-[#fde2b5] bg-[#fff7ea] text-[#b45309] hover:bg-[#ffedd0]";
@@ -84,6 +127,17 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
   const [accountStatus, setAccountStatus] = useState<"all" | UserStatus>("all");
   const [planFilter, setPlanFilter] = useState("all");
   const [subStatus, setSubStatus] = useState<"all" | SubscriptionStatus>("all");
+  const [city, setCity] = useState("all");
+  const [joinedFrom, setJoinedFrom] = useState("");
+  const [joinedTo, setJoinedTo] = useState("");
+  const [joinedPreset, setJoinedPreset] = useState<JoinedPreset>("any");
+  const applyJoinedPreset = (key: JoinedPreset) => {
+    setJoinedPreset(key);
+    if (key === "custom") return;
+    const [from, to] = presetRange(key);
+    setJoinedFrom(from);
+    setJoinedTo(to);
+  };
   const [detail, setDetail] = useState<User | null>(null);
   const [statusTarget, setStatusTarget] = useState<User | null>(null);
   const [editTarget, setEditTarget] = useState<User | null>(null);
@@ -109,15 +163,26 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
       if (planFilter === "none" && current) return false;
       if (planFilter !== "all" && planFilter !== "none" && current?.planId !== planFilter) return false;
       if (subStatus !== "all" && current?.status !== subStatus) return false;
+      if (city !== "all" && (user.city || "").trim().toLowerCase() !== city.toLowerCase()) return false;
+      if (joinedFrom || joinedTo) {
+        const joined = joinedTime(user.joinedDate);
+        if (joined === null) return false;
+        if (joinedFrom && joined < new Date(`${joinedFrom}T00:00:00`).getTime()) return false;
+        if (joinedTo && joined > new Date(`${joinedTo}T23:59:59.999`).getTime()) return false;
+      }
       if (q) {
         const hay = [user.name, user.email, user.id, user.phone, user.companyName ?? ""].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [rows, search, accountStatus, planFilter, subStatus]);
+  }, [rows, search, accountStatus, planFilter, subStatus, city, joinedFrom, joinedTo]);
 
-  const paged = usePaged(filtered, `${search}|${accountStatus}|${planFilter}|${subStatus}`);
+  const paged = usePaged(filtered, `${search}|${accountStatus}|${planFilter}|${subStatus}|${city}|${joinedFrom}|${joinedTo}`);
+  const cities = useMemo(
+    () => [...new Set(rows.map((r) => (r.user.city || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [rows],
+  );
   const rolePlans = plans.filter((p) => p.role === role);
   const kpis = {
     total: rows.length,
@@ -126,7 +191,44 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
     suspended: rows.filter((r) => r.user.status === "Suspended").length,
   };
   const label = ROLE_LABEL[role];
-  const hasFilters = search || accountStatus !== "all" || planFilter !== "all" || subStatus !== "all";
+  const hasFilters = search || accountStatus !== "all" || planFilter !== "all" || subStatus !== "all" || city !== "all" || joinedFrom || joinedTo;
+  const clearFilters = () => {
+    setSearch("");
+    setAccountStatus("all");
+    setPlanFilter("all");
+    setSubStatus("all");
+    setCity("all");
+    setJoinedFrom("");
+    setJoinedTo("");
+    setJoinedPreset("any");
+  };
+
+  const exportCsv = () => {
+    if (filtered.length === 0) {
+      toast.info("Nothing to export", { description: "No accounts match the current filters." });
+      return;
+    }
+    const header = [
+      "User ID", "Name", "Phone", "Email", "Role", "Company", "City", "State", "Joined", "Last active",
+      "Account status", "Current plan", "Subscription status", "Plan started", "Plan expires",
+    ];
+    const lines = filtered.map(({ user, current }) => [
+      user.id, user.name, user.phone, user.email, label, user.companyName ?? "", user.city, user.state, user.joinedDate, user.lastActive,
+      user.status, current?.snapshot.name ?? "No plan", current?.status ?? "", fmtDate(current?.activatedAt, ""), fmtDate(current?.expiresAt, current ? "No expiry" : ""),
+    ]);
+    const csv = [header, ...lines].map((r) => r.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const parts = [label.toLowerCase() + "s", city !== "all" ? city.toLowerCase().replace(/\s+/g, "-") : "", joinedFrom || joinedTo ? `${joinedFrom || "start"}_to_${joinedTo || "today"}` : "", new Date().toISOString().slice(0, 10)];
+    a.href = url;
+    a.download = `restamp-${parts.filter(Boolean).join("-")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filtered.length} ${label.toLowerCase()}${filtered.length === 1 ? "" : "s"}`);
+  };
 
   const changeStatus = (user: User, reason: string) => {
     if (!actor || !canManage) throw new Error("Your admin role cannot change account status.");
@@ -221,7 +323,7 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${label.toLowerCase()}s by name, email, phone or ID`}
-              className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] py-2 pl-9 pr-3 text-xs font-medium text-[#22324d] outline-none placeholder:text-[#a1adc0] focus:border-[#087ed9] focus:bg-white"
+              className="w-full rounded-xl border border-[#e2e8f2] bg-[#fbfcfe] h-9 py-2 pl-9 pr-3 text-xs font-medium text-[#22324d] outline-none placeholder:text-[#a1adc0] focus:border-[#087ed9] focus:bg-white"
             />
           </div>
           <select aria-label="Plan" value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className={selectCls}>
@@ -235,6 +337,23 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
             <option value="all">Any subscription</option>
             {SUB_STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
           </select>
+          <div className="relative">
+            <MapPin size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9da9bc]" />
+            <select aria-label="Location" value={city} onChange={(e) => setCity(e.target.value)} className={selectCls} style={{ paddingLeft: 30 }}>
+              <option value="all">All locations</option>
+              {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <select aria-label="Joined" value={joinedPreset} onChange={(e) => applyJoinedPreset(e.target.value as JoinedPreset)} className={selectCls}>
+            {JOINED_PRESETS.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
+          </select>
+          {joinedPreset === "custom" && (
+            <div className="flex items-center gap-1 text-xs font-semibold text-[#5b6b84]">
+              <input type="date" aria-label="Joined from" value={joinedFrom} max={joinedTo || undefined} onChange={(e) => setJoinedFrom(e.target.value)} className={selectCls} />
+              <span>–</span>
+              <input type="date" aria-label="Joined to" value={joinedTo} min={joinedFrom || undefined} onChange={(e) => setJoinedTo(e.target.value)} className={selectCls} />
+            </div>
+          )}
           <select aria-label="Account status" value={accountStatus} onChange={(e) => setAccountStatus(e.target.value as typeof accountStatus)} className={selectCls}>
             <option value="all">Any account status</option>
             {ACCOUNT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -243,11 +362,19 @@ export function RoleDirectory({ role }: { role: SubscriberRole }) {
             <button
               type="button"
               className="inline-flex items-center gap-1 text-xs font-bold text-[#087ed9]"
-              onClick={() => { setSearch(""); setAccountStatus("all"); setPlanFilter("all"); setSubStatus("all"); }}
+              onClick={clearFilters}
             >
               <X size={13} /> Clear
             </button>
           )}
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!ready}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#1B459B] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#153a85] disabled:opacity-50"
+          >
+            <Download size={14} /> Export CSV{ready ? ` (${filtered.length})` : ""}
+          </button>
         </div>
 
         {canManage && selected.length > 0 && (
@@ -528,7 +655,7 @@ function RoleDetail({
             <Field k="Account status" v={user.status} />
             {user.role !== "buyer" && <Field k="Type" v={user.ownerType ?? "—"} />}
             {user.companyName && <Field k="Company" v={user.companyName} />}
-            {user.role === "agent" && <Field k="RERA registration" v={user.reraRegistrationNumber ?? "Not provided"} />}
+            {user.role === "dealer" && <Field k="RERA registration" v={user.reraRegistrationNumber ?? "Not provided"} />}
           </dl>
           {user.suspensionReason && <Notice tone="warn">Suspended: {user.suspensionReason}</Notice>}
         </Section>
@@ -585,7 +712,7 @@ function RoleDetail({
         )}
 
         {user.role !== "buyer" && (
-          <Section title={`${user.role === "agent" ? "Managed" : "Linked"} properties (${linked.length})`}>
+          <Section title={`${user.role === "dealer" ? "Managed" : "Linked"} properties (${linked.length})`}>
             <div className="flex flex-wrap gap-2">
               {(["Active", "Pending", "Rejected", "Draft"] as const).map((s) => (
                 <span key={s} className="rounded-lg bg-[#f3f6fb] px-2 py-1 font-semibold">{s}: {count(s)}</span>

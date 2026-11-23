@@ -197,10 +197,10 @@ export function PlanEditor({
             <Label>Description</Label>
             <input className={inputCls} value={d.description} onChange={(e) => set("description", e.target.value)} placeholder="One line shown under the plan name" />
           </label>
-          {d.role === "agent" && (
+          {d.role === "dealer" && (
             <label>
               <Label hint="optional">Badge</Label>
-              <input className={inputCls} value={d.badge ?? ""} onChange={(e) => set("badge", e.target.value)} placeholder="e.g. Growth Agent" />
+              <input className={inputCls} value={d.badge ?? ""} onChange={(e) => set("badge", e.target.value)} placeholder="e.g. Growth Dealer" />
             </label>
           )}
 

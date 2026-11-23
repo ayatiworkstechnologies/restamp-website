@@ -188,7 +188,7 @@ function AdminLoginForm() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-[#087ed9] hover:bg-[#0070c9] h-[53px] text-sm font-semibold text-white transition shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+              className="w-full rounded-xl bg-[#087ed9] hover:bg-[#0070c9] h-11 text-sm font-semibold text-white transition shadow-sm hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
             >
               <span>Get Security OTP</span>
               <ArrowRight size={16} />
@@ -235,7 +235,7 @@ function AdminLoginForm() {
             <button
               type="submit"
               disabled={otp.join('').length < OTP_LENGTH || isVerifying}
-              className="inline-flex items-center justify-center w-full rounded-xl bg-[#087ed9] hover:bg-[#0070c9] h-[53px] text-sm font-semibold text-white transition disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm"
+              className="inline-flex items-center justify-center w-full rounded-xl bg-[#087ed9] hover:bg-[#0070c9] h-11 text-sm font-semibold text-white transition disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm"
             >
               {isVerifying ? 'Authenticating...' : 'Verify & Open Console'}
             </button>

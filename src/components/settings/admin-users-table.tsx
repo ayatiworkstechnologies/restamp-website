@@ -79,7 +79,7 @@ export function AdminUsersTable({
             onChange={(e) =>
               setRoleFilter(e.target.value as "all" | AdminRoleType)
             }
-            className="rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
+            className="ui-select rounded-xl border border-[#e8ecf4] bg-white px-3 py-2 text-xs font-medium text-[#475467] shadow-sm focus:border-[#162d66] focus:outline-none"
           >
             <option value="all">All Admin Roles</option>
             <option value="Super Admin">Super Admin</option>

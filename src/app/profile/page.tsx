@@ -12,7 +12,7 @@ import { Smartphone, Mail, MapPin, User, LogOut, Heart, Home, Building2, Check, 
 const roleOptions: { value: Profile['role']; label: string }[] = [
   { value: 'buyer', label: 'Buyer' },
   { value: 'owner', label: 'Owner' },
-  { value: 'agent', label: 'Agent' },
+  { value: 'dealer', label: 'Dealer' },
 ];
 
 const quickLinks = [
@@ -111,7 +111,7 @@ export default function ProfilePage() {
               className="rounded-2xl border border-slate-100 bg-white p-6 md:p-8 shadow-[0_12px_45px_-10px_rgba(0,0,0,0.1)]"
             >
               <h2 className="text-lg font-bold text-slate-900">Personal details</h2>
-              <p className="mt-1 text-sm text-slate-500">Keep your details up to date so owners and agents can reach you.</p>
+              <p className="mt-1 text-sm text-slate-500">Keep your details up to date so owners and dealers can reach you.</p>
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <Field label="Full name" icon={User}>
@@ -165,7 +165,7 @@ export default function ProfilePage() {
               <div className="mt-8 flex items-center gap-4">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-6 h-[53px] text-sm font-semibold text-white hover:bg-[#0670c2] transition cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-6 h-11 text-sm font-semibold text-white hover:bg-[#0670c2] transition cursor-pointer"
                 >
                   Save changes
                 </button>
@@ -224,7 +224,7 @@ function OwnerPlanCard({ subscription, payments }: { subscription: OwnerSubscrip
         </div>
         <Link
           href="/owner/plans"
-          className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-[53px] text-sm font-semibold text-white hover:bg-[#0670c2] transition"
+          className="inline-flex items-center justify-center rounded-lg bg-[#087ed9] px-5 h-11 text-sm font-semibold text-white hover:bg-[#0670c2] transition"
         >
           {!subscription ? 'Choose a plan' : expired ? 'Renew Plan' : 'Upgrade Plan'}
         </Link>

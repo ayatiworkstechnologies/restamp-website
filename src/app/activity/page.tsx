@@ -10,7 +10,7 @@ import { getProfile, type Profile } from '@/lib/profile';
 import { useBuyerActivity, type ActivityEntry, type ActivityType } from '@/lib/activity';
 import { Phone, MessageSquare, UserRound, Eye, Pencil, ChevronRight } from 'lucide-react';
 
-type TabKey = 'calls' | 'messages' | 'agents' | 'viewed';
+type TabKey = 'calls' | 'messages' | 'dealers' | 'viewed';
 
 const tabs: {
   key: TabKey;
@@ -34,11 +34,11 @@ const tabs: {
     emptyText: 'Properties you contact will appear here so you can follow up.',
   },
   {
-    key: 'agents',
-    label: 'Agents',
+    key: 'dealers',
+    label: 'Dealers',
     icon: UserRound,
-    emptyTitle: 'No agent history yet',
-    emptyText: 'Agent contact history is not available yet. Your calls and messages are listed in the Calls and Messages tabs.',
+    emptyTitle: 'No dealers contacted',
+    emptyText: 'Dealers and builders you call or message will be listed here.',
   },
   {
     key: 'viewed',
@@ -71,9 +71,9 @@ export default function ActivityPage() {
       calls: activity.calls,
       messages: activity.messages,
       viewed: activity.viewed.map((e) => e.property),
-      // The backend has no "agents contacted" record (owner names/numbers are not part of
+      // The backend has no "dealers contacted" record (owner names/numbers are not part of
       // these responses), so nothing is listed here rather than invented contacts.
-      agents: [] as { name: string; role: string; phone: string; properties: Property[] }[],
+      dealers: [] as { name: string; role: string; phone: string; properties: Property[] }[],
     }),
     [activity],
   );
@@ -161,32 +161,32 @@ export default function ActivityPage() {
                 <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">{activity.status === 'error' ? activity.error : current.emptyText}</p>
                 <Link
                   href="/buy"
-                  className="mt-5 inline-flex items-center gap-1 rounded-full bg-[#087ed9] px-5 h-[53px] text-sm font-semibold text-white hover:bg-sky-600 transition"
+                  className="mt-5 inline-flex items-center gap-1 rounded-full bg-[#087ed9] px-5 h-11 text-sm font-semibold text-white hover:bg-sky-600 transition"
                 >
                   Explore Properties <ChevronRight size={16} />
                 </Link>
               </div>
-            ) : activeTab === 'agents' ? (
+            ) : activeTab === 'dealers' ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {lists.agents.map((agent) => (
+                {lists.dealers.map((dealer) => (
                   <div
-                    key={agent.name}
+                    key={dealer.name}
                     className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-sky-300 hover:shadow-lg transition"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-50 font-bold text-[#087ed9]">
-                        {agent.name.charAt(0)}
+                        {dealer.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold uppercase tracking-tight text-slate-900 truncate">{agent.name}</p>
-                        <p className="text-xs text-slate-400">{agent.role}</p>
+                        <p className="font-bold uppercase tracking-tight text-slate-900 truncate">{dealer.name}</p>
+                        <p className="text-xs text-slate-400">{dealer.role}</p>
                       </div>
                     </div>
                     <p className="mt-4 text-xs text-slate-500">
-                      {agent.properties.length} {agent.properties.length === 1 ? 'property' : 'properties'} contacted
+                      {dealer.properties.length} {dealer.properties.length === 1 ? 'property' : 'properties'} contacted
                     </p>
                     <ul className="mt-2 space-y-1">
-                      {agent.properties.map((p) => (
+                      {dealer.properties.map((p) => (
                         <li key={p.id}>
                           <Link href={`/properties/${p.id}`} className="text-sm text-slate-700 hover:text-[#087ed9]">
                             {p.name}
@@ -195,10 +195,10 @@ export default function ActivityPage() {
                       ))}
                     </ul>
                     <a
-                      href={`tel:${agent.phone.replace(/\s/g, '')}`}
+                      href={`tel:${dealer.phone.replace(/\s/g, '')}`}
                       className="mt-4 flex items-center justify-center gap-1.5 rounded-md border border-[#087ed9] py-2 text-xs font-semibold text-[#087ed9] hover:bg-sky-50 transition"
                     >
-                      <Phone size={14} /> {agent.phone}
+                      <Phone size={14} /> {dealer.phone}
                     </a>
                   </div>
                 ))}

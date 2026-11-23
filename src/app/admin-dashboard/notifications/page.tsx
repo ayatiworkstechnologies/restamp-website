@@ -117,7 +117,7 @@ export default function NotificationsPage() {
                 <option value="all">All users</option>
                 <option value="buyer">All buyers</option>
                 <option value="owner">All owners</option>
-                <option value="agent">All agents</option>
+                <option value="dealer">All dealers</option>
                 <option value="user">One specific user</option>
               </select>
             </label>

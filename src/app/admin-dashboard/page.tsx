@@ -668,9 +668,9 @@ export default function DashboardPage() {
                     text: "#d8a24e",
                   },
                   {
-                    label: "Registered agents",
-                    value: userStats.agents.toString(),
-                    href: "/admin-dashboard/users/agents",
+                    label: "Registered dealers",
+                    value: userStats.dealers.toString(),
+                    href: "/admin-dashboard/users/dealers",
                     icon: Briefcase,
                     color: "#f3edff",
                     text: "#9469dc",

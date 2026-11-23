@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Help Center | Restamp',
-  description: 'Answers to common questions about buying, renting, listing and agent plans on Restamp.',
+  description: 'Answers to common questions about buying, renting, listing and dealer plans on Restamp.',
 };
 
 const groups = [
@@ -29,9 +29,9 @@ const groups = [
   },
   {
     icon: UserRound,
-    title: 'For agents',
+    title: 'For dealers',
     faqs: [
-      { q: 'Can agents post properties?', a: 'No. Only owners post properties on Restamp. Agents can view owner properties in their subscribed locations and work with buyer leads.' },
+      { q: 'Can dealers post properties?', a: 'No. Only owners post properties on Restamp. Dealers can view owner properties in their subscribed locations and work with buyer leads.' },
       { q: 'How do location packages work?', a: 'Choose a package of 5, 10 or 15 locations. You get owner properties and buyer enquiries from those locations for the package validity.' },
     ],
   },
@@ -99,7 +99,7 @@ export default function HelpCenterPage() {
                 <p className="text-sm text-slate-500">Send us a message and we&apos;ll get back within one working day.</p>
               </div>
             </div>
-            <Link href="/contact" className="inline-flex h-[53px] items-center rounded-xl bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600">
+            <Link href="/contact" className="inline-flex h-11 items-center rounded-xl bg-[#087ed9] px-6 text-sm font-semibold text-white hover:bg-sky-600">
               Contact Us
             </Link>
           </section>

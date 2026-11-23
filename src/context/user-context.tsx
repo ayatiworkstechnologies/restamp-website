@@ -34,7 +34,7 @@ interface UserContextType {
     total: number;
     buyers: number;
     owners: number;
-    agents: number;
+    dealers: number;
     suspended: number;
     active: number;
   };
@@ -57,7 +57,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const tints = ["#E6EBFF", "#E7F3EC", "#FDF0DB", "#EDE9FE", "#FCE7F3", "#DCFCE7", "#FEF3C7"];
 
-const ROLE: Record<string, UserRole> = { BUYER: "buyer", OWNER: "owner", BROKER: "agent" };
+const ROLE: Record<string, UserRole> = { BUYER: "buyer", OWNER: "owner", BROKER: "dealer" };
 const STATUS: Record<string, UserStatus> = { active: "Active", suspended: "Suspended", closed: "Inactive" };
 
 const fmtDate = (iso: string | null | undefined) =>
@@ -138,10 +138,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const total = users.length;
     const buyers = users.filter((u) => u.role === "buyer").length;
     const owners = users.filter((u) => u.role === "owner").length;
-    const agents = users.filter((u) => u.role === "agent").length;
+    const dealers = users.filter((u) => u.role === "dealer").length;
     const suspended = users.filter((u) => u.status === "Suspended").length;
     const active = users.filter((u) => u.status === "Active").length;
-    return { total, buyers, owners, agents, suspended, active };
+    return { total, buyers, owners, dealers, suspended, active };
   }, [users]);
 
   const run = async (userId: string, call: () => Promise<AdminUserDetail>, okMsg: string) => {
