@@ -12,6 +12,8 @@ export type OwnerPlan = {
   name: string;
   highlight?: string;
   price: number;
+  /** Original price, shown struck through. */
+  mrp?: number;
   priceSub1: string;
   priceSub2: string;
   validityDays: number | null; // null = until deal closed
@@ -33,6 +35,7 @@ export function toOwnerPlan(p: SubscriptionPlan): OwnerPlan {
     name: p.name,
     highlight: p.badge,
     price: p.price,
+    mrp: p.mrp,
     priceSub1: `${BILLING_LABEL[p.billingCycle]} payment · ${p.validityDays ? `${p.validityDays} Days` : 'Until deal closed'}`,
     priceSub2: limit >= 999 ? 'Unlimited property posts' : `${limit} property post${limit === 1 ? '' : 's'}`,
     validityDays: p.validityDays,

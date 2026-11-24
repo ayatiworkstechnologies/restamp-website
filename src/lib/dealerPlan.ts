@@ -534,6 +534,43 @@ const DEALER_SUB_KEY = 'restamp_dealer_subscription';
 const DEALER_PAYMENTS_KEY = 'restamp_dealer_payments';
 const DEALER_DRAFT_KEY = 'restamp_dealer_draft_package';
 
+/* --- PER-PINCODE DEALER PLANS --- */
+/**
+ * Dealer pricing: a fixed price for each pincode / micro-market chosen.
+ * A dealer plan unlocks the Sales Hub only.
+ */
+export type DealerPincodePlanId = '30d' | '60d';
+export const DEALER_PINCODE_PLANS: { id: DealerPincodePlanId; label: string; pricePerLocation: number; validityDays: number }[] = [
+  { id: '30d', label: '30 Days', pricePerLocation: 200, validityDays: 30 },
+  { id: '60d', label: '60 Days', pricePerLocation: 300, validityDays: 60 },
+];
+
+export function findPincodePlan(id?: string) {
+  return DEALER_PINCODE_PLANS.find((p) => p.id === id) ?? DEALER_PINCODE_PLANS[0];
+}
+
+/**
+ * Builds the checkout package for `count` pincodes on a per-pincode plan.
+ * `backend` is the admin plan used to activate access: the smallest one that
+ * covers `count` locations (the backend enforces the locality limit).
+ */
+export function pincodePackage(rateId: DealerPincodePlanId | undefined, count: number, backend: LocationPackage[]): LocationPackage {
+  const rate = findPincodePlan(rateId);
+  const sorted = [...backend].sort(byLocations);
+  const base = sorted.find((p) => p.locationLimit >= count) ?? sorted[sorted.length - 1] ?? PLACEHOLDER_PACKAGE;
+  const price = rate.pricePerLocation * count;
+  return {
+    ...base,
+    name: `Dealer ${rate.label} Plan`,
+    tagline: `₹${rate.pricePerLocation} per pincode · ${rate.validityDays} days`,
+    badge: '',
+    locationLimit: count,
+    price,
+    validityDays: rate.validityDays,
+    monthlyEquivalent: Math.round(price / Math.max(1, Math.round(rate.validityDays / 30))),
+  };
+}
+
 /* --- BILLING CALCULATOR HELPER --- */
 export function calculateDealerPackageBill(pkg: LocationPackage, discountAmount: number) {
   const afterDiscount = Math.max(0, pkg.price - discountAmount);
@@ -551,6 +588,8 @@ export function calculateDealerPackageBill(pkg: LocationPackage, discountAmount:
 /* --- DRAFT PACKAGE STATE (Checkout Bridge) --- */
 export type DraftDealerPackage = {
   packageId: string;
+  /** Per-pincode plan chosen on the plan page (see DEALER_PINCODE_PLANS). */
+  rateId?: DealerPincodePlanId;
   selectedLocations: string[];
   promoCode?: string;
   discount?: number;

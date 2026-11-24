@@ -128,7 +128,19 @@ function ensureSeeded() {
     }
   }
 
-  // 2. Ensure dealer plans exist in the store even if already seeded before dealer rename
+  // 2. Owner catalogue v2 (Seller plan sheet, Nov 2026): replace older owner plans once.
+  try {
+    const OWNER_V = "restamp_owner_catalog_v2";
+    if (!localStorage.getItem(OWNER_V)) {
+      const now = new Date().toISOString();
+      const others = read<SubscriptionPlan[]>(KEYS.plans, []).filter((p) => p.role !== "owner");
+      const owners = SEED_PLANS.filter((p) => p.role === "owner").map((p) => ({ ...p, createdAt: now, updatedAt: now, updatedBy: "System seed" }));
+      write(KEYS.plans, [...owners, ...others]);
+      localStorage.setItem(OWNER_V, now);
+    }
+  } catch {}
+
+  // 2b. Ensure dealer plans exist in the store even if already seeded before dealer rename
   try {
     const existing = read<SubscriptionPlan[]>(KEYS.plans, []);
     const hasDealerPlans = existing.some((p) => p.role === "dealer");

@@ -12,7 +12,7 @@ export const LEGAL = {
   /** Registered legal entity name (e.g. "Restamp Realty Private Limited"). */
   legalName: 'RESTAMP Real Estate Marketplace',
   /** Registered office address. */
-  address: 'Chennai, Tamil Nadu, India',
+  address: '5/69, Kalaimagal Nagar 3rd Main Road, Ekkattuthangal, Chennai 600032, Tamil Nadu, India',
   website: 'www.restamp.in',
   supportEmail: 'support@restamp.in',
   /** Grievance Officer (IT Rules 2021, Rule 3(2)) and DPDP Act contact. Add the officer's name. */

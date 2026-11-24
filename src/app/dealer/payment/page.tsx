@@ -16,6 +16,8 @@ import {
   hasActiveDealerSubscription,
   DEALER_PROMO_CODES,
   calculateDealerPackageBill,
+  pincodePackage,
+  type DealerPincodePlanId,
   type LocationPackage,
 } from '@/lib/dealerPlan';
 import {
@@ -51,18 +53,15 @@ export default function DealerPaymentPage() {
   // Live admin-managed price list; checkout always charges the current price.
   const locationPackages = useLocationPackages();
   const [pkgId, setPkgId] = useState<string>('');
-  const pkg: LocationPackage =
-    locationPackages.find((p) => p.id === pkgId) ??
-    locationPackages.find((p) => p.popular) ??
-    locationPackages[0] ??
-    PLACEHOLDER_PACKAGE;
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([
-    'OMR IT Corridor',
-    'Sholinganallur',
-    'Velachery',
-    'Adyar & Besant Nagar',
-    'Anna Nagar',
-  ]);
+  const [rateId, setRateId] = useState<DealerPincodePlanId | undefined>(undefined);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  // Per-pincode plan: price = rate × pincodes chosen (see /dealer/packages).
+  const pkg: LocationPackage = rateId
+    ? pincodePackage(rateId, selectedLocations.length, locationPackages)
+    : locationPackages.find((p) => p.id === pkgId) ??
+      locationPackages.find((p) => p.popular) ??
+      locationPackages[0] ??
+      PLACEHOLDER_PACKAGE;
 
   // Promo code & discount
   const [promoCode, setPromoCode] = useState('');
@@ -105,6 +104,7 @@ export default function DealerPaymentPage() {
     const draft = getDraftPackage();
     if (draft) {
       setPkgId(draft.packageId);
+      setRateId(draft.rateId);
       if (draft.selectedLocations && draft.selectedLocations.length > 0) {
         setSelectedLocations(draft.selectedLocations);
       }

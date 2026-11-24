@@ -1,11 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import { useOwnerPlans, type OwnerPlan } from '@/lib/ownerPlan';
-
-type Category = 'Residential' | 'Commercial';
 
 /**
  * "Assistance Plans" pricing section from the owner landing page (/owner).
@@ -26,8 +23,7 @@ export default function OwnerAssistancePlans({
   showHeader?: boolean;
 }) {
   const live = useOwnerPlans();
-  const [planCategory, setPlanCategory] = useState<Category>('Residential');
-  const list = plans ?? live[planCategory];
+  const list = plans ?? live.Residential;
   const loading = !plans && list.length === 0;
 
   const Cta = ({ className, children }: { className: string; children: React.ReactNode }) =>
@@ -48,20 +44,6 @@ export default function OwnerAssistancePlans({
               <p className="mt-2 text-sm text-slate-500 max-w-xl">
                 Get dedicated relationship manager assistance, top search placement, and direct verified WhatsApp buyer leads.
               </p>
-            </div>
-            <div className="inline-flex rounded-2xl bg-white border border-slate-200/80 p-1 text-xs font-semibold shadow-2xs">
-              {(['Residential', 'Commercial'] as const).map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setPlanCategory(cat)}
-                  className={`px-4 py-2 rounded-xl transition cursor-pointer ${
-                    planCategory === cat ? 'bg-slate-900 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
             </div>
           </div>
         )}
@@ -117,14 +99,17 @@ export default function OwnerAssistancePlans({
                   </div>
 
                   {/* Price & Billing */}
-                  <div className="mt-4 flex items-baseline gap-3 relative z-10">
-                    <span className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-                      {p.price === 0 ? 'Free' : `₹${p.price.toLocaleString('en-IN')}`}
-                    </span>
-                    <div className="text-[11px] leading-tight font-medium">
-                      <span className={`block font-bold ${isFeatured ? 'text-slate-900' : 'text-slate-700'}`}>{p.priceSub1}</span>
-                      <span className="block text-slate-400">{p.priceSub2}</span>
+                  <div className="mt-4 relative z-10">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight whitespace-nowrap">
+                        {p.price === 0 ? 'Free' : `₹${p.price.toLocaleString('en-IN')}`}
+                      </span>
+                      {!!p.mrp && p.mrp > p.price && (
+                        <span className="text-base font-semibold text-slate-400 line-through whitespace-nowrap">₹{p.mrp.toLocaleString('en-IN')}</span>
+                      )}
                     </div>
+                    <p className={`mt-2 text-xs font-bold ${isFeatured ? 'text-slate-900' : 'text-slate-700'}`}>{p.priceSub1}</p>
+                    <p className="text-xs font-medium text-slate-400">{p.priceSub2}</p>
                   </div>
 
                   {/* Primary CTA Button */}

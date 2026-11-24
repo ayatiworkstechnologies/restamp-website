@@ -17,24 +17,25 @@ type SeedPlan = Omit<SubscriptionPlan, "createdAt" | "updatedAt" | "updatedBy">;
 
 const base = { currency: "INR" as const, version: 1, visible: true, recommended: false };
 
-const ownerTiers: [string, string, number, number | null, number, string[]][] = [
-  ["owner-startup", "Startup Plan", 499, 30, 1, ["Unlimited Leads", "City Limit Reach"]],
-  ["owner-super", "Super Plan", 999, 45, 3, ["Unlimited Leads", "City Limit Reach"]],
-  ["owner-premium", "Premium Plan", 1799, 60, 5, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance"]],
-  ["owner-elite", "Elite Plan", 2499, 90, 20, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
-  ["owner-special", "Special Plan", 3499, 90, 30, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
-  ["owner-business", "Business Plan", 49999, 90, 50, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
-  ["owner-unlimited-business", "Unlimited Business Plan", 99999, 180, -1, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
+const ownerTiers: [string, string, number, number, number | null, number, string[]][] = [
+  ["owner-super", "Super Plan", 1600, 999, 45, 3, ["Unlimited Leads", "City Limit Reach"]],
+  ["owner-premium", "Premium Plan", 2000, 1799, 60, 5, ["Unlimited Leads", "City Limit Reach"]],
+  ["owner-elite", "Elite Plan", 3000, 2499, 90, 20, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
+  ["owner-special", "Special Plan", 4000, 3499, 90, 50, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
+  ["owner-business", "Business Plan", 70000, 49999, 90, 250, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
+  ["owner-unlimited-business", "Unlimited Business Plan", 125000, 99999, 180, -1, ["Unlimited Leads", "City Limit Reach", "Relationship Manager Assistance", "Social Media Promotion"]],
 ];
 
 export const SEED_PLANS: SeedPlan[] = [
-  ...ownerTiers.map(([id, name, price, validityDays, listingLimit, features], i) => ({
+  ...ownerTiers.map(([id, name, mrp, price, validityDays, listingLimit, features], i) => ({
     ...base,
     id,
     role: "owner" as const,
     name,
     description: listingLimit === -1 ? "Unlimited property posts" : `${listingLimit} property post${listingLimit === 1 ? "" : "s"}`,
     price,
+    mrp,
+    recommended: id === "owner-elite",
     billingCycle: "one_time" as const,
     validityDays,
     status: "active" as const,

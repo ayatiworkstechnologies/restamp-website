@@ -30,7 +30,6 @@ export default function OwnerPlansPage() {
   const router = useRouter();
   const ownerPlans = useOwnerPlans();
   const [stage, setStage] = useState<Stage>('plans');
-  const [category, setCategory] = useState<'Residential' | 'Commercial'>('Residential');
   const [plan, setPlan] = useState<OwnerPlan | null>(null);
   const [current, setCurrent] = useState<OwnerSubscription | null>(null);
 
@@ -134,23 +133,8 @@ export default function OwnerPlansPage() {
                 </div>
               )}
 
-              <div className="mt-8 inline-flex rounded-lg bg-white p-1 shadow-xs border border-slate-200">
-                {(['Residential', 'Commercial'] as const).map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCategory(c)}
-                    className={`rounded-md px-5 py-2 text-sm font-semibold transition cursor-pointer ${
-                      category === c ? 'bg-[#087ed9] text-white' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 grid gap-6 md:grid-cols-3">
-                {ownerPlans[category].map((p) => {
+              <div className="mt-8 grid gap-6 md:grid-cols-3">
+                {ownerPlans.Residential.map((p) => {
                   const isCurrent = current?.planId === p.id;
                   return (
                     <div
@@ -171,7 +155,10 @@ export default function OwnerPlansPage() {
                           p.name
                         )}
                       </h2>
-                      <p className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900">₹{p.price.toLocaleString('en-IN')}</p>
+                      <p className="mt-4 flex items-baseline gap-2">
+                        <span className="text-3xl font-extrabold tracking-tight text-slate-900">₹{p.price.toLocaleString('en-IN')}</span>
+                        {!!p.mrp && p.mrp > p.price && <span className="text-sm font-semibold text-slate-400 line-through">₹{p.mrp.toLocaleString('en-IN')}</span>}
+                      </p>
                       <p className="mt-1 text-sm text-slate-600">{p.priceSub1}</p>
                       <p className="text-xs text-slate-400">{p.priceSub2}</p>
 

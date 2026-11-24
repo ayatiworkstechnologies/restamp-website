@@ -7,9 +7,9 @@ import { getProfile } from '@/lib/profile';
 
 // Support contact details for Restamp platform
 const SUPPORT = {
-  phone: '+91 98400 00000',
+  phone: '+91 99400 44234',
   email: 'support@restamp.in',
-  whatsapp: 'https://wa.me/919840000000',
+  whatsapp: 'https://wa.me/919940044234',
   hours: 'Mon – Sat, 9:30 AM – 6:30 PM',
 };
 

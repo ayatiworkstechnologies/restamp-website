@@ -36,6 +36,8 @@ export interface SubscriptionPlan {
   badge?: string;
   /** Base price in the smallest display unit (whole rupees). GST is added at checkout. */
   price: number;
+  /** Original price shown struck through next to `price` (offer price). */
+  mrp?: number;
   currency: "INR";
   billingCycle: BillingCycle;
   /** null = valid until the deal closes (legacy owner behaviour). */
