@@ -13,7 +13,7 @@
  */
 import { getSessionToken, handleUnauthorized } from './session';
 
-const DEFAULT_PROD_API_URL = 'https://restamp-backend-h3x8.onrender.com';
+const DEFAULT_PROD_API_URL = 'https://api.restamp.in';
 
 function resolveApiBaseUrl(): string {
   const configured = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
@@ -82,17 +82,18 @@ export function errorMessage(e: unknown, fallback = 'Something went wrong. Pleas
     case 'denied':
       return "You don't have permission to do that.";
     case 'missing':
-      return 'This item could not be found. It may have been removed.';
+      // FastAPI's own "Not Found" means the route itself does not exist on this server.
+      if (!e.detail || e.detail === 'Not Found') return 'This service is not available right now. Please try again later or contact support.';
+      return e.detail;
+    case 'validation':
+      return e.detail && e.detail !== 'Invalid request' ? e.detail : 'Invalid request. Please check the details and try again.';
     default:
-      if (e.status === 402 && e.detail) return e.detail;
       break;
   }
-  switch (e.kind) {
-    case 'validation':
-      return e.detail && e.detail !== 'Invalid request' ? e.detail : 'Please check the details and try again.';
-    default:
-      return fallback;
-  }
+  if (e.status === 402 && e.detail) return e.detail;
+  if (e.status === 503) return 'The service is temporarily unavailable. Please try again in a few minutes.';
+  if (e.status >= 500) return 'Something went wrong on our side. Please try again.';
+  return fallback;
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;

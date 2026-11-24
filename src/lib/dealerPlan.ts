@@ -699,8 +699,35 @@ export async function syncDealerSubscription(): Promise<DealerSubscription | nul
  *  2. POST /broker/plan/localities allocates the chosen localities under that plan;
  *  3. the dealer's plan is re-read from the backend.
  */
+/** Backend dealer plan codes by locality limit (used if the plan list can't be read). */
+const BACKEND_DEALER_CODES: [number, string][] = [
+  [5, 'RESTAMP_AGENT_STARTER'],
+  [10, 'RESTAMP_AGENT_PRO'],
+  [15, 'RESTAMP_AGENT_ELITE'],
+];
+
+/**
+ * The website's dealer packages have their own ids (e.g. "loc-5"); the backend
+ * only knows its plan codes. Pick the smallest purchasable backend BROKER plan
+ * that covers `count` localities.
+ */
+async function backendDealerCode(count: number): Promise<string> {
+  try {
+    const plans = (await listPublicPlans('BROKER'))
+      .filter((p) => (p.location_limit ?? 0) > 1 && p.price_paise > 0)
+      .sort((a, b) => (a.location_limit ?? 0) - (b.location_limit ?? 0));
+    const fit = plans.find((p) => (p.location_limit ?? 0) >= count) ?? plans[plans.length - 1];
+    if (fit) return fit.code;
+  } catch {
+    /* fall back to the known codes */
+  }
+  const fit = BACKEND_DEALER_CODES.find(([limit]) => limit >= count) ?? BACKEND_DEALER_CODES[BACKEND_DEALER_CODES.length - 1];
+  return fit[1];
+}
+
 export async function activateAgentPlanViaBypass(pkg: LocationPackage, localities: string[]) {
-  await bypassActivate('BROKER', pkg.id);
+  const code = await backendDealerCode(Math.max(1, localities.length));
+  await bypassActivate('BROKER', code);
   let allocation: { unmatched: string[]; unavailable: string[]; error: string | null } = { unmatched: [], unavailable: [], error: null };
   if (localities.length) {
     try {
@@ -713,7 +740,7 @@ export async function activateAgentPlanViaBypass(pkg: LocationPackage, localitie
     }
   }
   const sub = await syncDealerSubscription();
-  if (!sub || sub.planId !== pkg.id) throw new Error('The plan could not be confirmed. Please try again.');
+  if (!sub || sub.planId !== code) throw new Error('The plan could not be confirmed. Please try again.');
   return { sub, allocation };
 }
 

@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   // phone) without depending on the backend's CORS allow-list. See src/lib/api/client.ts.
   async rewrites() {
     if (process.env.NODE_ENV !== 'development') return [];
-    const backend = (process.env.NEXT_PUBLIC_API_URL || 'https://restamp-backend-h3x8.onrender.com').trim().replace(/\/+$/, '');
+    const backend = (process.env.NEXT_PUBLIC_API_URL || 'https://api.restamp.in').trim().replace(/\/+$/, '');
     return [{ source: '/backend-api/:path*', destination: `${backend}/:path*` }];
   },
   async redirects() {
