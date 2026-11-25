@@ -6,436 +6,744 @@ import { LEGAL } from '@/lib/legal-entity';
 export const metadata: Metadata = {
   title: 'Terms and Conditions | Restamp',
   description:
-    'The terms that govern your use of the Restamp website and the Restamp mobile apps for iOS and Android, including listings, plans, payments and acceptable use.',
+    'Terms and Conditions governing access to and use of the RESTAMP website and RESTAMP Mobile Application, including listings, brokerage disclosures, subscriptions, liability and grievance redressal.',
 };
 
 const mail = (subject?: string) => (
-  <a href={`mailto:${LEGAL.supportEmail}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`}>{LEGAL.supportEmail}</a>
+  <a href={`mailto:${LEGAL.grievanceOfficer.email}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`}>
+    {LEGAL.grievanceOfficer.email}
+  </a>
 );
 
-// Legal content: have it reviewed by a qualified legal advisor before each release.
 export default function TermsPage() {
   return (
     <LegalPage
       eyebrow="Legal"
       title="Terms and Conditions"
-      updated="21 November 2026"
+      effectiveDate={LEGAL.effectiveDate}
+      updated={LEGAL.effectiveDate}
       intro={
         <>
-          <p>
-            These Terms and Conditions (&ldquo;Terms&rdquo;) form a legally binding agreement between you and {LEGAL.legalName}
-            (&ldquo;{LEGAL.brand}&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo;). They govern your access to and use of the
-            website at {LEGAL.website}, the {LEGAL.brand} mobile applications for iOS and Android, and all related features, content
-            and services (together, the &ldquo;Platform&rdquo;).
+          <p className="text-sm text-slate-500">
+            Website:{' '}
+            <a href={LEGAL.websiteUrl}>{LEGAL.websiteUrl}</a> · Application: RESTAMP Mobile Application
           </p>
-          <p>
-            By creating an account, signing in, posting a listing, purchasing a plan or otherwise using the Platform, you confirm that you
-            have read, understood and agree to these Terms and to our <Link href="/privacy-policy">Privacy Policy</Link> and{' '}
-            <Link href="/refund-policy">Refund &amp; Cancellation Policy</Link>, which form part of these Terms. If you do not agree, please
-            do not use the Platform.
-          </p>
-          <p>
-            These Terms are an electronic record under the Information Technology Act, 2000 and the rules made under it, and are published
-            in accordance with Rule 3(1) of the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.
+          <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-800">
+            IMPORTANT NOTICE: PLEASE READ THESE TERMS CAREFULLY. BY REGISTERING, ACCESSING, BROWSING, POSTING A LISTING,
+            MAKING AN ENQUIRY, PURCHASING A SUBSCRIPTION OR OTHERWISE USING RESTAMP, YOU CONFIRM THAT YOU HAVE READ,
+            UNDERSTOOD AND AGREED TO THESE TERMS AND THE <Link href="/privacy-policy">PRIVACY POLICY</Link>. IF YOU DO
+            NOT AGREE, YOU MUST NOT ACCESS OR USE THE PLATFORM.
           </p>
         </>
       }
       sections={[
         {
-          id: 'definitions',
-          title: '1. Definitions',
-          body: (
-            <ul>
-              <li><strong>&ldquo;User&rdquo;</strong> or <strong>&ldquo;you&rdquo;</strong> means any person who accesses or uses the Platform, whether or not registered.</li>
-              <li><strong>&ldquo;Buyer&rdquo;</strong> means a User looking to buy, rent or lease property, including tenants and lessees.</li>
-              <li><strong>&ldquo;Owner&rdquo;</strong> means a User who owns a property, or is lawfully authorised by the owner, and lists it on the Platform.</li>
-              <li><strong>&ldquo;Dealer&rdquo;</strong> means a real estate agent, broker or agency using the Platform to post properties for clients and respond to enquiries.</li>
-              <li><strong>&ldquo;Listing&rdquo;</strong> means any property advertisement, including its description, price, photos, documents and other details.</li>
-              <li><strong>&ldquo;Plan&rdquo;</strong> means any paid or free subscription, package or service offered on the Platform.</li>
-              <li><strong>&ldquo;Content&rdquo;</strong> means any text, images, video, documents, data or other material on the Platform.</li>
-            </ul>
-          ),
-        },
-        {
-          id: 'about',
-          title: '2. About the Platform and our role',
+          id: 'operator',
+          title: '1. Operator, Scope and Acceptance',
           body: (
             <>
               <p>
-                {LEGAL.brand} is an online real estate marketplace that helps Buyers discover properties for sale, resale, rent and lease,
-                and helps Owners and Dealers advertise properties and receive enquiries.
+                These Terms and Conditions (&ldquo;Terms&rdquo;) govern access to and use of the RESTAMP website, mobile
+                application, software, features, listings, communications and related services (collectively, the
+                &ldquo;Platform&rdquo;). The Platform is operated by {LEGAL.legalName}, a company incorporated under the
+                laws of India, having its registered office at {LEGAL.address} (&ldquo;RESTAMP&rdquo;,
+                &ldquo;Company&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo;). RESTAMP is the brand
+                and trading name of the Company.
               </p>
               <p>
-                {LEGAL.brand} acts as an <strong>intermediary</strong> within the meaning of Section 2(1)(w) of the Information Technology
-                Act, 2000. We provide the technology that lets Users publish and find Listings. Unless we expressly agree otherwise in
-                writing, {LEGAL.brand}:
+                These Terms constitute an electronic record and are intended to be accepted electronically in accordance
+                with applicable Indian law. Acceptance may be evidenced by clicking &ldquo;I Agree&rdquo;, ticking an
+                acceptance box, OTP verification, account registration, purchase of a plan, posting a listing or
+                continued use after reasonable notice of revised Terms. The User should retain a copy of the Terms.
               </p>
-              <ul>
-                <li>is not a real estate agent or broker, and is not a party to any sale, purchase, rental, lease or other agreement between Users;</li>
-                <li>does not own, sell, rent or manage any property listed on the Platform;</li>
-                <li>does not collect or hold any token amount, advance, deposit, rent or sale consideration on behalf of Users; and</li>
-                <li>does not guarantee that any Listing will result in a transaction.</li>
-              </ul>
-              <p>Any transaction you enter into with another User is solely between you and that User.</p>
+              <p>
+                These Terms must be read with the <Link href="/privacy-policy">Privacy Policy</Link>, applicable{' '}
+                <Link href="/refund-policy">Refund/Cancellation Policy</Link>, listing rules, subscription plan
+                conditions and any additional terms displayed for a particular feature. In case of conflict, the specific
+                feature or plan terms shall prevail only for that feature, and applicable law shall prevail over all
+                contractual terms.
+              </p>
             </>
+          ),
+        },
+        {
+          id: 'definitions',
+          title: '2. Definitions',
+          body: (
+            <ul>
+              <li>
+                <strong>&ldquo;User&rdquo;</strong> means every person or entity accessing or using the Platform,
+                including a Buyer, Owner, Broker, advertiser or visitor.
+              </li>
+              <li>
+                <strong>&ldquo;Buyer&rdquo;</strong> includes a person seeking to purchase, lease or rent property or
+                making an enquiry in relation to property.
+              </li>
+              <li>
+                <strong>&ldquo;Owner&rdquo;</strong> means the owner, co-owner, lawful title holder or a person holding
+                valid written authority to advertise or deal with a property.
+              </li>
+              <li>
+                <strong>&ldquo;Broker&rdquo;</strong> means a real estate agent, broker, channel partner or intermediary
+                using the Platform in a professional or commercial capacity.
+              </li>
+              <li>
+                <strong>&ldquo;Listing&rdquo;</strong> means any property advertisement or information uploaded or
+                displayed on the Platform.
+              </li>
+              <li>
+                <strong>&ldquo;User Content&rdquo;</strong> includes listings, photographs, videos, documents,
+                descriptions, messages, reviews, contact details and other material submitted by a User.
+              </li>
+              <li>
+                <strong>&ldquo;Subscription&rdquo;</strong> means a paid or free plan, membership, listing package, lead
+                package or other paid feature.
+              </li>
+              <li>
+                <strong>&ldquo;Transaction&rdquo;</strong> means any sale, purchase, lease, licence, rental,
+                development, joint venture, brokerage or other arrangement between Users.
+              </li>
+            </ul>
           ),
         },
         {
           id: 'eligibility',
-          title: '3. Eligibility',
-          body: (
-            <ul>
-              <li>You must be at least 18 years old and competent to contract under the Indian Contract Act, 1872 to register or transact on the Platform.</li>
-              <li>If you use the Platform on behalf of a company, firm or other entity, you confirm that you are authorised to bind it to these Terms.</li>
-              <li>You may not use the Platform if we have previously suspended or removed your account, or if you are barred from doing so under any applicable law.</li>
-            </ul>
-          ),
-        },
-        {
-          id: 'accounts',
-          title: '4. Your account',
+          title: '3. Eligibility, Authority and Account',
           body: (
             <>
               <p>
-                You register and sign in with your mobile number, verified by a one-time password (OTP). You agree that:
+                A User must be at least 18 years of age, legally competent to contract and not prohibited by law from
+                using the Platform. A person acting for a company, partnership, trust, HUF or other entity represents
+                that he or she has due authority to bind that entity.
               </p>
-              <ul>
-                <li>the information you provide (name, mobile number, email address, city and role) is true, accurate and kept up to date;</li>
-                <li>you will register only one account per role, and will not create an account using another person&rsquo;s identity or mobile number;</li>
-                <li>you are responsible for all activity under your account and for keeping your device, OTPs and sign-in credentials confidential; and</li>
-                <li>you will tell us immediately at {mail('Unauthorised account access')} if you suspect any unauthorised use of your account.</li>
-              </ul>
-              <p>We may refuse registration, or suspend or close an account, if we reasonably believe these Terms have been breached.</p>
+              <p>
+                Users shall provide true, current, complete and verifiable information, including identity, contact
+                particulars, role and authority. RESTAMP may request identity, business, address, ownership or
+                authorization documents. Submission of documents does not amount to certification of their genuineness,
+                legal sufficiency or title by RESTAMP.
+              </p>
+              <p>
+                Users are responsible for safeguarding their devices, OTPs, passwords and accounts and for all activity
+                through their accounts. Users must promptly notify RESTAMP of suspected unauthorized access. RESTAMP
+                shall not be liable for loss caused by a User&rsquo;s failure to secure credentials, subject always to
+                liabilities that cannot lawfully be excluded.
+              </p>
+              <p>
+                Unless expressly permitted, one person shall maintain one account per role or such account structure as
+                RESTAMP may approve. Fake, duplicate, automated, proxy or impersonation accounts are prohibited. RESTAMP
+                may verify, restrict, merge, suspend or close accounts where reasonably necessary.
+              </p>
             </>
           ),
         },
         {
-          id: 'listings',
-          title: '5. Listings by Owners and Dealers',
+          id: 'nature-of-platform',
+          title: '4. Nature of Platform; No Brokerage or Transactional Role',
           body: (
             <>
-              <p>When you post a Listing, you represent and warrant that:</p>
-              <ul>
-                <li>you are the owner of the property, or are authorised in writing by the owner to advertise it, and can produce proof on request;</li>
-                <li>all details, including price, area, location, configuration, amenities, availability, ownership and legal status, are accurate and not misleading;</li>
-                <li>photos and videos show the actual property and you have the right to publish them;</li>
-                <li>the property is not under any undisclosed dispute, encumbrance or restriction that would prevent the advertised transaction; and</li>
-                <li>where the property or project is required to be registered under the Real Estate (Regulation and Development) Act, 2016 (&ldquo;RERA&rdquo;), it is registered and you display the RERA registration number, and Dealers hold a valid RERA agent registration where required.</li>
-              </ul>
               <p>
-                We may review, verify, edit for format, refuse, hide or remove any Listing, or limit its visibility, at our discretion,
-                including Listings that are duplicate, inaccurate, expired, unlawful or reported by other Users. A &ldquo;Verified&rdquo; or
-                similar badge means only that the Listing passed our internal checks at the time; it is not a guarantee of title, condition
-                or legality.
+                RESTAMP provides an online technology and advertising marketplace intended to facilitate discovery and
+                communication between Users. Unless a separate written agreement expressly states otherwise, RESTAMP is
+                not the owner, seller, purchaser, lessor, lessee, developer, builder, promoter, property manager, broker,
+                agent, legal adviser, valuer, surveyor, escrow agent or representative of any User.
+              </p>
+              <p>
+                RESTAMP is not a party to, negotiator of, or guarantor for any Transaction. No listing, enquiry, contact,
+                verification indicator, subscription or communication creates an agency, partnership, joint venture,
+                employment, fiduciary or representative relationship between RESTAMP and a User.
+              </p>
+              <p>
+                Users independently negotiate and conclude Transactions, conduct due diligence, execute documents, pay
+                consideration and comply with applicable laws. RESTAMP does not receive, hold, transfer or safeguard
+                token advances, deposits, rent, sale consideration or brokerage between Users unless a separately
+                documented service expressly provides otherwise.
+              </p>
+              <p>
+                Nothing in this clause is intended to contract out of any licence, registration, disclosure, consumer,
+                intermediary or other statutory obligation that applies to RESTAMP on the facts or under applicable law.
+                If RESTAMP undertakes any additional regulated activity, the relevant separate terms and statutory
+                requirements shall apply.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'due-diligence',
+          title: '5. Property Information, Verification and Due Diligence',
+          body: (
+            <>
+              <p>
+                All property information is supplied by Users or third-party sources. RESTAMP does not independently
+                investigate or guarantee ownership, title, chain of title, possession, boundaries, measurements,
+                classification, land use, zoning, access, road width, survey particulars, encumbrances, litigation,
+                acquisition, tenancy, approvals, building condition, structural safety, amenities, utilities, RERA
+                status, CMDA/DTCP/local-body approval, tax status, price, marketability or legal compliance.
+              </p>
+              <p>
+                Any &ldquo;verified&rdquo;, &ldquo;checked&rdquo;, &ldquo;featured&rdquo;, &ldquo;premium&rdquo;,
+                &ldquo;genuine&rdquo; or similar label means only that a limited check may have been performed in
+                accordance with the stated scope and at the stated time. It is not a title certificate, legal opinion,
+                valuation, approval, guarantee or assurance that the information remains current. RESTAMP may change or
+                withdraw a verification indicator.
+              </p>
+              <p>
+                Before paying any amount or entering into a Transaction, Buyers must independently inspect the property
+                and verify original title deeds, parent documents, encumbrance certificates,
+                patta/chitta/adangal/A-register/FMB or equivalent revenue records, approvals, sanctioned plans, RERA
+                registration where applicable, identity and authority of the counterparty, possession, access, litigation
+                and all other relevant matters through qualified professionals.
+              </p>
+              <p>
+                Users must not rely solely on photographs, videos, maps, floor plans, virtual tours, descriptions,
+                chatbot responses, badges or statements appearing on the Platform. Measurements, distances, areas,
+                boundaries and location pins are indicative unless expressly confirmed by competent records and on-site
+                verification.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'owners',
+          title: '6. Responsibilities of Owners',
+          body: (
+            <>
+              <p>
+                The Owner must be the lawful owner or hold current, valid and sufficient written authority from every
+                person whose consent or authority is legally required to advertise the property.
+              </p>
+              <p>
+                The Owner warrants that the Listing, documents, photographs, price, area, location, approvals,
+                availability and statements are true, complete, current and not misleading.
+              </p>
+              <p>
+                The Owner must disclose co-ownership, succession issues, powers of attorney, tenancy, possession
+                disputes, mortgages, charges, litigation, acquisition notices, restrictions, approvals and other material
+                facts affecting the property.
+              </p>
+              <p>
+                The Owner must have the right to upload all documents, photographs and personal information and must
+                obtain all necessary consents.
+              </p>
+              <p>
+                The Owner must promptly update, pause or remove a Listing once the property is sold, leased, withdrawn,
+                unavailable or materially changed.
+              </p>
+              <p>
+                The Owner shall deal directly and lawfully with prospective Buyers and shall not use the Platform to
+                advertise illegal, prohibited or unauthorized transactions.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'brokers',
+          title: '7. Responsibilities of Brokers and Agents',
+          body: (
+            <>
+              <p>
+                A Broker shall obtain and maintain all registrations, licences and approvals required under the Real
+                Estate (Regulation and Development) Act, 2016, applicable State RERA rules and all other applicable laws.
+                A Broker shall provide its registration details when required and shall not advertise or facilitate a
+                project or transaction in violation of RERA or other law.
+              </p>
+              <p>
+                A Broker warrants that it has valid written authority from the Owner, accurately identifies the Owner and
+                its own role, discloses brokerage/commission and other charges before they become payable, and does not
+                falsely claim exclusivity, ownership, authorization or approval.
+              </p>
+              <p>
+                A Broker shall not upload duplicate, bait, fictitious or unauthorized listings; divert leads through
+                deception; collect money without authority; make false assurances; conceal material facts; or use another
+                broker&rsquo;s credentials or documents. RESTAMP may seek supporting authorization and registration
+                records and may remove or restrict listings pending verification.
               </p>
             </>
           ),
         },
         {
           id: 'buyers',
-          title: '6. Responsibilities of Buyers',
-          body: (
-            <>
-              <p>Before making any payment or entering into any agreement for a property found on the Platform, you are responsible for:</p>
-              <ul>
-                <li>physically inspecting the property and independently verifying ownership, title documents, approvals, RERA registration and all other details;</li>
-                <li>confirming the identity and authority of the Owner or Dealer you deal with; and</li>
-                <li>seeking independent legal, financial and technical advice where appropriate.</li>
-              </ul>
-              <p>
-                Never pay a token amount, advance or deposit before you have verified the property and the counterparty. {LEGAL.brand} will
-                never ask you to transfer money to an individual on its behalf.
-              </p>
-            </>
-          ),
-        },
-        {
-          id: 'enquiries',
-          title: '7. Enquiries, contact details and communications',
+          title: '8. Responsibilities of Buyers and Other Enquirers',
           body: (
             <>
               <p>
-                When you send an enquiry, request a site visit or choose to view a contact number, you agree that we may share your name,
-                mobile number and enquiry details with the relevant Owner or Dealer so they can respond to you. Owners and Dealers may use
-                these details only to respond to that enquiry, and not for unrelated marketing or resale.
+                Buyers shall use contact details and information only for genuine property-related enquiries and shall not
+                harass, threaten, spam, stalk, scrape, publish or commercially exploit another User&rsquo;s details.
+                Buyers shall independently verify the property and counterparty and shall not make payment based solely on
+                a Listing, message, call, badge or representation appearing on the Platform.
               </p>
               <p>
-                By registering, you consent to receive calls, SMS, WhatsApp messages, emails and push notifications from {LEGAL.brand} and
-                from Owners or Dealers you have contacted, relating to your account, Listings, enquiries and transactions. This consent
-                applies even if your number is registered on the National Customer Preference Register (DND), to the extent permitted
-                by TRAI regulations. You can opt out of promotional messages at any time; service and transactional messages may still be
-                sent while your account is active.
-              </p>
-            </>
-          ),
-        },
-        {
-          id: 'plans',
-          title: '8. Plans, pricing and payments',
-          body: (
-            <>
-              <ul>
-                <li>Basic browsing and, where offered, free listing are available at no charge. Paid Plans for Owners, Dealers and Buyers give additional benefits such as more listings, wider reach, coverage of more micro-markets or access to contact details.</li>
-                <li>The benefits, limits, validity period and price of each Plan are shown on the relevant plan page and at checkout. Prices are in Indian Rupees and are exclusive of GST unless stated; applicable GST is added and shown before you pay.</li>
-                <li>Payments are processed by authorised third-party payment gateways. We do not store your full card details, UPI PIN or net-banking credentials.</li>
-                <li>A Plan is activated only after successful payment confirmation. We issue an invoice for every payment, which you can download from your dashboard.</li>
-                <li>Plans are personal to the account that bought them and cannot be transferred, resold or split across accounts.</li>
-                <li>We may change Plan features or prices for future purchases. Changes do not affect a Plan you have already paid for during its current validity.</li>
-                <li>Refunds and cancellations are governed by our <Link href="/refund-policy">Refund &amp; Cancellation Policy</Link>.</li>
-              </ul>
-              <p>
-                Purchases made inside the iOS or Android app may also be subject to the payment terms of Apple or Google where their billing
-                systems are used.
-              </p>
-            </>
-          ),
-        },
-        {
-          id: 'reva',
-          title: '9. Reva AI assistant',
-          body: (
-            <>
-              <p>
-                The Platform includes Reva, an AI assistant that answers questions about properties, localities and how to use{' '}
-                {LEGAL.brand}, by text or voice. Reva&rsquo;s answers are generated automatically and are provided for general guidance only.
-              </p>
-              <ul>
-                <li>Reva may make mistakes. Do not rely on its answers as legal, financial, tax or investment advice, and always verify property details independently.</li>
-                <li>Do not share sensitive information such as bank details, card numbers, passwords, Aadhaar or PAN numbers with Reva.</li>
-                <li>How we handle your messages and voice input is described in our <Link href="/privacy-policy">Privacy Policy</Link>.</li>
-              </ul>
-            </>
-          ),
-        },
-        {
-          id: 'conduct',
-          title: '10. Acceptable use',
-          body: (
-            <>
-              <p>
-                In line with Rule 3(1)(b) of the IT Rules, 2021, you must not host, display, upload, publish, transmit or share any Content,
-                and must not use the Platform in any way, that:
-              </p>
-              <ul>
-                <li>belongs to another person and to which you have no right, or infringes any patent, trademark, copyright or other proprietary right;</li>
-                <li>is false, misleading, fraudulent or knowingly deceptive, including fake Listings, bait pricing or properties that are not genuinely available;</li>
-                <li>is defamatory, obscene, pornographic, harassing, hateful, or discriminatory on the basis of religion, caste, gender, community or any other ground;</li>
-                <li>is harmful to children or violates any law for the time being in force;</li>
-                <li>impersonates another person or misrepresents your identity, ownership or authority;</li>
-                <li>contains viruses, malware or any code designed to interrupt, damage or limit the Platform;</li>
-                <li>threatens the unity, integrity, defence, security or sovereignty of India, friendly relations with foreign states, or public order;</li>
-                <li>involves scraping, crawling, bulk downloading or copying Listings or User data, or using automated systems to access the Platform without our written permission;</li>
-                <li>involves sending spam, unsolicited messages or contacting Users for purposes unrelated to their Listing or enquiry; or</li>
-                <li>attempts to bypass the Platform to avoid Plan limits, or probes, tests or breaches the security of the Platform.</li>
-              </ul>
-              <p>
-                We may remove infringing Content and suspend or terminate accounts for breach of this section, and may report unlawful
-                activity to the appropriate authorities.
+                Users must exercise reasonable care during site visits and meetings, verify the identity of persons they
+                meet, avoid carrying or transferring large sums in unsafe circumstances and promptly report suspicious
+                conduct. RESTAMP does not supervise site visits or guarantee the safety, conduct or identity of persons
+                met through the Platform.
               </p>
             </>
           ),
         },
         {
           id: 'ip',
-          title: '11. Intellectual property',
+          title: '9. Listings, Content and Intellectual Property Licence',
           body: (
             <>
               <p>
-                The Platform, including its design, software, logos, the {LEGAL.brand} name and trademarks, text, graphics and the
-                compilation of Listings, is owned by or licensed to {LEGAL.legalName} and protected by Indian and international
-                intellectual property laws. Except as these Terms allow, you may not copy, modify, distribute, sell or create derivative
-                works from any part of the Platform.
+                The User retains ownership of User Content, subject to the rights and licences granted in these Terms.
+                The User grants RESTAMP a non-exclusive, worldwide, royalty-free licence, for the duration reasonably
+                necessary to operate and promote the Platform, to host, store, reproduce, display, distribute,
+                communicate, adapt for formatting, create thumbnails, index and technically process User Content on the
+                Platform and through service providers and distribution channels used for the Platform.
               </p>
               <p>
-                You keep ownership of the Content you upload. By uploading it, you grant {LEGAL.brand} a non-exclusive, worldwide,
-                royalty-free, transferable licence to host, store, reproduce, format, display and distribute that Content on the Platform
-                and in marketing of the Platform, for as long as it remains on the Platform and for a reasonable period afterwards for
-                backup and legal purposes. You confirm you have the rights needed to grant this licence.
+                The licence includes the right to display listings and related material to other Users and to use listing
+                excerpts or promotional material to market the Platform, subject to the{' '}
+                <Link href="/privacy-policy">Privacy Policy</Link> and applicable law. The User confirms that it has all
+                rights and consents required to grant this licence. The licence shall continue for copies already shared,
+                cached, backed up, archived or retained for legal, security, dispute-resolution or compliance purposes, to
+                the extent permitted by law.
+              </p>
+              <p>
+                RESTAMP may, but is not obliged to, review, moderate, reject, disable, edit for formatting, demote or
+                remove any Listing or User Content where it reasonably considers this necessary for compliance, safety,
+                quality, rights protection or Platform integrity. Such action does not constitute an admission that
+                RESTAMP has verified other content or assumed responsibility for it.
+              </p>
+              <p>
+                The RESTAMP name, logo, software, design, databases, layout, text and other Company materials are owned by
+                or licensed to RESTAMP. No User receives ownership or an unrestricted licence to copy, scrape, reverse
+                engineer, reproduce, sell or commercially exploit them.
               </p>
             </>
           ),
         },
         {
-          id: 'apps',
-          title: '12. Mobile apps',
+          id: 'conduct',
+          title: '10. Prohibited Conduct',
+          body: (
+            <>
+              <p>Users shall not, directly or indirectly:</p>
+              <ul>
+                <li>upload false, misleading, fraudulent, duplicate, unlawful or unauthorized listings or documents;</li>
+                <li>
+                  impersonate another person or misstate identity, ownership, authority, registration or professional
+                  status;
+                </li>
+                <li>commit or facilitate fraud, cheating, forgery, money laundering, benami transactions, bribery or any unlawful activity;</li>
+                <li>
+                  scrape, crawl, harvest, copy, extract, index, compile, resell or commercially exploit listings, leads,
+                  contact details or Platform data without prior written permission;
+                </li>
+                <li>
+                  use contact details obtained through the Platform for spam, harassment, intimidation, unsolicited
+                  marketing or unrelated purposes;
+                </li>
+                <li>bypass access controls, subscription restrictions, contact limits, security systems or technical protections;</li>
+                <li>upload malware, malicious code, harmful files or content infringing intellectual property, privacy or other rights;</li>
+                <li>publish defamatory, obscene, threatening, hateful or otherwise unlawful material;</li>
+                <li>interfere with Platform operations, servers, networks, other accounts or service providers;</li>
+                <li>
+                  circumvent RESTAMP&rsquo;s paid features, manipulate ranking or enquiry metrics, or create artificial
+                  leads or reviews;
+                </li>
+                <li>use the Platform in a manner that exposes RESTAMP or other Users to legal, regulatory, security or reputational risk.</li>
+              </ul>
+            </>
+          ),
+        },
+        {
+          id: 'enforcement',
+          title: '11. Platform Discretion, Moderation and Enforcement',
           body: (
             <>
               <p>
-                Subject to these Terms, we grant you a limited, personal, non-exclusive, non-transferable, revocable licence to download
-                and use the {LEGAL.brand} app on devices you own or control, for your personal or business use of the Platform. You must
-                not reverse-engineer, decompile or modify the app, except to the extent the law allows.
+                To protect Users and the Platform, RESTAMP may, acting reasonably and subject to applicable law, request
+                additional information, verify contact details, flag or label content, restrict visibility, disable
+                contact access, remove or suspend a Listing, block an account, suspend a Subscription feature, preserve
+                relevant records, report suspected unlawful conduct to competent authorities or take other proportionate
+                measures.
               </p>
               <p>
-                The app may request access to features of your device, such as your photos (to add property pictures) or microphone (to
-                speak with Reva). You can allow or deny these permissions at any time in your device settings; some features will not
-                work without them. Updates may be required to keep using the app.
+                RESTAMP may act with or without prior notice where urgent action is reasonably required to prevent fraud,
+                harm, unlawful activity, security threats, evidence destruction or continuing violation. Where
+                practicable, RESTAMP may provide a reason and an opportunity to submit an explanation or appeal. RESTAMP
+                is not required to disclose confidential fraud-detection methods, security controls or information whose
+                disclosure is prohibited by law.
               </p>
-              <p><strong>Apple App Store.</strong> If you downloaded the app from the Apple App Store:</p>
-              <ul>
-                <li>these Terms are between you and {LEGAL.legalName} only, not Apple Inc. (&ldquo;Apple&rdquo;), and {LEGAL.brand}, not Apple, is solely responsible for the app and its content;</li>
-                <li>your licence is limited to use on Apple-branded products you own or control, as permitted by the Usage Rules in the Apple Media Services Terms and Conditions;</li>
-                <li>Apple has no obligation to provide any maintenance or support for the app;</li>
-                <li>if the app fails to conform to any applicable warranty, you may notify Apple and Apple will refund the purchase price (if any); to the maximum extent permitted by law, Apple has no other warranty obligation with respect to the app;</li>
-                <li>{LEGAL.brand}, not Apple, is responsible for addressing any claims relating to the app, including product liability claims, claims that the app fails to meet legal or regulatory requirements, and consumer protection or privacy claims;</li>
-                <li>{LEGAL.brand}, not Apple, is responsible for the investigation, defence, settlement and discharge of any third-party claim that the app infringes intellectual property rights;</li>
-                <li>you confirm that you are not located in a country subject to a U.S. Government embargo, or designated as a &ldquo;terrorist supporting&rdquo; country, and are not on any U.S. Government list of prohibited or restricted parties; and</li>
-                <li>Apple and its subsidiaries are third-party beneficiaries of these Terms and, once you accept them, Apple may enforce them against you.</li>
-              </ul>
               <p>
-                <strong>Google Play.</strong> If you downloaded the app from Google Play, you also agree to the Google Play Terms of Service.
-                In case of conflict regarding your use of Google Play, the Google Play Terms prevail.
+                A User shall not be entitled to compensation merely because content is moderated or an account or feature
+                is restricted in good faith under these Terms. This does not affect any mandatory statutory remedy or a
+                User&rsquo;s right to challenge an action through the applicable grievance mechanism.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'subscriptions',
+          title: '12. Subscriptions, Fees, Taxes and Payments',
+          body: (
+            <>
+              <p>
+                Subscription features, prices, validity periods, usage limits, taxes and renewal terms shall be
+                displayed before purchase. A Subscription is activated after successful payment confirmation. Unless
+                expressly stated, a Subscription provides access to specified Platform features only and does not
+                guarantee leads, views, calls, site visits, conversions, sales, rentals or any commercial result.
+              </p>
+              <p>
+                Fees are payable in Indian Rupees and applicable taxes, including GST, shall be charged as required by
+                law. Invoices and tax documents shall be issued in accordance with applicable law. Payments may be
+                processed by third-party payment service providers and are subject to their terms and security
+                procedures.
+              </p>
+              <p>
+                RESTAMP does not store card numbers, banking passwords or UPI PINs where payment processing is handled by
+                a third-party gateway. RESTAMP is not responsible for delays, declines, reversals or failures
+                attributable to banks, payment gateways, telecom networks or other third parties, except to the extent
+                caused by RESTAMP&rsquo;s own breach or liability imposed by law.
+              </p>
+              <p>
+                A Subscription is personal or business-account specific, non-transferable and may not be resold, shared
+                or sublicensed unless expressly permitted. RESTAMP may revise prices and plans prospectively. A price
+                change shall not alter the paid price for the unexpired portion of an existing fixed-term Subscription.
+              </p>
+              <p>
+                Unless a specific plan or applicable law provides otherwise, fees for a Subscription that has been
+                activated or made available are non-refundable. This shall not exclude refunds required by law or for
+                duplicate, failed, unauthorized or incorrectly processed charges. Any refund request shall be handled
+                under the published <Link href="/refund-policy">Refund/Cancellation Policy</Link>. No clause shall permit
+                RESTAMP to retain money where such retention is prohibited by law.
+              </p>
+              <p>
+                Where auto-renewal is offered, the renewal amount, frequency and cancellation method shall be disclosed
+                before consent. Users may cancel future renewal through the available account or payment-provider
+                process. Cancellation of renewal does not automatically refund the current paid period.
+              </p>
+              <p>
+                All token amounts, deposits, rents, sale consideration, brokerage and other payments between Users are
+                outside the Platform unless a separate written service expressly states otherwise. RESTAMP is not an
+                escrow holder, trustee or stakeholder for such funds and shall not be responsible for their collection,
+                refund, appropriation or settlement.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'communications',
+          title: '13. Communications and Consent',
+          body: (
+            <>
+              <p>
+                The Platform may facilitate calls, messages, enquiries, chat, notifications and visit requests. Users are
+                responsible for the content, accuracy and lawfulness of their communications and for their conduct online
+                and offline. RESTAMP does not guarantee delivery, receipt, response or authenticity of communications
+                between Users.
+              </p>
+              <p>
+                Users may receive essential service communications, security alerts, transaction-related messages and
+                legal notices. Promotional communications shall be handled in accordance with applicable consent and
+                opt-out requirements. A User may opt out of promotional messages through the available mechanism, without
+                affecting essential service or legally required communications.
               </p>
             </>
           ),
         },
         {
           id: 'third-party',
-          title: '13. Third-party services and links',
-          body: (
-            <p>
-              The Platform may contain links to, or integrations with, third-party websites and services, such as maps, payment gateways,
-              home-loan partners or legal and documentation services. These are provided for convenience only. We do not
-              control and are not responsible for their content, policies or services, and your use of them is governed by their own terms.
-            </p>
-          ),
-        },
-        {
-          id: 'disclaimer',
-          title: '14. Disclaimers',
+          title: '14. Third-Party Services, Links and Information',
           body: (
             <>
               <p>
-                The Platform and all Content are provided on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo; basis. To the fullest extent
-                permitted by law, {LEGAL.brand} disclaims all warranties, express or implied, including warranties of merchantability, fitness
-                for a particular purpose, accuracy and non-infringement.
+                The Platform may rely on third-party services including cloud hosting, maps, analytics, identity or OTP
+                providers, payment gateways, communication providers and social login. Such services may be governed by
+                separate terms and privacy policies. RESTAMP does not control third-party services and does not
+                guarantee their availability, accuracy or security, but this clause does not exclude liability that
+                applicable law places on RESTAMP.
               </p>
               <p>
-                Listings, prices, locality insights, price trends, estimates and AI-generated answers are provided by Users or generated
-                automatically, and are for information only. {LEGAL.brand} does not verify, and makes no representation about, the title,
-                legal status, approvals, condition, measurements or value of any property, or the identity or conduct of any User. We do not
-                guarantee that the Platform will be uninterrupted, error-free or free of harmful components.
+                Maps, geolocation, area calculations, automated recommendations and other technology-generated
+                information are indicative and may contain errors. Users must independently confirm material information
+                before relying on it.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'disclaimers',
+          title: '15. Disclaimers and Availability',
+          body: (
+            <>
+              <p>
+                To the maximum extent permitted by law, the Platform and its features are provided on an &ldquo;as
+                available&rdquo; basis. RESTAMP does not warrant uninterrupted, error-free, secure or continuous
+                availability, compatibility with every device, or that defects will always be corrected immediately.
+              </p>
+              <p>
+                RESTAMP does not warrant the accuracy, completeness, legality, availability or quality of User Content or
+                any property, User, Broker, lead or Transaction. RESTAMP does not promise any minimum number or quality
+                of listings, enquiries, impressions, leads, visits or completed Transactions.
+              </p>
+              <p>
+                The disclaimers in these Terms allocate responsibility for matters controlled by Users and third
+                parties. They shall not exclude any express undertaking made by RESTAMP in a separate written agreement
+                or any right or liability that cannot lawfully be excluded.
               </p>
             </>
           ),
         },
         {
           id: 'liability',
-          title: '15. Limitation of liability',
+          title: '16. Limitation of Liability',
           body: (
             <>
-              <p>To the maximum extent permitted by law:</p>
-              <ul>
-                <li>{LEGAL.brand} is not liable for any indirect, incidental, special, consequential or punitive loss, or for loss of profit, data, goodwill or business opportunity, arising from your use of the Platform;</li>
-                <li>{LEGAL.brand} is not liable for any act, omission, misrepresentation, fraud or default of any User, or for any loss arising from a transaction or dispute between Users; and</li>
-                <li>our total aggregate liability to you for any claim relating to the Platform is limited to the amount you paid to {LEGAL.brand} for the Plan giving rise to the claim in the 6 months before the claim arose, or ₹1,000 if you have paid nothing.</li>
-              </ul>
-              <p>Nothing in these Terms limits any liability that cannot be limited under applicable law.</p>
+              <p>
+                To the maximum extent permitted by applicable law, RESTAMP and its directors, officers, employees,
+                affiliates, contractors and service providers shall not be liable for indirect, incidental, special,
+                exemplary or consequential loss, loss of profit, revenue, business, opportunity, goodwill, anticipated
+                savings or data, arising out of or connected with use of the Platform.
+              </p>
+              <p>
+                Subject to the exceptions below, RESTAMP&rsquo;s aggregate liability arising out of or in connection with
+                these Terms or the Platform shall not exceed the Subscription fees actually paid by the affected User to
+                RESTAMP for the relevant service during the three (3) months immediately preceding the event giving rise
+                to the claim, or {LEGAL.liabilityCapInr}, whichever is lower.
+              </p>
+              <p>
+                The above exclusions and cap shall not apply to liability that cannot be excluded or limited under
+                applicable law, including where applicable fraud, wilful misconduct, gross negligence, death or personal
+                injury caused by negligence, breach of mandatory data-protection obligations, or any mandatory consumer
+                remedy. Nothing in these Terms restricts a consumer from exercising a non-waivable statutory right.
+              </p>
+              <p>
+                RESTAMP shall not be liable for loss arising from a User&rsquo;s decision to transact, a defect in
+                property or title, inaccurate User Content, acts or omissions of another User, failure to conduct due
+                diligence, payment made directly to another User, or third-party service failure, except to the extent
+                such loss is directly caused by RESTAMP&rsquo;s own legally actionable act or omission.
+              </p>
             </>
           ),
         },
         {
           id: 'indemnity',
-          title: '16. Indemnity',
+          title: '17. User Indemnity',
           body: (
-            <p>
-              You agree to indemnify and hold harmless {LEGAL.legalName}, its directors, employees, partners and agents from any claim,
-              demand, loss, liability, penalty or expense (including reasonable legal fees) arising out of your Listings or other Content, your
-              breach of these Terms or of any law, your transactions with other Users, or your violation of the rights of any third party.
-            </p>
+            <>
+              <p>
+                To the maximum extent permitted by law, each User (&ldquo;Indemnifying User&rdquo;) shall indemnify,
+                defend and hold harmless RESTAMP, the Company, its affiliates and each of their directors, officers,
+                employees, agents, contractors and service providers (&ldquo;Indemnified Parties&rdquo;) from and
+                against third-party claims, demands, proceedings, losses, damages, liabilities, penalties, costs and
+                reasonable legal fees arising out of or relating to:
+              </p>
+              <ul>
+                <li>the User&rsquo;s Listing, User Content, documents, representations or omissions;</li>
+                <li>
+                  any defect in title, ownership, authority, possession, approval, registration or legal status of
+                  property advertised by the User;
+                </li>
+                <li>
+                  fraud, forgery, misrepresentation, unauthorized listing, unlawful conduct or infringement of third-party
+                  rights by the User;
+                </li>
+                <li>
+                  any Transaction, payment, brokerage, deposit, refund, agreement or dispute between the User and another
+                  person;
+                </li>
+                <li>breach of these Terms or applicable law by the User; or</li>
+                <li>negligent, reckless or wilful acts or omissions of the User.</li>
+              </ul>
+              <p>
+                RESTAMP shall give reasonable notice of a claim where practicable and may participate in its defence
+                through counsel of its choice. The User shall not settle a claim in a manner that admits liability on
+                behalf of, imposes an obligation on, or prejudices an Indemnified Party without that party&rsquo;s prior
+                written consent. This indemnity shall not apply to the extent a claim is finally determined to have
+                resulted from the fraud or wilful misconduct of the Indemnified Party.
+              </p>
+            </>
           ),
         },
         {
           id: 'termination',
-          title: '17. Suspension and termination',
+          title: '18. Suspension, Termination and Consequences',
           body: (
             <>
               <p>
-                You may stop using the Platform and request deletion of your account at any time, as explained in our{' '}
-                <Link href="/privacy-policy#delete-account">Privacy Policy</Link>.
+                A User may stop using the Platform and request account closure through the available process. Account
+                closure does not automatically cancel amounts already due, resolve pending disputes or entitle the User
+                to a refund except as provided by law or the <Link href="/refund-policy">Refund Policy</Link>.
               </p>
               <p>
-                We may suspend, restrict or terminate your access, or remove your Listings, with or without notice, if you breach these Terms,
-                if we are required to by law or a competent authority, or if we reasonably believe your use creates risk or harm for other Users
-                or for {LEGAL.brand}. If we terminate your account for breach, fees already paid are not refundable except as stated in the{' '}
-                <Link href="/refund-policy">Refund &amp; Cancellation Policy</Link>. Sections that by their nature should survive termination,
-                including intellectual property, disclaimers, limitation of liability, indemnity and governing law, will survive.
+                RESTAMP may suspend, restrict or terminate access, remove listings or discontinue features where the
+                User breaches these Terms, provides inaccurate information, creates risk, fails verification, violates
+                law, receives credible complaints, fails to pay fees, or where required by a competent authority or
+                reasonably necessary for Platform security or business continuity.
+              </p>
+              <p>
+                On termination, the User&rsquo;s right to access the relevant services ceases. Clauses which by their
+                nature should survive, including intellectual property, licences for retained content, disclaimers,
+                liability, indemnity, dispute resolution, payment obligations and record retention, shall survive to the
+                extent necessary and lawful.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: 'privacy',
+          title: '19. Privacy and Data Protection',
+          body: (
+            <>
+              <p>
+                Personal data shall be handled in accordance with the RESTAMP{' '}
+                <Link href="/privacy-policy">Privacy Policy</Link> and applicable Indian data-protection and
+                information-technology laws, including the Digital Personal Data Protection Act, 2023 and the rules and
+                commencement notifications applicable from time to time. The applicability and commencement of particular
+                statutory obligations may be phased; RESTAMP shall implement obligations as and when they become
+                applicable.
+              </p>
+              <p>
+                Users shall provide personal data lawfully and shall not upload or disclose another person&rsquo;s
+                personal data, identity documents, contact details, photographs or property documents without a lawful
+                basis and all required notices or consents. Users shall not use Platform data for unlawful profiling,
+                unsolicited marketing, harassment or any purpose inconsistent with the{' '}
+                <Link href="/privacy-policy">Privacy Policy</Link>.
+              </p>
+              <p>
+                RESTAMP may retain records for security, dispute resolution, fraud prevention, legal compliance and
+                responding to lawful requests, subject to applicable law and the{' '}
+                <Link href="/privacy-policy">Privacy Policy</Link>. Nothing in these Terms authorises processing that is
+                prohibited by applicable data-protection law.
               </p>
             </>
           ),
         },
         {
           id: 'grievance',
-          title: '18. Grievance redressal',
+          title: '20. Grievance Redressal and Notices',
           body: (
             <>
               <p>
-                In accordance with the Information Technology Act, 2000, the IT Rules, 2021 and the Consumer Protection (E-Commerce) Rules,
-                2020, you can raise any complaint about the Platform, a Listing, Content you believe is unlawful or infringing, or these Terms,
-                with our Grievance Officer:
+                Users may submit complaints through the contact details and grievance mechanism published on the
+                Platform. RESTAMP shall acknowledge and process complaints within the timelines applicable to its legal
+                classification and the nature of the complaint. A complaint involving unlawful content, impersonation,
+                fraud, privacy, intellectual property or a property listing should include the relevant URL/listing ID,
+                a clear description, supporting material and the complainant&rsquo;s contact details.
               </p>
               <ul>
-                <li><strong>Name:</strong> {LEGAL.grievanceOfficer.name}</li>
                 <li><strong>Company:</strong> {LEGAL.legalName}</li>
-                <li><strong>Address:</strong> {LEGAL.address}</li>
-                <li><strong>Email:</strong> <a href={`mailto:${LEGAL.grievanceOfficer.email}?subject=Grievance`}>{LEGAL.grievanceOfficer.email}</a></li>
-                <li><strong>Hours:</strong> {LEGAL.grievanceOfficer.hours}</li>
+                <li><strong>Brand:</strong> RESTAMP</li>
+                <li><strong>Registered Office:</strong> {LEGAL.address}</li>
+                <li><strong>Grievance Officer:</strong> {LEGAL.grievanceOfficer.name}</li>
+                <li><strong>Email:</strong> {mail('Grievance')}</li>
+                <li><strong>Website:</strong> <a href={LEGAL.websiteUrl}>{LEGAL.websiteUrl}</a></li>
               </ul>
               <p>
-                Please include your name, registered mobile number, a description of the issue and links or Listing IDs. We will acknowledge
-                your complaint within 24 hours and resolve it within 15 days of receipt. Requests to remove Content that is prima facie
-                unlawful, or that exposes a person&rsquo;s private area, nudity or is impersonation, will be acted on within 72 hours or 24 hours
-                respectively, as required by the IT Rules, 2021.
+                Notices to Users may be sent to the registered email address, mobile number, in-app notification or other
+                contact details provided by the User. Users are responsible for keeping such details current. Legal
+                notices shall also be served in any manner required by applicable law.
               </p>
             </>
           ),
         },
         {
-          id: 'law',
-          title: '19. Governing law and disputes',
+          id: 'dispute-resolution',
+          title: '21. Dispute Resolution, Arbitration and Jurisdiction',
           body: (
             <>
-              <p>These Terms are governed by the laws of India.</p>
               <p>
-                If a dispute arises, please contact us first so we can try to resolve it amicably. Any dispute that is not resolved within 30
-                days shall be referred to arbitration by a sole arbitrator appointed by {LEGAL.brand}, under the Arbitration and Conciliation
-                Act, 1996. The seat and venue of arbitration shall be {LEGAL.jurisdiction}, and the proceedings shall be in English. Subject to
-                this, the courts at {LEGAL.jurisdiction} have exclusive jurisdiction. Nothing here prevents you from approaching a consumer
-                commission where the law entitles you to do so.
+                The parties shall first attempt in good faith to resolve disputes arising directly between RESTAMP and a
+                User by submitting a written complaint to the Grievance Officer. If the dispute is not resolved within
+                thirty (30) days, either party may pursue remedies available under applicable law.
+              </p>
+              <p>
+                Subject to non-arbitrable matters, mandatory statutory forums and rights of consumers, disputes arising
+                between RESTAMP and a User out of these Terms may be referred to arbitration under the Arbitration and
+                Conciliation Act, 1996, as amended. The parties shall mutually appoint a sole independent arbitrator
+                within thirty (30) days of a written request. If they fail to agree, the arbitrator shall be appointed
+                in accordance with the Act by the competent court or institution. No unilateral appointment by RESTAMP is
+                intended.
+              </p>
+              <p>
+                The seat and legal place of arbitration shall be {LEGAL.jurisdiction}, India. Hearings may be conducted
+                physically or virtually as determined by the arbitrator. The language shall be English. The award shall
+                be reasoned and binding, subject to statutory rights of challenge.
+              </p>
+              <p>
+                Subject to the foregoing and to mandatory jurisdiction conferred by consumer, property, data-protection
+                or other applicable laws, courts at {LEGAL.jurisdiction} shall have jurisdiction over disputes arising
+                from these Terms. Nothing in this clause prevents a User from approaching a consumer commission or other
+                statutory authority having jurisdiction under applicable law.
               </p>
             </>
-          ),
-        },
-        {
-          id: 'general',
-          title: '20. General',
-          body: (
-            <ul>
-              <li><strong>Entire agreement.</strong> These Terms, with the policies referred to in them, are the entire agreement between you and {LEGAL.brand} about the Platform.</li>
-              <li><strong>Severability.</strong> If any provision is found invalid or unenforceable, the rest of these Terms remain in full force.</li>
-              <li><strong>No waiver.</strong> Our failure to enforce any right is not a waiver of that right.</li>
-              <li><strong>Assignment.</strong> You may not transfer your rights under these Terms. We may assign them to an affiliate or a successor business.</li>
-              <li><strong>Force majeure.</strong> We are not liable for any delay or failure caused by events beyond our reasonable control, including natural disasters, epidemics, network failures, government action or third-party service outages.</li>
-            </ul>
           ),
         },
         {
           id: 'changes',
-          title: '21. Changes to these Terms',
+          title: '22. Changes to Terms',
           body: (
             <p>
-              We may update these Terms from time to time to reflect changes to the Platform, our Plans or the law. We will post the updated
-              Terms on this page and change the &ldquo;Last updated&rdquo; date, and will notify you of material changes through the Platform,
-              the app or by message. Your continued use of the Platform after the changes take effect means you accept the updated Terms.
+              RESTAMP may revise these Terms to reflect changes in the Platform, business model, security practices or
+              applicable law. The revised version shall be published with an updated effective or revision date. Where
+              required by law or where a material change affects Users&rsquo; rights, RESTAMP shall provide appropriate
+              notice and obtain fresh consent where legally required. Continued use after the effective date may
+              constitute acceptance only to the extent permitted by law. If a User does not agree to a material change,
+              the User must stop using the affected service and may close the account, subject to accrued obligations.
             </p>
           ),
         },
         {
-          id: 'contact',
-          title: '22. Contact us',
+          id: 'general',
+          title: '23. General Provisions',
+          body: (
+            <ul>
+              <li>
+                <strong>Entire Agreement:</strong> These Terms, the <Link href="/privacy-policy">Privacy Policy</Link>,{' '}
+                <Link href="/refund-policy">Refund Policy</Link> and applicable plan-specific terms constitute the
+                agreement between RESTAMP and the User concerning the Platform.
+              </li>
+              <li>
+                <strong>Severability:</strong> If any provision is held invalid or unenforceable, it shall be modified to
+                the minimum extent necessary, and the remaining provisions shall continue in force.
+              </li>
+              <li>
+                <strong>No Waiver:</strong> Failure or delay in exercising a right is not a waiver of that right.
+              </li>
+              <li>
+                <strong>Assignment:</strong> A User may not assign or transfer rights or obligations without
+                RESTAMP&rsquo;s prior written consent. RESTAMP may assign or transfer its rights and obligations to an
+                affiliate, successor or acquirer in connection with restructuring, merger, acquisition or business
+                transfer, subject to applicable law.
+              </li>
+              <li>
+                <strong>Force Majeure:</strong> RESTAMP shall not be liable for delay or failure caused by events beyond
+                its reasonable control, including natural disasters, epidemics, war, civil disturbance, government action,
+                power failure, cyberattack, telecom or internet outage, cloud-service failure, strikes or disruption of
+                third-party services.
+              </li>
+              <li>
+                <strong>Independent Relationship:</strong> These Terms do not create a partnership, joint venture,
+                employment, franchise, agency or fiduciary relationship between RESTAMP and any User.
+              </li>
+              <li>
+                <strong>No Third-Party Beneficiary:</strong> Except for the Indemnified Parties expressly identified in
+                the indemnity clause, no person who is not a party to these Terms shall have a right to enforce them,
+                subject to applicable law.
+              </li>
+              <li>
+                <strong>Language:</strong> The English version shall prevail in case of inconsistency, to the extent
+                permitted by law. Any translated version may be provided for convenience or statutory compliance.
+              </li>
+              <li>
+                <strong>Electronic Records:</strong> RESTAMP may maintain electronic logs, OTP records, consent records,
+                payment confirmations, communications and system records in accordance with applicable law. Their
+                admissibility and evidentiary value shall be determined by the competent forum under applicable law.
+              </li>
+            </ul>
+          ),
+        },
+        {
+          id: 'acknowledgement',
+          title: '24. Acknowledgement',
           body: (
             <p>
-              For any questions about these Terms, write to us at {mail('Question about Terms and Conditions')} or use our{' '}
-              <Link href="/contact">Contact page</Link>. {LEGAL.legalName}, {LEGAL.address}.
+              By clicking &ldquo;I Agree&rdquo;, registering, accessing or using the Platform, the User confirms that the
+              User has read and accepted these Terms, has authority to accept them, and agrees to comply with them and
+              all applicable laws.
             </p>
           ),
         },

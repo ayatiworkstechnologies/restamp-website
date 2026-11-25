@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Eye, EyeOff, MapPin, Pencil, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
 import { AdminShell } from "@/components/dashboard/admin-shell";
+import { AgentLocationsPanel } from "@/components/dashboard/agent-locations-panel";
 import { Card, EmptyState, Modal, btnPrimary, btnSecondary, inputCls, selectCls, useActor } from "@/components/subscriptions/ui";
 import { confirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "@/lib/notify";
@@ -235,6 +236,9 @@ export default function LocationsPage() {
           }}
         />
       )}
+      {/* Agent Location Master (backend workbook) — separate from the
+          marketing micro-markets above, which are unchanged. */}
+      <AgentLocationsPanel canManage={canManage} />
     </AdminShell>
   );
 }

@@ -113,11 +113,13 @@ type RequestOptions = {
   /** Send the session token. Public endpoints pass false. */
   auth?: boolean;
   signal?: AbortSignal;
+  /** Extra request headers (e.g. Idempotency-Key). */
+  headers?: Record<string, string>;
 };
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', query, body, auth = true, signal } = options;
-  const headers: Record<string, string> = { Accept: 'application/json' };
+  const headers: Record<string, string> = { Accept: 'application/json', ...(options.headers || {}) };
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (auth) {

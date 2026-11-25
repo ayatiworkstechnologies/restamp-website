@@ -1,3 +1,4 @@
+import { toPlanChoice } from '@/lib/agentLocations';
 import { useEffect, useState } from 'react';
 import { apiGet, apiPost, errorMessage } from '@/lib/api/client';
 import { withRole } from '@/lib/api/auth';
@@ -731,8 +732,10 @@ export async function activateAgentPlanViaBypass(pkg: LocationPackage, localitie
   let allocation: { unmatched: string[]; unavailable: string[]; error: string | null } = { unmatched: [], unavailable: [], error: null };
   if (localities.length) {
     try {
+      // Agent Location Master labels go as stable group ids (older names as names).
+      const choice = await toPlanChoice(localities);
       const r = await withRole('BROKER', () =>
-        apiPost<{ unmatched_localities?: string[]; unavailable_localities?: string[] }>('/broker/plan/localities', { localities }),
+        apiPost<{ unmatched_localities?: string[]; unavailable_localities?: string[] }>('/broker/plan/localities', choice),
       );
       allocation = { unmatched: r.unmatched_localities || [], unavailable: r.unavailable_localities || [], error: null };
     } catch (e) {

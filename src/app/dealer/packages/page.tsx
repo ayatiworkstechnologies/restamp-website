@@ -1,6 +1,6 @@
 "use client";
 
-import { useActiveLocations } from '@/lib/locations';
+import { AGENT_ZONES, filterAgentGroups, groupLabel, useAgentLocationGroups } from '@/lib/agentLocations';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
@@ -19,7 +19,8 @@ import {
 import { ArrowRight, Check, CheckCircle2, Search, X } from 'lucide-react';
 
 const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
-const ZONES = ['All', 'South & OMR', 'Central Chennai', 'Coastal & ECR', 'West Chennai'];
+// Agent Location Master zones (one option per PIN code, from the backend).
+const ZONES = ['All', ...AGENT_ZONES];
 
 /**
  * Dealer plan: pick a validity (30 or 60 days), then the pincodes / micro-markets.
@@ -28,7 +29,8 @@ const ZONES = ['All', 'South & OMR', 'Central Chennai', 'Coastal & ECR', 'West C
 export default function DealerPackagesPage() {
   const router = useRouter();
   const backendPackages = useLocationPackages();
-  const dealerLocations = useActiveLocations();
+  const { items: groups, state: groupsState, reload: reloadGroups } = useAgentLocationGroups();
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const [rateId, setRateId] = useState<DealerPincodePlanId>('30d');
   const [selected, setSelected] = useState<string[]>([]);
@@ -43,17 +45,18 @@ export default function DealerPackagesPage() {
     if (draft?.selectedLocations?.length) setSelected(draft.selectedLocations);
   }, []);
 
+  // Drop restored selections that are no longer location options (e.g. an
+  // older draft made from the previous location list).
+  useEffect(() => {
+    if (groupsState !== 'ok') return;
+    const valid = new Set(groups.map(groupLabel));
+    setSelected((cur) => cur.filter((l) => valid.has(l)));
+  }, [groups, groupsState]);
+
   const rate = findPincodePlan(rateId);
   const maxLocations = Math.max(0, ...backendPackages.map((p) => p.locationLimit));
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase();
-    return dealerLocations.filter(
-      (l) =>
-        (zone === 'All' || l.region === zone) &&
-        (l.name.toLowerCase().includes(q) || l.city.toLowerCase().includes(q) || l.tag.toLowerCase().includes(q)),
-    );
-  }, [dealerLocations, query, zone]);
+  const filtered = useMemo(() => filterAgentGroups(groups, query, zone), [groups, query, zone]);
 
   const toggle = (name: string) => {
     setWarning(null);
@@ -151,7 +154,7 @@ export default function DealerPackagesPage() {
                 <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search Chennai locations..."
+                  placeholder="Search area, locality or PIN code"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-full pl-9 pr-8 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#087ed9] outline-none transition"
@@ -184,32 +187,67 @@ export default function DealerPackagesPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {filtered.map((loc) => {
-                const on = selected.includes(loc.name);
+              {groupsState === 'loading' && <p className="text-sm text-slate-500">Loading locations…</p>}
+              {groupsState === 'error' && (
+                <button type="button" onClick={reloadGroups} className="text-sm font-semibold text-rose-600 hover:underline cursor-pointer text-left">
+                  Couldn&apos;t load locations. Retry
+                </button>
+              )}
+              {filtered.map((g) => {
+                const label = groupLabel(g);
+                const on = selected.includes(label);
+                const open = expanded === label;
+                const many = g.localities.length > 1;
                 return (
-                  <button
-                    key={loc.id}
-                    type="button"
-                    onClick={() => toggle(loc.name)}
-                    className={`p-4 rounded-2xl border text-left flex items-center justify-between gap-3 transition cursor-pointer ${
+                  <div
+                    key={label}
+                    className={`p-4 rounded-2xl border text-left transition ${
                       on ? 'border-[#087ed9] bg-sky-50/60 ring-2 ring-[#087ed9]' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
                     }`}
                   >
-                    <span className="min-w-0">
-                      <span className="block text-sm font-bold truncate">{loc.name}</span>
-                      <span className="block text-xs text-slate-500 truncate">{loc.city}</span>
-                    </span>
-                    <span
-                      className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center ${
-                        on ? 'border-[#087ed9] bg-[#087ed9] text-white' : 'border-slate-300'
-                      }`}
+                    <button
+                      type="button"
+                      onClick={() => toggle(label)}
+                      aria-pressed={on}
+                      className="w-full flex items-start justify-between gap-3 text-left cursor-pointer"
                     >
-                      {on && <Check size={12} strokeWidth={3} />}
-                    </span>
-                  </button>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold break-words">
+                          {g.primary_name} <span className="font-semibold text-slate-500">{g.pincode}</span>
+                        </span>
+                        <span className="block text-xs text-slate-500">
+                          {g.legacy
+                            ? `PIN ${g.pincode}`
+                            : `${g.zone} · ${g.localities.length} ${g.localities.length === 1 ? 'locality' : 'localities'}`}
+                        </span>
+                      </span>
+                      <span
+                        className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border flex items-center justify-center ${
+                          on ? 'border-[#087ed9] bg-[#087ed9] text-white' : 'border-slate-300'
+                        }`}
+                      >
+                        {on && <Check size={12} strokeWidth={3} />}
+                      </span>
+                    </button>
+                    {many && (
+                      <div className="mt-2 text-xs text-slate-600 leading-relaxed break-words">
+                        {open ? g.localities.join(', ') : `${g.localities.slice(0, 3).join(', ')}${g.localities.length > 3 ? '…' : ''}`}
+                        {g.localities.length > 3 && (
+                          <button
+                            type="button"
+                            onClick={() => setExpanded(open ? null : label)}
+                            aria-expanded={open}
+                            className="ml-1 font-semibold text-[#087ed9] hover:underline cursor-pointer"
+                          >
+                            {open ? 'Show less' : `Show all ${g.localities.length}`}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-              {filtered.length === 0 && <p className="text-sm text-slate-500">No locations match your search.</p>}
+              {groupsState === 'ok' && filtered.length === 0 && <p className="text-sm text-slate-500">No locations match your search.</p>}
             </div>
 
             {selected.length > 0 && (
